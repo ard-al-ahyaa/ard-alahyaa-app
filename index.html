@@ -29,9 +29,9 @@
             height: 100vh;
             width: 100vw;
         }
-        /* 📺 شاشة العرض (التلفزيون) */
+        /* 📺 شاشة العرض (التلفزيون) - تظهر افتراضياً */
         #tv-view {
-            display: none;
+            display: flex;
             flex-direction: column;
             width: 100%;
             height: 100%;
@@ -106,7 +106,7 @@
         }
         #caption-overlay.hidden { opacity: 0; pointer-events: none; }
 
-        /* 📱 شاشة التحكم (الهاتف) */
+        /* 📱 شاشة التحكم (الهاتف) - مخفية وتظهر عند الطلب */
         #mobile-view {
             display: none;
             flex-direction: column;
@@ -221,7 +221,6 @@
 
     <!-- 2. 📱 قسم التحكم (الهاتف) -->
     <div id="mobile-view">
-        <!-- مرحلة تسجيل الدخول والربط -->
         <div id="mobile-login">
             <h2>لوحة التحكم الذكية</h2>
             <p style="color: var(--text-muted); text-align: center;">أدخل الرمز المكون من 6 أرقام الظاهر على شاشة التلفزيون</p>
@@ -230,28 +229,21 @@
             <div id="mobile-status" style="color: var(--btn-danger); text-align: center; margin-top: 10px;"></div>
         </div>
         
-        <!-- لوحة الأزرار والتحكم الكامل بعد الاتصال -->
         <div id="mobile-dashboard" style="display: none;">
             <div class="status-bar" id="dashboard-status">متصل تماماً بشاشة العرض ومستعد للعمل</div>
-            
             <div class="info-card">
                 <div class="info-label">النص المعروض حالياً على التلفزيون:</div>
                 <div class="info-value" id="current-sentence-txt">-</div>
             </div>
-            
             <div class="status-bar" style="font-weight: bold; color:#fff;" id="page-sentence-counter">
                 الصفحة: 0 / 0 | الجملة المنطقية: 0 / 0
             </div>
-
             <div class="controls-grid">
                 <button class="ctrl-btn primary" id="btn-next-sent">▶ الجملة التالية</button>
                 <button class="ctrl-btn primary" id="btn-prev-sent">◀ الجملة السابقة</button>
-                
                 <button class="ctrl-btn" id="btn-next-page">الصفحة التالية ▶</button>
                 <button class="ctrl-btn" id="btn-prev-page">◀ الصفحة السابقة</button>
-                
                 <button class="ctrl-btn danger full-width" id="btn-toggle-caption">👁 إخفاء / إظهار الجملة</button>
-                
                 <button class="ctrl-btn" id="btn-zoom-in">＋ تكبير</button>
                 <button class="ctrl-btn" id="btn-zoom-out">－ تصغير</button>
                 <button class="ctrl-btn full-width" id="btn-zoom-reset">100% إعادة الحجم الافتراضي</button>
@@ -260,14 +252,11 @@
     </div>
 
     <script>
-        // إعدادات محرك PDF.js المتقدمة
         pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cloudflare.com';
 
-        // قراءة المعاملات لمعرفة نوع الشاشة المطلوبة
         const urlParams = new URLSearchParams(window.location.search);
         const isControlMode = urlParams.get('control') === '1';
 
-        // المتغيرات التشغيلية
         let peer = null;
         let conn = null;
         let pdfDoc = null;
@@ -277,5 +266,12 @@
         let currentSentenceIdx = -1;
         let isCaptionVisible = true;
 
-        // توليد معرف رقمي من 6 أرقام لتسهيل النقل
         function generateNumericCode() {
+            return Math.floor(100000 + Math.random() * 900000).toString();
+        }
+
+        // التبديل الصحيح والظهور التلقائي للواجهات بناءً على الرابط
+        if (isControlMode) {
+            document.getElementById('tv-view').style.display = 'none';
+            document.getElementById('mobile-view').style.display = 'flex';
+        } else {
