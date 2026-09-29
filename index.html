@@ -3,24 +3,19 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>عارض المحاضرات الاحترافي - نظام التلفزيون والريموت</title>
-    <!-- PDF.js CDN -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
-    <script>
-        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
-    </script>
-    <!-- PeerJS CDN للاتصال الفوري ثنائي الاتجاه بدون سيرفر -->
-    <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
+    <title>تكنومسار - عارض المحاضرات الذكي</title>
+    <!-- مكتبة PDF.js لعرض ملفات الـ PDF -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
+    <!-- مكتبة PeerJS للاتصال الفوري P2P عبر الإنترنت بدون سيرفر -->
+    <script src="https://unpkg.com/peerjs@1.4.7/dist/peerjs.min.js"></script>
     <style>
         :root {
-            --primary: #059669;
-            --primary-dark: #047857;
-            --accent: #10b981;
-            --bg-dark: #0f172a;
-            --bg-panel: #1e293b;
-            --text-main: #f8fafc;
+            --bg-color: #0f172a;
+            --card-bg: #1e293b;
+            --primary: #10b981;
+            --primary-hover: #059669;
+            --text: #f8fafc;
             --text-muted: #94a3b8;
-            --border: #334155;
             --danger: #ef4444;
         }
 
@@ -32,726 +27,371 @@
         }
 
         body {
-            background-color: var(--bg-dark);
-            color: var(--text-main);
-            height: 100vh;
+            background-color: var(--bg-color);
+            color: var(--text);
+            min-height: 100vh;
             display: flex;
             flex-direction: column;
-            overflow: hidden;
+            overflow-x: hidden;
         }
 
-        /* شاشة اختيار الوضع (تلفزيون أو ريموت) */
+        /* شاشة اختيار الوضع الأولية */
         #mode-selector {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: var(--bg-dark);
             display: flex;
-            justify-content: center;
+            flex-direction: column;
             align-items: center;
-            z-index: 2000;
+            justify-content: center;
+            height: 100vh;
             padding: 20px;
+            text-align: center;
         }
 
         .mode-card {
-            background: var(--bg-panel);
-            border: 2px solid var(--border);
+            background-color: var(--card-bg);
+            border: 2px solid #334155;
+            padding: 30px;
             border-radius: 16px;
-            padding: 40px;
-            text-align: center;
-            max-width: 500px;
+            margin: 10px;
             width: 100%;
-            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5);
-        }
-
-        .mode-card h1 {
-            color: var(--accent);
-            font-size: 2.2rem;
-            margin-bottom: 15px;
-        }
-
-        .mode-card p {
-            color: var(--text-muted);
-            margin-bottom: 30px;
-            font-size: 1.1rem;
-            line-height: 1.6;
-        }
-
-        .btn {
-            background-color: #334155;
-            color: var(--text-main);
-            border: 1px solid var(--border);
-            padding: 12px 24px;
-            border-radius: 10px;
+            max-width: 400px;
             cursor: pointer;
-            font-size: 1.1rem;
-            font-weight: 600;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
-            transition: all 0.2s ease;
-            width: 100%;
-            margin-bottom: 15px;
+            transition: all 0.3s ease;
         }
 
-        .btn:hover {
-            background-color: #475569;
-            border-color: var(--accent);
-        }
-
-        .btn-primary {
-            background-color: var(--primary);
+        .mode-card:hover {
             border-color: var(--primary);
+            transform: translateY(-5px);
         }
 
-        .btn-primary:hover {
-            background-color: var(--primary-dark);
+        .mode-card h2 {
+            color: var(--primary);
+            margin-bottom: 10px;
         }
 
-        .input-text {
-            background: #0f172a;
-            border: 1px solid var(--border);
-            color: white;
-            padding: 12px;
-            border-radius: 10px;
-            width: 100%;
-            font-size: 1.3rem;
-            text-align: center;
-            letter-spacing: 4px;
-            margin-bottom: 15px;
-        }
-
-        .input-text:focus {
-            outline: none;
-            border-color: var(--accent);
-        }
-
-        /* شريط الأدوات العلوي للتلفزيون */
-        #toolbar {
-            background-color: var(--bg-panel);
-            border-bottom: 1px solid var(--border);
-            padding: 10px 20px;
-            display: flex;
-            flex-wrap: wrap;
-            align-items: center;
-            justify-content: space-between;
-            gap: 15px;
-            z-index: 100;
-            transition: transform 0.3s ease, opacity 0.3s ease;
-        }
-
-        #toolbar.hidden {
-            transform: translateY(-100%);
-            opacity: 0;
-            pointer-events: none;
-            position: absolute;
-            width: 100%;
-        }
-
-        .toolbar-group {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            flex-wrap: wrap;
-        }
-
-        input[type="file"] {
-            display: none;
-        }
-
-        .file-upload-label {
-            background-color: var(--primary);
-            color: white;
-            padding: 8px 16px;
-            border-radius: 8px;
-            cursor: pointer;
-            font-weight: 600;
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            transition: background 0.2s;
-        }
-
-        .file-upload-label:hover {
-            background-color: var(--primary-dark);
-        }
-
-        .input-num {
-            background: #0f172a;
-            border: 1px solid var(--border);
-            color: white;
-            padding: 6px 10px;
-            border-radius: 8px;
-            width: 60px;
-            text-align: center;
-            font-size: 1rem;
-        }
-
-        span.page-info {
-            font-size: 1.05rem;
-            color: var(--text-muted);
-            font-weight: 500;
-        }
-
-        /* شريط الشرح والتوضيح العلوي */
-        #annotation-bar {
-            background: linear-gradient(135deg, #065f46, #047857);
-            color: white;
-            padding: 12px 25px;
-            font-size: 1.4rem;
-            font-weight: bold;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            box-shadow: inset 0 2px 4px rgba(0,0,0,0.2);
-            border-bottom: 2px solid var(--accent);
-            z-index: 90;
-            transition: max-height 0.3s ease, padding 0.3s ease, opacity 0.3s ease;
-            max-height: 80px;
-            opacity: 1;
-            overflow: hidden;
-            text-align: center;
-        }
-
-        #annotation-bar.hidden {
-            max-height: 0;
-            padding-top: 0;
-            padding-bottom: 0;
-            opacity: 0;
-            border-bottom: none;
-        }
-
-        /* منطقة عرض الـ PDF */
-        #viewer-container {
-            flex-grow: 1;
-            overflow: auto;
-            display: flex;
-            justify-content: center;
-            align-items: flex-start;
-            padding: 20px;
-            position: relative;
-            background: radial-gradient(circle, #1e293b 0%, #0f172a 100%);
-        }
-
-        .pdf-page-wrapper {
-            position: relative;
-            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.5);
-            border-radius: 4px;
-            background: white;
-            margin-bottom: 20px;
-        }
-
-        canvas {
-            display: block;
-            border-radius: 4px;
-            max-width: 100%;
-            height: auto;
-        }
-
-        /* شاشة الترحيب للتلفزيون */
-        #welcome-screen {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            text-align: center;
-            background: var(--bg-panel);
-            padding: 40px 60px;
-            border-radius: 16px;
-            border: 2px dashed var(--border);
-            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5);
-            max-width: 650px;
-            width: 90%;
-        }
-
-        #welcome-screen h1 {
-            font-size: 2rem;
-            margin-bottom: 15px;
-            color: var(--accent);
-        }
-
-        #welcome-screen p {
-            color: var(--text-muted);
-            font-size: 1.1rem;
-            margin-bottom: 25px;
-            line-height: 1.6;
-        }
-
-        .connection-badge {
-            background: rgba(16, 185, 129, 0.15);
-            border: 1px solid var(--accent);
-            color: var(--accent);
-            padding: 8px 16px;
-            border-radius: 30px;
-            font-size: 1rem;
-            font-weight: bold;
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        /* مؤشر التحميل */
-        #loading-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(15, 23, 42, 0.85);
-            display: none;
-            justify-content: center;
-            align-items: center;
-            z-index: 3000;
-            flex-direction: column;
-            gap: 15px;
-        }
-
-        .spinner {
-            width: 60px;
-            height: 60px;
-            border: 6px solid var(--border);
-            border-top: 6px solid var(--accent);
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-        }
-
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-
-        /* واجهة ريموت الموبايل */
-        #remote-ui {
+        /* واجهة التلفزيون (TV View) */
+        #tv-view {
             display: none;
             flex-direction: column;
             height: 100vh;
-            background: var(--bg-dark);
-            padding: 15px;
-            overflow-y: auto;
+            width: 100vw;
+            position: relative;
+            background: #000;
         }
 
-        .remote-header {
-            background: var(--bg-panel);
-            padding: 15px;
+        #tv-header {
+            background: rgba(15, 23, 42, 0.95);
+            color: var(--text);
+            padding: 15px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 2px solid var(--primary);
+            z-index: 10;
+            transition: opacity 0.3s ease;
+        }
+
+        #tv-header.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        #pdf-container {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: auto;
+            position: relative;
+            background: #111;
+        }
+
+        canvas {
+            max-width: 100%;
+            max-height: 100%;
+            box-shadow: 0 0 20px rgba(0,0,0,0.8);
+        }
+
+        #live-annotation {
+            position: absolute;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(16, 185, 129, 0.9);
+            color: #000;
+            padding: 15px 30px;
             border-radius: 12px;
+            font-size: 1.5rem;
+            font-weight: bold;
+            display: none;
+            z-index: 100;
             text-align: center;
-            margin-bottom: 15px;
-            border: 1px solid var(--border);
+            max-width: 80%;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.5);
         }
 
-        .remote-header h2 {
-            color: var(--accent);
-            font-size: 1.3rem;
-            margin-bottom: 5px;
+        .connection-overlay {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background: rgba(30, 41, 59, 0.9);
+            padding: 10px 20px;
+            border-radius: 8px;
+            border: 1px solid var(--primary);
+            z-index: 200;
+            font-size: 1.1rem;
+        }
+
+        /* واجهة الموبايل (Remote View) */
+        #remote-view {
+            display: none;
+            flex-direction: column;
+            padding: 15px;
+            max-width: 600px;
+            margin: 0 auto;
+            width: 100%;
         }
 
         .remote-section {
-            background: var(--bg-panel);
+            background: var(--card-bg);
             border-radius: 12px;
             padding: 15px;
             margin-bottom: 15px;
-            border: 1px solid var(--border);
+            border: 1px solid #334155;
         }
 
         .remote-section h3 {
-            font-size: 1rem;
-            color: var(--text-muted);
+            color: var(--primary);
             margin-bottom: 10px;
-            text-align: center;
-        }
-
-        .grid-2 {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 10px;
-        }
-
-        .grid-3 {
-            display: grid;
-            grid-template-columns: 1fr 1fr 1fr;
-            gap: 10px;
-        }
-
-        .remote-btn {
-            background-color: #334155;
-            color: white;
-            border: 1px solid var(--border);
-            padding: 15px;
-            border-radius: 10px;
             font-size: 1.1rem;
-            font-weight: bold;
-            cursor: pointer;
-            text-align: center;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-            transition: background 0.1s;
         }
 
-        .remote-btn:active {
+        .btn-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+        }
+
+        .btn {
             background-color: var(--primary);
-        }
-
-        .remote-input {
-            background: #0f172a;
-            border: 1px solid var(--border);
-            color: white;
+            color: #0f172a;
+            border: none;
             padding: 12px;
             border-radius: 8px;
-            width: 100%;
-            font-size: 1.1rem;
-            margin-bottom: 10px;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background 0.2s;
+            text-align: center;
         }
 
-        .remote-input:focus {
-            outline: none;
-            border-color: var(--accent);
+        .btn:active {
+            transform: scale(0.98);
         }
+
+        .btn:hover {
+            background-color: var(--primary-hover);
+            color: #fff;
+        }
+
+        .btn-danger {
+            background-color: var(--danger);
+            color: #fff;
+        }
+
+        input, textarea {
+            width: 100%;
+            padding: 10px;
+            border-radius: 8px;
+            border: 1px solid #334155;
+            background: #0f172a;
+            color: #fff;
+            margin-bottom: 10px;
+            font-size: 1rem;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: bold;
+        }
+        .status-disconnected { background: var(--danger); color: #fff; }
+        .status-connected { background: var(--primary); color: #0f172a; }
     </style>
 </head>
 <body>
 
-    <!-- مؤشر التحميل -->
-    <div id="loading-overlay">
-        <div class="spinner"></div>
-        <div id="loading-text" style="font-size: 1.3rem; font-weight: bold; color: var(--text-main);">جاري تهيئة النظام...</div>
-    </div>
-
-    <!-- شاشة اختيار الوضع (تلفزيون أم ريموت موبايل) -->
+    <!-- شاشة الاختيار الرئيسية -->
     <div id="mode-selector">
-        <div class="mode-card">
-            <h1>عارض المحاضرات الاحترافي</h1>
-            <p>اختر وضع التشغيل للبدء. يمكنك تشغيل هذا الملف على شاشة العرض (التلفزيون) أو على هاتفك الذكي كـريموت تحكم عن بعد.</p>
-            <button class="btn btn-primary" id="select-tv-btn">📺 تشغيل وضع التلفزيون (الشاشة الرئيسية)</button>
-            <hr style="border: 0; border-top: 1px solid var(--border); margin: 20px 0;">
-            <p style="font-size: 1rem; margin-bottom: 10px;">أو اربط هاتفك كـ ريموت تحكم:</p>
-            <input type="text" id="room-code-input" class="input-text" placeholder="أدخل كود 6 أرقام" maxlength="6">
-            <button class="btn" id="select-remote-btn">📱 اتصال كـ ريموت موبايل</button>
+        <h1 style="color: var(--primary); margin-bottom: 20px;">تكنومسار - عارض المحاضرات</h1>
+        <p style="color: var(--text-muted); margin-bottom: 30px;">اختر وضع التشغيل على هذا الجهاز</p>
+        
+        <div class="mode-card" onclick="startTVMode()">
+            <h2>وضع التلفزيون (TV)</h2>
+            <p>اختر هذا الوضع على شاشة العرض الكبيرة (الشاشة الرئيسية للمحاضرة).</p>
+        </div>
+
+        <div class="mode-card" onclick="startRemoteMode()">
+            <h2>وضع الريموت (Remote)</h2>
+            <p>اختر هذا الوضع على هاتفك المحمول للتحكم الكامل بالشاشة عن بعد.</p>
         </div>
     </div>
 
-    <!-- تلفزيون: شريط الأدوات العلوي -->
-    <div id="toolbar" style="display: none;">
-        <div class="toolbar-group">
-            <label class="file-upload-label">
-                📂 فتح ملف PDF
-                <input type="file" id="file-upload" accept="application/pdf">
-            </label>
-            <button class="btn" id="prev-page" style="width: auto; margin:0; padding: 8px 14px;">◀ السابق</button>
-            <div style="display: flex; align-items: center; gap: 6px;">
-                <input type="number" id="page-num-input" class="input-num" value="1" min="1">
-                <span class="page-info">من <span id="page-count">0</span></span>
-            </div>
-            <button class="btn" id="next-page" style="width: auto; margin:0; padding: 8px 14px;">التالي ▶</button>
+    <!-- واجهة التلفزيون -->
+    <div id="tv-view">
+        <div class="connection-overlay">
+            كود الجلسة: <span id="session-code-display" style="color: var(--primary); font-weight: bold;">جاري الإنشاء...</span> | 
+            الحالة: <span id="tv-status" class="status-badge status-disconnected">في انتظار الاتصال</span>
+        </div>
+        
+        <div id="tv-header">
+            <input type="file" id="pdf-file-input" accept="application/pdf" style="display:none;" />
+            <button class="btn" onclick="document.getElementById('pdf-file-input').click()">اختيار ملف PDF من الجهاز</button>
+            <div id="page-info" style="font-size: 1.2rem; font-weight: bold;">الصفحة: <span id="current-page">0</span> / <span id="total-pages">0</span></div>
+            <div id="tv-announcement-bar" style="max-width: 40%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: var(--primary);">شريط الشرح العلوي جاهز</div>
         </div>
 
-        <div class="toolbar-group">
-            <span class="connection-badge" id="tv-room-display">🔑 الكود: جاري الإنشاء...</span>
-            <button class="btn" id="toggle-toolbar-btn" style="width: auto; margin:0; padding: 8px 12px;" title="إخفاء شريط الأدوات">🛠️ إخفاء الشريط</button>
-            <button class="btn btn-primary" id="fullscreen-btn" style="width: auto; margin:0; padding: 8px 12px;" title="شاشة كاملة">📺 ملء الشاشة</button>
+        <div id="pdf-container">
+            <canvas id="pdf-canvas"></canvas>
         </div>
+
+        <div id="live-annotation"></div>
     </div>
 
-    <!-- تلفزيون: شريط الشرح العلوي -->
-    <div id="annotation-bar" style="display: none;">
-        <span id="annotation-text-display">التنسيق الهرموني في الكائنات الحية - الأحياء للثانوية العامة</span>
-    </div>
-
-    <!-- تلفزيون: منطقة عرض الـ PDF -->
-    <div id="viewer-container" style="display: none;">
-        <div id="welcome-screen">
-            <h1>مرحباً بك في وضع العرض على التلفزيون</h1>
-            <p>قم برفع ملف الـ PDF الخاص بالمحاضرة من جهازك، ثم استخدم كود الجلسة الظاهر بالأعلى لربط هاتفك المحمول فوراً والتحكم في العرض عن بعد.</p>
-            <label class="file-upload-label" style="font-size: 1.2rem; padding: 14px 28px;">
-                📂 اضغط هنا لاختيار ملف PDF
-                <input type="file" id="file-upload-welcome" accept="application/pdf">
-            </label>
-        </div>
-        <div id="canvas-container" style="display: none; text-align: center;">
-            <div class="pdf-page-wrapper">
-                <canvas id="pdf-canvas"></canvas>
-            </div>
-        </div>
-    </div>
-
-    <!-- واجهة ريموت الموبايل -->
-    <div id="remote-ui">
-        <div class="remote-header">
-            <h2>📱 ريموت التحكم بالمحاضرة</h2>
-            <p id="remote-status" style="color: var(--accent); font-size: 0.9rem;">متصل بالتلفزيون بنجاح</p>
+    <!-- واجهة الموبايل (الريموت) -->
+    <div id="remote-view">
+        <div class="remote-section">
+            <h3>اتصال بالاتصال (التلفزيون)</h3>
+            <input type="text" id="connect-code-input" placeholder="أدخل كود الـ 6 أرقام" maxlength="6">
+            <button class="btn" onclick="connectToTV()">اتصال بالشاشة</button>
+            <p style="margin-top: 8px; font-size: 0.9rem;">حالة الاتصال: <span id="remote-status" class="status-badge status-disconnected">غير متصل</span></p>
         </div>
 
         <div class="remote-section">
             <h3>التنقل بين الصفحات</h3>
-            <div class="grid-2">
-                <button class="remote-btn" id="rem-prev">◀ السابق</button>
-                <button class="remote-btn" id="rem-next">التالي ▶</button>
+            <div class="btn-grid">
+                <button class="btn" onclick="sendCommand('prev_page')">السابق ⬅</button>
+                <button class="btn" onclick="sendCommand('next_page')">التالي ➡</button>
             </div>
             <div style="display: flex; gap: 10px; margin-top: 10px;">
-                <input type="number" id="rem-page-input" class="remote-input" placeholder="رقم الصفحة" style="margin:0;">
-                <button class="remote-btn" id="rem-goto" style="width: 120px; margin:0; background: var(--primary);">انتقال</button>
+                <input type="number" id="page-target-input" placeholder="رقم الصفحة" style="margin-bottom: 0;">
+                <button class="btn" onclick="sendPageJump()" style="width: 120px;">انتقال</button>
             </div>
         </div>
 
         <div class="remote-section">
-            <h3>التحكم بحجم العرض (Zoom)</h3>
-            <div class="grid-3">
-                <button class="remote-btn" id="rem-zoom-out">🔍 ➖</button>
-                <button class="remote-btn" id="rem-fit" style="font-size: 0.9rem;">ملاءمة</button>
-                <button class="remote-btn" id="rem-zoom-in">🔍 ➕</button>
+            <h3>التحكم بالعرض (Zoom & Fit)</h3>
+            <div class="btn-grid">
+                <button class="btn" onclick="sendCommand('zoom_in')">تكبير (+) z</button>
+                <button class="btn" onclick="sendCommand('zoom_out')">تصغير (-) z</button>
+                <button class="btn" onclick="sendCommand('fit_width')">ملاءمة العرض</button>
+                <button class="btn" onclick="sendCommand('toggle_header')">إظهار/إخفاء الشريط</button>
             </div>
         </div>
 
         <div class="remote-section">
-            <h3>شريط الشرح والتوضيح</h3>
-            <input type="text" id="rem-annotation-input" class="remote-input" placeholder="اكتب عنوان الشرح هنا...">
-            <button class="remote-btn" id="rem-send-annotation" style="width: 100%; background: var(--primary);">إرسال الشرح للتلفزيون 📤</button>
-        </div>
-
-        <div class="remote-section">
-            <h3>خيارات الشاشة</h3>
-            <div class="grid-2">
-                <button class="remote-btn" id="rem-toggle-toolbar">🛠️ إخفاء/إظهار الشريط</button>
-                <button class="remote-btn" id="rem-toggle-ann">💬 إخفاء/إظهار الشرح</button>
-            </div>
+            <h3>إرسال جملة شرح فورية للشاشة</h3>
+            <textarea id="annotation-text-input" rows="2" placeholder="اكتب الملاحظة أو الجملة هنا..."></textarea>
+            <button class="btn" onclick="sendAnnotation()" style="width: 100%;">إرسال فوراً للشاشة</button>
+            <button class="btn btn-danger" onclick="clearAnnotation()" style="width: 100%; margin-top: 5px;">إخفاء الشرح الفوري</button>
         </div>
     </div>
 
     <script>
-        let pdfDoc = null;
-        let pageNum = 1;
-        let pageRendering = false;
-        let pageNumPending = null;
-        let scale = 1.1;
-        let currentRenderTask = null;
+        // إعدادات PDF.js
+        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js';
 
         let peer = null;
         let conn = null;
+        let pdfDoc = null;
+        let pageNum = 1;
+        let pageScale = 1.2;
+        let isHeaderVisible = true;
         let isTV = false;
-        let roomCode = '';
 
-        const loadingOverlay = document.getElementById('loading-overlay');
-        const loadingText = document.getElementById('loading-text');
-
-        function generateRoomCode() {
+        // توليد كود عشوائي من 6 أرقام
+        function generateSessionCode() {
             return Math.floor(100000 + Math.random() * 900000).toString();
         }
 
-        document.getElementById('select-tv-btn').addEventListener('click', function() {
+        function startTVMode() {
             isTV = true;
-            roomCode = generateRoomCode();
             document.getElementById('mode-selector').style.display = 'none';
-            document.getElementById('toolbar').style.display = 'flex';
-            document.getElementById('annotation-bar').style.display = 'flex';
-            document.getElementById('viewer-container').style.display = 'flex';
-            document.getElementById('tv-room-display').textContent = `🔑 كود الريموت: ${roomCode}`;
+            document.getElementById('tv-view').style.display = 'flex';
 
-            initTVPeer(roomCode);
-        });
+            const code = generateSessionCode();
+            document.getElementById('session-code-display').innerText = code;
 
-        document.getElementById('select-remote-btn').addEventListener('click', function() {
-            const code = document.getElementById('room-code-input').value.trim();
-            if (code.length !== 6) {
-                alert('الرجاء إدخال كود صحيح مكون من 6 أرقام.');
-                return;
-            }
-            roomCode = code;
-            isTV = false;
-
-            loadingText.textContent = "جاري الاتصال بالتلفزيون...";
-            loadingOverlay.style.display = 'flex';
-
-            initRemotePeer(roomCode);
-        });
-
-        function initTVPeer(code) {
-            const peerId = 'technomasar-pdf-' + code;
-            peer = new Peer(peerId);
-
-            peer.on('open', (id) => {
-                console.log('TV Peer initialized with ID:', id);
-            });
-
+            // تهيئة PeerJS للتلفزيون
+            peer = new Peer('tech-masar-' + code);
+            
             peer.on('connection', (connection) => {
                 conn = connection;
-                setupTVConnectionHandlers();
-                alert('تم اتصال ريموت الموبايل بنجاح!');
-            });
+                document.getElementById('tv-status').innerText = "متصل بالريموت";
+                document.getElementById('tv-status').className = "status-badge status-connected";
+                
+                conn.on('data', (data) => {
+                    handleRemoteCommand(data);
+                });
 
-            peer.on('error', (err) => {
-                console.error(err);
-                if (err.type === 'unavailable-id') {
-                    alert('هذا الكود مستخدم بالفعل، حاول إعادة تحميل الصفحة لتوليد كود جديد.');
-                } else {
-                    alert('خطأ في الاتصال: ' + err.message);
-                }
-            });
-        }
-
-        function setupTVConnectionHandlers() {
-            conn.on('data', (data) => {
-                handleRemoteCommand(data);
-            });
-
-            conn.on('close', () => {
-                alert('انقطع اتصال الريموت.');
+                conn.on('close', () => {
+                    document.getElementById('tv-status').innerText = "انقطع الاتصال";
+                    document.getElementById('tv-status').className = "status-badge status-disconnected";
+                });
             });
         }
 
-        function handleRemoteCommand(data) {
-            switch(data.action) {
-                case 'prev':
-                    if (pageNum > 1) { pageNum--; queueRenderPage(pageNum); }
-                    break;
-                case 'next':
-                    if (pdfDoc && pageNum < pdfDoc.numPages) { pageNum++; queueRenderPage(pageNum); }
-                    break;
-                case 'goto':
-                    if (pdfDoc && data.page >= 1 && data.page <= pdfDoc.numPages) {
-                        pageNum = data.page;
-                        queueRenderPage(pageNum);
-                    }
-                    break;
-                case 'zoom-in':
-                    if (pdfDoc) { scale = Math.min(scale + 0.2, 2.5); renderPage(pageNum); }
-                    break;
-                case 'zoom-out':
-                    if (pdfDoc) { scale = Math.max(scale - 0.2, 0.5); renderPage(pageNum); }
-                    break;
-                case 'fit':
-                    if (pdfDoc) {
-                        pdfDoc.getPage(pageNum).then(function(page) {
-                            const container = document.getElementById('viewer-container');
-                            const unscaledViewport = page.getViewport({scale: 1.0});
-                            const hScale = (container.clientWidth - 40) / unscaledViewport.width;
-                            const vScale = (container.clientHeight - 40) / unscaledViewport.height;
-                            scale = Math.min(hScale, vScale);
-                            renderPage(pageNum);
-                        });
-                    }
-                    break;
-                case 'annotation':
-                    document.getElementById('annotation-text-display').textContent = data.text;
-                    break;
-                case 'toggle-toolbar':
-                    document.getElementById('toolbar').classList.toggle('hidden');
-                    break;
-                case 'toggle-ann':
-                    document.getElementById('annotation-bar').classList.toggle('hidden');
-                    break;
-            }
-        }
-
-        function initRemotePeer(code) {
+        function startRemoteMode() {
+            isTV = false;
+            document.getElementById('mode-selector').style.display = 'none';
+            document.getElementById('remote-view').style.display = 'flex';
             peer = new Peer();
-
-            peer.on('open', (id) => {
-                const tvPeerId = 'technomasar-pdf-' + code;
-                conn = peer.connect(tvPeerId);
-
-                conn.on('open', () => {
-                    loadingOverlay.style.display = 'none';
-                    document.getElementById('mode-selector').style.display = 'none';
-                    document.getElementById('remote-ui').style.display = 'flex';
-                });
-
-                conn.on('error', (err) => {
-                    loadingOverlay.style.display = 'none';
-                    alert('فشل الاتصال بالتلفزيون. تأكد من صحة الكود وأن التلفزيون مفتوح.');
-                });
-            });
-
-            peer.on('error', (err) => {
-                loadingOverlay.style.display = 'none';
-                alert('خطأ في شبكة الاتصال: ' + err.message);
-            });
         }
 
-        function sendCommand(action, extraData = {}) {
-            if (conn && conn.open) {
-                conn.send({ action: action, ...extraData });
-            } else {
-                alert('غير متصل بالتلفزيون حالياً.');
+        function connectToTV() {
+            const code = document.getElementById('connect-code-input').value.trim();
+            if(code.length !== 6) {
+                alert('الرجاء إدخال كود صحيح مكون من 6 أرقام');
+                return;
             }
+
+            conn = peer.connect('tech-masar-' + code);
+
+            conn.on('open', () => {
+                document.getElementById('remote-status').innerText = "متصل بنجاح";
+                document.getElementById('remote-status').className = "status-badge status-connected";
+            });
+
+            conn.on('error', (err) => {
+                alert('فشل الاتصال بالشاشة، تأكد من الكود.');
+            });
         }
 
-        document.getElementById('rem-prev').addEventListener('click', () => sendCommand('prev'));
-        document.getElementById('rem-next').addEventListener('click', () => sendCommand('next'));
-        document.getElementById('rem-goto').addEventListener('click', () => {
-            const p = parseInt(document.getElementById('rem-page-input').value);
-            if (p) sendCommand('goto', { page: p });
-        });
-        document.getElementById('rem-zoom-in').addEventListener('click', () => sendCommand('zoom-in'));
-        document.getElementById('rem-zoom-out').addEventListener('click', () => sendCommand('zoom-out'));
-        document.getElementById('rem-fit').addEventListener('click', () => sendCommand('fit'));
-        document.getElementById('rem-send-annotation').addEventListener('click', () => {
-            const txt = document.getElementById('rem-annotation-input').value.trim();
-            if (txt) sendCommand('annotation', { text: txt });
-        });
-        document.getElementById('rem-toggle-toolbar').addEventListener('click', () => sendCommand('toggle-toolbar'));
-        document.getElementById('rem-toggle-ann').addEventListener('click', () => sendCommand('toggle-ann'));
-
-        const canvas = document.getElementById('pdf-canvas');
-        const ctx = canvas.getContext('2d');
-        const welcomeScreen = document.getElementById('welcome-screen');
-        const canvasContainer = document.getElementById('canvas-container');
-        const pageCountElem = document.getElementById('page-count');
-        const pageNumInput = document.getElementById('page-num-input');
-
-        function handleFileSelect(e) {
+        // معالجة ملف الـ PDF المرفوع محلياً على التلفزيون
+        document.getElementById('pdf-file-input').addEventListener('change', function(e) {
             const file = e.target.files[0];
             if (file && file.type === 'application/pdf') {
                 const fileReader = new FileReader();
-                loadingText.textContent = "جاري تحميل المحاضرة...";
-                loadingOverlay.style.display = 'flex';
                 fileReader.onload = function() {
-                    try {
-                        const typedarray = new Uint8Array(this.result);
-                        loadPDFData(typedarray);
-                    } catch (err) {
-                        loadingOverlay.style.display = 'none';
-                        alert('عذراً، الملف كبير جداً.');
-                    }
+                    const typedarray = new Uint8Array(this.result);
+                    pdfjsLib.getDocument(typedarray).promise.then(function(pdfDoc_) {
+                        pdfDoc = pdfDoc_;
+                        document.getElementById('total-pages').textContent = pdfDoc.numPages;
+                        pageNum = 1;
+                        renderPage(pageNum);
+                    });
                 };
                 fileReader.readAsArrayBuffer(file);
-            } else {
-                alert('الرجاء اختيار ملف PDF صحيح.');
             }
-        }
-
-        document.getElementById('file-upload').addEventListener('change', handleFileSelect);
-        document.getElementById('file-upload-welcome').addEventListener('change', handleFileSelect);
-
-        function loadPDFData(data) {
-            pdfjsLib.getDocument({data: data}).promise.then(function(pdfDoc_) {
-                pdfDoc = pdfDoc_;
-                pageCountElem.textContent = pdfDoc.numPages;
-                pageNum = 1;
-                welcomeScreen.style.display = 'none';
-                canvasContainer.style.display = 'block';
-                loadingOverlay.style.display = 'none';
-                renderPage(pageNum);
-            }).catch(function(error) {
-                loadingOverlay.style.display = 'none';
-                alert('حدث خطأ أثناء تحميل ملف الـ PDF: ' + error.message);
-            });
-        }
+        });
 
         function renderPage(num) {
-            pageRendering = true;
-            loadingText.textContent = "جاري عرض الصفحة...";
-            loadingOverlay.style.display = 'flex';
-
-            if (currentRenderTask) {
-                currentRenderTask.cancel();
-            }
-
+            if (!pdfDoc) return;
             pdfDoc.getPage(num).then(function(page) {
-                const viewport = page.getViewport({scale: scale});
+                const canvas = document.getElementById('pdf-canvas');
+                const ctx = canvas.getContext('2d');
+                const viewport = page.getViewport({ scale: pageScale });
                 canvas.height = viewport.height;
                 canvas.width = viewport.width;
 
@@ -759,73 +399,94 @@
                     canvasContext: ctx,
                     viewport: viewport
                 };
-
-                currentRenderTask = page.render(renderContext);
-
-                currentRenderTask.promise.then(function() {
-                    pageRendering = false;
-                    loadingOverlay.style.display = 'none';
-                    currentRenderTask = null;
-                    if (pageNumPending !== null) {
-                        renderPage(pageNumPending);
-                        pageNumPending = null;
-                    }
-                }).catch(function(err) {
-                    if (err.name !== 'RenderingCancelledException') {
-                        pageRendering = false;
-                        loadingOverlay.style.display = 'none';
-                    }
-                });
+                page.render(renderContext);
+                document.getElementById('current-page').textContent = num;
             });
-
-            pageNumInput.value = num;
         }
 
-        function queueRenderPage(num) {
-            if (pageRendering) {
-                pageNumPending = num;
+        // إرسال الأوامر من الريموت
+        function sendCommand(action, value = null) {
+            if(conn && conn.open) {
+                conn.send({ action: action, value: value });
             } else {
-                renderPage(num);
+                alert('غير متصل بالشاشة حالياً!');
             }
         }
 
-        document.getElementById('prev-page').addEventListener('click', () => {
-            if (pageNum <= 1) return;
-            pageNum--;
-            queueRenderPage(pageNum);
-        });
-
-        document.getElementById('next-page').addEventListener('click', () => {
-            if (pageNum >= pdfDoc.numPages) return;
-            pageNum++;
-            queueRenderPage(pageNum);
-        });
-
-        pageNumInput.addEventListener('change', function() {
-            if (!pdfDoc) return;
-            let num = parseInt(this.value);
-            if (num >= 1 && num <= pdfDoc.numPages) {
-                pageNum = num;
-                queueRenderPage(pageNum);
-            } else {
-                pageNumInput.value = pageNum;
+        function sendPageJump() {
+            const target = parseInt(document.getElementById('page-target-input').value);
+            if(target) {
+                sendCommand('goto_page', target);
             }
-        });
+        }
 
-        document.getElementById('toggle-toolbar-btn').addEventListener('click', () => {
-            document.getElementById('toolbar').classList.toggle('hidden');
-        });
-
-        const fullscreenBtn = document.getElementById('fullscreen-btn');
-        fullscreenBtn.addEventListener('click', () => {
-            if (!document.fullscreenElement) {
-                document.documentElement.requestFullscreen().catch(err => {
-                    alert(`خطأ في تفعيل وضع الشاشة الكاملة: ${err.message}`);
-                });
-            } else {
-                document.exitFullscreen();
+        function sendAnnotation() {
+            const text = document.getElementById('annotation-text-input').value;
+            if(text) {
+                sendCommand('show_annotation', text);
             }
-        });
+        }
+
+        function clearAnnotation() {
+            sendCommand('clear_annotation');
+        }
+
+        // استقبال وتنفيد الأوامر على الشاشة (TV)
+        function handleRemoteCommand(data) {
+            if (!pdfDoc && data.action !== 'show_annotation' && data.action !== 'clear_annotation') return;
+
+            switch(data.action) {
+                case 'next_page':
+                    if (pageNum < pdfDoc.numPages) {
+                        pageNum++;
+                        renderPage(pageNum);
+                    }
+                    break;
+                case 'prev_page':
+                    if (pageNum > 1) {
+                        pageNum--;
+                        renderPage(pageNum);
+                    }
+                    break;
+                case 'goto_page':
+                    if (data.value >= 1 && data.value <= pdfDoc.numPages) {
+                        pageNum = data.value;
+                        renderPage(pageNum);
+                    }
+                    break;
+                case 'zoom_in':
+                    pageScale += 0.2;
+                    renderPage(pageNum);
+                    break;
+                case 'zoom_out':
+                    if(pageScale > 0.6) pageScale -= 0.2;
+                    renderPage(pageNum);
+                    break;
+                case 'fit_width':
+                    pageScale = 1.0;
+                    renderPage(pageNum);
+                    break;
+                case 'toggle_header':
+                    isHeaderVisible = !isHeaderVisible;
+                    const header = document.getElementById('tv-header');
+                    if(isHeaderVisible) {
+                        header.classList.remove('hidden');
+                    } else {
+                        header.classList.add('hidden');
+                    }
+                    break;
+                case 'show_annotation':
+                    const annBox = document.getElementById('live-annotation');
+                    annBox.innerText = data.value;
+                    annBox.style.display = 'block';
+                    document.getElementById('tv-announcement-bar').innerText = data.value;
+                    break;
+                case 'clear_annotation':
+                    document.getElementById('live-annotation').style.display = 'none';
+                    document.getElementById('tv-announcement-bar').innerText = 'شريط الشرح العلوي جاهز';
+                    break;
+            }
+        }
     </script>
 </body>
 </html>
