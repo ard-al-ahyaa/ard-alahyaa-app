@@ -213,7 +213,6 @@
          📺 SECTION 1: Tv (شاشة العرض الكبيرة للتلفزيون)
          ======================================================== -->
     <div id="Tv">
-        <!-- واجهة الإعداد المبدئية والرمز -->
         <div id="tv-setup">
             <h2>شاشة العرض الرئيسية (التلفزيون)</h2>
             <p>أدخل هذا الرمز في شاشة التحكم بالهاتف للربط:</p>
@@ -223,7 +222,6 @@
             <input type="file" id="file-input" accept="application/pdf">
             <div id="tv-status" style="color: var(--text-muted); margin-top: 10px;">جاري تشغيل خادم الاتصال الذكي...</div>
         </div>
-        <!-- حاوي عرض الـ PDF والنصوص فوقه -->
         <div id="viewer-container">
             <canvas id="pdf-canvas"></canvas>
             <div id="caption-overlay" class="hidden"></div>
@@ -235,7 +233,6 @@
          📱 SECTION 2: Control (لوحة التحكم الخاصة بالهاتف)
          ======================================================== -->
     <div id="Control">
-        <!-- واجهة الربط بالرمز المكون من 6 أرقام -->
         <div id="mobile-login">
             <h2>لوحة التحكم الذكية</h2>
             <p style="color: var(--text-muted); text-align: center;">أدخل الرمز المكون من 6 أرقام الظاهر على شاشة التلفزيون</p>
@@ -244,7 +241,6 @@
             <div id="mobile-status" style="color: var(--btn-danger); text-align: center; margin-top: 10px;"></div>
         </div>
         
-        <!-- لوحة التحكم الكاملة بالأزرار وتظهر فور نجاح الاتصال -->
         <div id="mobile-dashboard" style="display: none;">
             <div class="status-bar" id="dashboard-status">متصل تماماً بشاشة العرض ومستعد للعمل</div>
             
@@ -273,3 +269,8 @@
 
     <!-- ========================================================
          ⚙️ LOGIC & SCRIPTS (المنطق البرمجي والتشغيل الذكي للشبكة)
+         ======================================================== -->
+    <script>
+        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cloudflare.com';
+
+        const urlParams = new URLSearchParams(window.location.search);
