@@ -1,492 +1,1815 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>تكنومسار - عارض المحاضرات الذكي</title>
-    <!-- مكتبة PDF.js لعرض ملفات الـ PDF -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
-    <!-- مكتبة PeerJS للاتصال الفوري P2P عبر الإنترنت بدون سيرفر -->
-    <script src="https://unpkg.com/peerjs@1.4.7/dist/peerjs.min.js"></script>
-    <style>
-        :root {
-            --bg-color: #0f172a;
-            --card-bg: #1e293b;
-            --primary: #10b981;
-            --primary-hover: #059669;
-            --text: #f8fafc;
-            --text-muted: #94a3b8;
-            --danger: #ef4444;
-        }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        }
+<title>عارض المحاضرات الاحترافي</title>
 
-        body {
-            background-color: var(--bg-color);
-            color: var(--text);
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-            overflow-x: hidden;
-        }
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
 
-        /* شاشة اختيار الوضع الأولية */
-        #mode-selector {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            height: 100vh;
-            padding: 20px;
-            text-align: center;
-        }
+<style>
+*{
+    box-sizing:border-box;
+}
 
-        .mode-card {
-            background-color: var(--card-bg);
-            border: 2px solid #334155;
-            padding: 30px;
-            border-radius: 16px;
-            margin: 10px;
-            width: 100%;
-            max-width: 400px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
+html,body{
+    margin:0;
+    width:100%;
+    height:100%;
+    background:#05080d;
+    color:white;
+    font-family:
+        Tahoma,
+        Arial,
+        "Noto Kufi Arabic",
+        sans-serif;
+}
 
-        .mode-card:hover {
-            border-color: var(--primary);
-            transform: translateY(-5px);
-        }
+body{
+    overflow:hidden;
+}
 
-        .mode-card h2 {
-            color: var(--primary);
-            margin-bottom: 10px;
-        }
+button,input{
+    font-family:inherit;
+}
 
-        /* واجهة التلفزيون (TV View) */
-        #tv-view {
-            display: none;
-            flex-direction: column;
-            height: 100vh;
-            width: 100vw;
-            position: relative;
-            background: #000;
-        }
+/* =========================
+   شاشة التلفزيون
+========================= */
 
-        #tv-header {
-            background: rgba(15, 23, 42, 0.95);
-            color: var(--text);
-            padding: 15px 30px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border-bottom: 2px solid var(--primary);
-            z-index: 10;
-            transition: opacity 0.3s ease;
-        }
+#tvMode{
+    width:100%;
+    height:100vh;
+    display:flex;
+    flex-direction:column;
+}
 
-        #tv-header.hidden {
-            opacity: 0;
-            pointer-events: none;
-        }
+.top{
+    height:60px;
+    min-height:60px;
+    background:#101722;
+    border-bottom:1px solid #273446;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding:0 25px;
+}
 
-        #pdf-container {
-            flex: 1;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            overflow: auto;
-            position: relative;
-            background: #111;
-        }
+#fileName{
+    font-size:22px;
+    font-weight:bold;
+    white-space:nowrap;
+    overflow:hidden;
+    text-overflow:ellipsis;
+}
 
-        canvas {
-            max-width: 100%;
-            max-height: 100%;
-            box-shadow: 0 0 20px rgba(0,0,0,0.8);
-        }
+#connectionStatus{
+    font-size:15px;
+    color:#7ee8a0;
+}
 
-        #live-annotation {
-            position: absolute;
-            bottom: 30px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: rgba(16, 185, 129, 0.9);
-            color: #000;
-            padding: 15px 30px;
-            border-radius: 12px;
-            font-size: 1.5rem;
-            font-weight: bold;
-            display: none;
-            z-index: 100;
-            text-align: center;
-            max-width: 80%;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.5);
-        }
+#pdfContainer{
+    flex:1;
+    position:relative;
+    overflow:auto;
+    display:flex;
+    justify-content:center;
+    align-items:flex-start;
+    padding:15px;
+    background:#070a0f;
+}
 
-        .connection-overlay {
-            position: absolute;
-            top: 20px;
-            left: 20px;
-            background: rgba(30, 41, 59, 0.9);
-            padding: 10px 20px;
-            border-radius: 8px;
-            border: 1px solid var(--primary);
-            z-index: 200;
-            font-size: 1.1rem;
-        }
+#pdfCanvas{
+    display:block;
+    background:white;
+    box-shadow:0 10px 40px rgba(0,0,0,.6);
+}
 
-        /* واجهة الموبايل (Remote View) */
-        #remote-view {
-            display: none;
-            flex-direction: column;
-            padding: 15px;
-            max-width: 600px;
-            margin: 0 auto;
-            width: 100%;
-        }
+#startMessage{
+    position:absolute;
+    top:50%;
+    left:50%;
+    transform:translate(-50%,-50%);
+    text-align:center;
+    color:#aeb9c8;
+    font-size:25px;
+    line-height:2;
+}
 
-        .remote-section {
-            background: var(--card-bg);
-            border-radius: 12px;
-            padding: 15px;
-            margin-bottom: 15px;
-            border: 1px solid #334155;
-        }
+#sentenceBox{
+    position:fixed;
+    left:50%;
+    bottom:95px;
+    transform:translateX(-50%);
 
-        .remote-section h3 {
-            color: var(--primary);
-            margin-bottom: 10px;
-            font-size: 1.1rem;
-        }
+    width:min(92vw,1200px);
 
-        .btn-grid {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 10px;
-        }
+    padding:20px 30px;
 
-        .btn {
-            background-color: var(--primary);
-            color: #0f172a;
-            border: none;
-            padding: 12px;
-            border-radius: 8px;
-            font-size: 1rem;
-            font-weight: bold;
-            cursor: pointer;
-            transition: background 0.2s;
-            text-align: center;
-        }
+    background:rgba(0,0,0,.82);
 
-        .btn:active {
-            transform: scale(0.98);
-        }
+    border:2px solid rgba(255,255,255,.18);
 
-        .btn:hover {
-            background-color: var(--primary-hover);
-            color: #fff;
-        }
+    border-radius:18px;
 
-        .btn-danger {
-            background-color: var(--danger);
-            color: #fff;
-        }
+    box-shadow:
+        0 10px 40px rgba(0,0,0,.7);
 
-        input, textarea {
-            width: 100%;
-            padding: 10px;
-            border-radius: 8px;
-            border: 1px solid #334155;
-            background: #0f172a;
-            color: #fff;
-            margin-bottom: 10px;
-            font-size: 1rem;
-        }
+    text-align:center;
 
-        .status-badge {
-            display: inline-block;
-            padding: 5px 10px;
-            border-radius: 20px;
-            font-size: 0.85rem;
-            font-weight: bold;
-        }
-        .status-disconnected { background: var(--danger); color: #fff; }
-        .status-connected { background: var(--primary); color: #0f172a; }
-    </style>
+    font-size:clamp(25px,3.2vw,48px);
+
+    line-height:1.8;
+
+    color:white;
+
+    direction:rtl;
+
+    z-index:20;
+
+    backdrop-filter:blur(8px);
+
+    display:none;
+}
+
+#bottom{
+    height:60px;
+    min-height:60px;
+
+    background:#101722;
+
+    border-top:1px solid #273446;
+
+    display:flex;
+
+    align-items:center;
+
+    justify-content:center;
+
+    gap:25px;
+
+    color:#d5dde8;
+
+    font-size:16px;
+}
+
+#choosePdf{
+    background:#1687ff;
+    color:white;
+    border:0;
+    border-radius:10px;
+    padding:10px 18px;
+    cursor:pointer;
+    font-weight:bold;
+}
+
+/* =========================
+   شاشة الهاتف
+========================= */
+
+#remoteMode{
+    width:100%;
+    height:100vh;
+
+    overflow:auto;
+
+    background:
+        linear-gradient(
+            145deg,
+            #07111d,
+            #0c1929
+        );
+
+    padding:20px;
+}
+
+.remoteCard{
+    width:min(100%,520px);
+
+    margin:0 auto;
+
+    background:#111c2a;
+
+    border:1px solid #2b3d53;
+
+    border-radius:25px;
+
+    padding:25px;
+
+    box-shadow:
+        0 20px 60px rgba(0,0,0,.5);
+}
+
+.remoteTitle{
+    text-align:center;
+    margin-bottom:20px;
+}
+
+.remoteTitle h1{
+    margin:0 0 8px;
+    font-size:27px;
+}
+
+.remoteTitle p{
+    margin:0;
+    color:#aebaca;
+    line-height:1.7;
+}
+
+label{
+    display:block;
+    margin:10px 0;
+    color:#dce5ef;
+}
+
+#tvCode{
+    width:100%;
+
+    background:#09111b;
+
+    border:1px solid #34485e;
+
+    color:white;
+
+    padding:16px;
+
+    border-radius:13px;
+
+    outline:none;
+
+    font-size:20px;
+
+    text-align:center;
+
+    letter-spacing:4px;
+}
+
+.connect{
+    width:100%;
+
+    margin-top:12px;
+
+    background:#1687ff;
+
+    color:white;
+
+    border:0;
+
+    border-radius:13px;
+
+    padding:15px;
+
+    font-size:18px;
+
+    font-weight:bold;
+
+    cursor:pointer;
+}
+
+#remoteStatus{
+    text-align:center;
+    margin:15px 0;
+    color:#ffd166;
+}
+
+.controls{
+    display:none;
+}
+
+.bigButton{
+    width:100%;
+
+    background:#19a957;
+
+    color:white;
+
+    border:0;
+
+    border-radius:16px;
+
+    padding:22px;
+
+    font-size:26px;
+
+    font-weight:bold;
+
+    cursor:pointer;
+
+    margin-bottom:12px;
+}
+
+.grid{
+    display:grid;
+
+    grid-template-columns:1fr 1fr;
+
+    gap:10px;
+}
+
+.control{
+    border:0;
+
+    border-radius:13px;
+
+    padding:15px;
+
+    background:#27374b;
+
+    color:white;
+
+    font-size:16px;
+
+    cursor:pointer;
+}
+
+.control:active,
+.bigButton:active,
+.connect:active{
+    transform:scale(.97);
+}
+
+.red{
+    background:#d94352;
+}
+
+.zoomGrid{
+    display:grid;
+
+    grid-template-columns:1fr 1fr 1fr;
+
+    gap:10px;
+
+    margin-top:10px;
+}
+
+.info{
+    background:#09111b;
+
+    border:1px solid #26384d;
+
+    border-radius:13px;
+
+    padding:14px;
+
+    margin-bottom:12px;
+
+    text-align:center;
+
+    color:#d4deea;
+
+    line-height:1.8;
+}
+
+#remotePage{
+    color:#75bfff;
+}
+
+#remoteSentence{
+    color:#7ee8a0;
+}
+
+.hidden{
+    display:none!important;
+}
+
+/* =========================
+   الهاتف صغير
+========================= */
+
+@media(max-width:500px){
+
+    .remoteCard{
+        padding:18px;
+    }
+
+    .remoteTitle h1{
+        font-size:23px;
+    }
+
+    .bigButton{
+        font-size:22px;
+        padding:20px;
+    }
+
+}
+</style>
 </head>
+
 <body>
 
-    <!-- شاشة الاختيار الرئيسية -->
-    <div id="mode-selector">
-        <h1 style="color: var(--primary); margin-bottom: 20px;">تكنومسار - عارض المحاضرات</h1>
-        <p style="color: var(--text-muted); margin-bottom: 30px;">اختر وضع التشغيل على هذا الجهاز</p>
-        
-        <div class="mode-card" onclick="startTVMode()">
-            <h2>وضع التلفزيون (TV)</h2>
-            <p>اختر هذا الوضع على شاشة العرض الكبيرة (الشاشة الرئيسية للمحاضرة).</p>
+<!-- ==================================================
+     وضع التلفزيون
+================================================== -->
+
+<div id="tvMode">
+
+    <div class="top">
+
+        <div id="fileName">
+            عارض المحاضرات
         </div>
 
-        <div class="mode-card" onclick="startRemoteMode()">
-            <h2>وضع الريموت (Remote)</h2>
-            <p>اختر هذا الوضع على هاتفك المحمول للتحكم الكامل بالشاشة عن بعد.</p>
+        <div id="connectionStatus">
+            جاري تشغيل الريموت...
         </div>
+
     </div>
 
-    <!-- واجهة التلفزيون -->
-    <div id="tv-view">
-        <div class="connection-overlay">
-            كود الجلسة: <span id="session-code-display" style="color: var(--primary); font-weight: bold;">جاري الإنشاء...</span> | 
-            الحالة: <span id="tv-status" class="status-badge status-disconnected">في انتظار الاتصال</span>
-        </div>
-        
-        <div id="tv-header">
-            <input type="file" id="pdf-file-input" accept="application/pdf" style="display:none;" />
-            <button class="btn" onclick="document.getElementById('pdf-file-input').click()">اختيار ملف PDF من الجهاز</button>
-            <div id="page-info" style="font-size: 1.2rem; font-weight: bold;">الصفحة: <span id="current-page">0</span> / <span id="total-pages">0</span></div>
-            <div id="tv-announcement-bar" style="max-width: 40%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: var(--primary);">شريط الشرح العلوي جاهز</div>
+
+    <div id="pdfContainer">
+
+        <canvas id="pdfCanvas"></canvas>
+
+        <div id="startMessage">
+
+            📄 اختر ملف PDF للبدء
+
+            <br>
+
+            ثم استخدم هاتفك كجهاز تحكم
+
         </div>
 
-        <div id="pdf-container">
-            <canvas id="pdf-canvas"></canvas>
-        </div>
-
-        <div id="live-annotation"></div>
     </div>
 
-    <!-- واجهة الموبايل (الريموت) -->
-    <div id="remote-view">
-        <div class="remote-section">
-            <h3>اتصال بالاتصال (التلفزيون)</h3>
-            <input type="text" id="connect-code-input" placeholder="أدخل كود الـ 6 أرقام" maxlength="6">
-            <button class="btn" onclick="connectToTV()">اتصال بالشاشة</button>
-            <p style="margin-top: 8px; font-size: 0.9rem;">حالة الاتصال: <span id="remote-status" class="status-badge status-disconnected">غير متصل</span></p>
-        </div>
 
-        <div class="remote-section">
-            <h3>التنقل بين الصفحات</h3>
-            <div class="btn-grid">
-                <button class="btn" onclick="sendCommand('prev_page')">السابق ⬅</button>
-                <button class="btn" onclick="sendCommand('next_page')">التالي ➡</button>
-            </div>
-            <div style="display: flex; gap: 10px; margin-top: 10px;">
-                <input type="number" id="page-target-input" placeholder="رقم الصفحة" style="margin-bottom: 0;">
-                <button class="btn" onclick="sendPageJump()" style="width: 120px;">انتقال</button>
-            </div>
-        </div>
+    <div id="sentenceBox"></div>
 
-        <div class="remote-section">
-            <h3>التحكم بالعرض (Zoom & Fit)</h3>
-            <div class="btn-grid">
-                <button class="btn" onclick="sendCommand('zoom_in')">تكبير (+) z</button>
-                <button class="btn" onclick="sendCommand('zoom_out')">تصغير (-) z</button>
-                <button class="btn" onclick="sendCommand('fit_width')">ملاءمة العرض</button>
-                <button class="btn" onclick="sendCommand('toggle_header')">إظهار/إخفاء الشريط</button>
-            </div>
-        </div>
 
-        <div class="remote-section">
-            <h3>إرسال جملة شرح فورية للشاشة</h3>
-            <textarea id="annotation-text-input" rows="2" placeholder="اكتب الملاحظة أو الجملة هنا..."></textarea>
-            <button class="btn" onclick="sendAnnotation()" style="width: 100%;">إرسال فوراً للشاشة</button>
-            <button class="btn btn-danger" onclick="clearAnnotation()" style="width: 100%; margin-top: 5px;">إخفاء الشرح الفوري</button>
-        </div>
+    <div id="bottom">
+
+        <button id="choosePdf">
+            📄 اختيار PDF
+        </button>
+
+        <input
+            type="file"
+            id="pdfInput"
+            accept="application/pdf"
+            hidden
+        >
+
+        <span id="pageInfo">
+            صفحة 0 / 0
+        </span>
+
+        <span id="sentenceInfo">
+            جملة 0 / 0
+        </span>
+
+        <span id="zoomInfo">
+            100%
+        </span>
+
     </div>
 
-    <script>
-        // إعدادات PDF.js
-        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js';
+</div>
 
-        let peer = null;
-        let conn = null;
-        let pdfDoc = null;
-        let pageNum = 1;
-        let pageScale = 1.2;
-        let isHeaderVisible = true;
-        let isTV = false;
 
-        // توليد كود عشوائي من 6 أرقام
-        function generateSessionCode() {
-            return Math.floor(100000 + Math.random() * 900000).toString();
+<!-- ==================================================
+     وضع الهاتف
+================================================== -->
+
+<div id="remoteMode" class="hidden">
+
+    <div class="remoteCard">
+
+        <div class="remoteTitle">
+
+            <h1>
+                📱 ريموت المحاضرات
+            </h1>
+
+            <p>
+                استخدم الهاتف للتحكم في العرض الموجود على التلفزيون.
+            </p>
+
+        </div>
+
+
+        <label>
+            كود التلفزيون
+        </label>
+
+        <input
+            id="tvCode"
+            type="text"
+            inputmode="numeric"
+            maxlength="6"
+            placeholder="123456"
+        >
+
+
+        <button
+            class="connect"
+            id="connectButton"
+        >
+            🔗 اتصال بالتلفزيون
+        </button>
+
+
+        <div id="remoteStatus">
+            غير متصل
+        </div>
+
+
+        <div
+            class="controls"
+            id="controls"
+        >
+
+            <div class="info">
+
+                الصفحة:
+                <b id="remotePage">
+                    0
+                </b>
+
+                <br>
+
+                الجملة:
+                <b id="remoteSentence">
+                    0 / 0
+                </b>
+
+            </div>
+
+
+            <!-- الزر الأساسي -->
+
+            <button
+                class="bigButton"
+                id="nextSentence"
+            >
+                ▶ الجملة التالية
+            </button>
+
+
+            <div class="grid">
+
+                <button
+                    class="control"
+                    id="previousSentence"
+                >
+                    ◀ الجملة السابقة
+                </button>
+
+
+                <button
+                    class="control"
+                    id="nextPage"
+                >
+                    الصفحة التالية ▶
+                </button>
+
+
+                <button
+                    class="control"
+                    id="previousPage"
+                >
+                    ◀ الصفحة السابقة
+                </button>
+
+
+                <button
+                    class="control red"
+                    id="hideSentence"
+                >
+                    👁 إخفاء الجملة
+                </button>
+
+            </div>
+
+
+            <div class="zoomGrid">
+
+                <button
+                    class="control"
+                    id="zoomOut"
+                >
+                    − تصغير
+                </button>
+
+
+                <button
+                    class="control"
+                    id="resetZoom"
+                >
+                    100%
+                </button>
+
+
+                <button
+                    class="control"
+                    id="zoomIn"
+                >
+                    + تكبير
+                </button>
+
+            </div>
+
+
+            <div class="info" style="margin-top:15px">
+
+                💡 اضغط على
+                <b>«الجملة التالية»</b>
+
+                لإظهار جملة واحدة كاملة في كل ضغطة.
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<script>
+
+/* ==================================================
+   PDF.JS
+================================================== */
+
+pdfjsLib.GlobalWorkerOptions.workerSrc =
+"https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
+
+
+/* ==================================================
+   العناصر
+================================================== */
+
+const tvMode =
+document.getElementById("tvMode");
+
+const remoteMode =
+document.getElementById("remoteMode");
+
+const pdfInput =
+document.getElementById("pdfInput");
+
+const choosePdf =
+document.getElementById("choosePdf");
+
+const canvas =
+document.getElementById("pdfCanvas");
+
+const ctx =
+canvas.getContext("2d");
+
+const sentenceBox =
+document.getElementById("sentenceBox");
+
+const startMessage =
+document.getElementById("startMessage");
+
+
+/* ==================================================
+   معرفة هل الجهاز تلفزيون أم هاتف
+================================================== */
+
+const urlParams =
+new URLSearchParams(window.location.search);
+
+const remoteModeEnabled =
+urlParams.get("remote") === "1";
+
+
+if(remoteModeEnabled){
+
+    tvMode.classList.add("hidden");
+
+    remoteMode.classList.remove("hidden");
+
+}
+
+
+/* ==================================================
+   بيانات البرنامج
+================================================== */
+
+let pdfDocument = null;
+
+let currentPage = 1;
+
+let currentScale = 1;
+
+let sentences = [];
+
+let currentSentence = -1;
+
+let peer = null;
+
+let connection = null;
+
+
+/* ==================================================
+   اختيار PDF
+================================================== */
+
+if(!remoteModeEnabled){
+
+    choosePdf.onclick = function(){
+
+        pdfInput.click();
+
+    };
+
+
+    pdfInput.onchange = async function(){
+
+        const file =
+        pdfInput.files[0];
+
+        if(!file){
+            return;
         }
 
-        function startTVMode() {
-            isTV = true;
-            document.getElementById('mode-selector').style.display = 'none';
-            document.getElementById('tv-view').style.display = 'flex';
 
-            const code = generateSessionCode();
-            document.getElementById('session-code-display').innerText = code;
+        try{
 
-            // تهيئة PeerJS للتلفزيون
-            peer = new Peer('tech-masar-' + code);
-            
-            peer.on('connection', (connection) => {
-                conn = connection;
-                document.getElementById('tv-status').innerText = "متصل بالريموت";
-                document.getElementById('tv-status').className = "status-badge status-connected";
-                
-                conn.on('data', (data) => {
-                    handleRemoteCommand(data);
-                });
+            const buffer =
+            await file.arrayBuffer();
 
-                conn.on('close', () => {
-                    document.getElementById('tv-status').innerText = "انقطع الاتصال";
-                    document.getElementById('tv-status').className = "status-badge status-disconnected";
-                });
-            });
+
+            pdfDocument =
+            await pdfjsLib.getDocument({
+                data:buffer
+            }).promise;
+
+
+            currentPage = 1;
+
+            currentScale = 1;
+
+
+            document.getElementById("fileName")
+                .textContent = file.name;
+
+
+            startMessage.style.display =
+            "none";
+
+
+            await displayPage();
+
+
+        }catch(error){
+
+            alert(
+                "تعذر فتح ملف PDF."
+            );
+
+            console.error(error);
+
         }
 
-        function startRemoteMode() {
-            isTV = false;
-            document.getElementById('mode-selector').style.display = 'none';
-            document.getElementById('remote-view').style.display = 'flex';
-            peer = new Peer();
+    };
+
+}
+
+
+/* ==================================================
+   عرض الصفحة
+================================================== */
+
+async function displayPage(){
+
+    if(!pdfDocument){
+        return;
+    }
+
+
+    const page =
+    await pdfDocument.getPage(
+        currentPage
+    );
+
+
+    const viewport =
+    page.getViewport({
+        scale:currentScale
+    });
+
+
+    canvas.width =
+    viewport.width;
+
+    canvas.height =
+    viewport.height;
+
+
+    await page.render({
+
+        canvasContext:ctx,
+
+        viewport:viewport
+
+    }).promise;
+
+
+    document.getElementById("pageInfo")
+        .textContent =
+        "صفحة " +
+        currentPage +
+        " / " +
+        pdfDocument.numPages;
+
+
+    document.getElementById("zoomInfo")
+        .textContent =
+        Math.round(
+            currentScale * 100
+        ) + "%";
+
+
+    /*
+       استخراج النص بطريقة تحافظ
+       على ترتيب الأسطر والفقرات
+    */
+
+    await extractText(page);
+
+
+    sendState();
+
+}
+
+
+/* ==================================================
+   استخراج النص بدون تقطيع عشوائي
+================================================== */
+
+async function extractText(page){
+
+    const content =
+    await page.getTextContent();
+
+
+    const items =
+    content.items || [];
+
+
+    if(items.length === 0){
+
+        sentences = [];
+
+        currentSentence = -1;
+
+        updateSentenceInfo();
+
+        return;
+
+    }
+
+
+    /*
+       PDF.js يعطينا مكان كل قطعة نص.
+       نستخدم X و Y لإعادة بناء الأسطر.
+    */
+
+    const textItems =
+    items
+    .filter(item =>
+        item.str &&
+        item.str.trim()
+    )
+    .map(item => {
+
+        const transform =
+        item.transform || [];
+
+        return {
+
+            text:item.str.trim(),
+
+            x:transform[4] || 0,
+
+            y:transform[5] || 0,
+
+            width:item.width || 0
+
+        };
+
+    });
+
+
+    /*
+       ترتيب من أعلى لأسفل.
+       وبداخل السطر من اليمين لليسار
+       لأن المستند عربي.
+    */
+
+    textItems.sort((a,b)=>{
+
+        const yDifference =
+        Math.abs(a.y - b.y);
+
+
+        if(yDifference > 5){
+
+            return b.y - a.y;
+
         }
 
-        function connectToTV() {
-            const code = document.getElementById('connect-code-input').value.trim();
-            if(code.length !== 6) {
-                alert('الرجاء إدخال كود صحيح مكون من 6 أرقام');
-                return;
+
+        return b.x - a.x;
+
+    });
+
+
+    /*
+       تجميع القطع الموجودة في نفس السطر
+    */
+
+    const lines = [];
+
+
+    for(const item of textItems){
+
+        let found = null;
+
+
+        for(const line of lines){
+
+            if(
+                Math.abs(
+                    line.y - item.y
+                ) <= 5
+            ){
+
+                found = line;
+
+                break;
+
             }
 
-            conn = peer.connect('tech-masar-' + code);
-
-            conn.on('open', () => {
-                document.getElementById('remote-status').innerText = "متصل بنجاح";
-                document.getElementById('remote-status').className = "status-badge status-connected";
-            });
-
-            conn.on('error', (err) => {
-                alert('فشل الاتصال بالشاشة، تأكد من الكود.');
-            });
         }
 
-        // معالجة ملف الـ PDF المرفوع محلياً على التلفزيون
-        document.getElementById('pdf-file-input').addEventListener('change', function(e) {
-            const file = e.target.files[0];
-            if (file && file.type === 'application/pdf') {
-                const fileReader = new FileReader();
-                fileReader.onload = function() {
-                    const typedarray = new Uint8Array(this.result);
-                    pdfjsLib.getDocument(typedarray).promise.then(function(pdfDoc_) {
-                        pdfDoc = pdfDoc_;
-                        document.getElementById('total-pages').textContent = pdfDoc.numPages;
-                        pageNum = 1;
-                        renderPage(pageNum);
-                    });
-                };
-                fileReader.readAsArrayBuffer(file);
-            }
+
+        if(!found){
+
+            found = {
+
+                y:item.y,
+
+                items:[]
+
+            };
+
+            lines.push(found);
+
+        }
+
+
+        found.items.push(item);
+
+    }
+
+
+    /*
+       ترتيب كل سطر من اليمين لليسار
+    */
+
+    lines.forEach(line=>{
+
+        line.items.sort(
+            (a,b)=>b.x-a.x
+        );
+
+    });
+
+
+    /*
+       تحويل الأسطر إلى نص
+    */
+
+    const paragraphs = [];
+
+
+    for(const line of lines){
+
+        const lineText =
+        line.items
+        .map(item=>item.text)
+        .join(" ")
+        .replace(/\s+/g," ")
+        .trim();
+
+
+        if(lineText){
+
+            paragraphs.push(lineText);
+
+        }
+
+    }
+
+
+    /*
+       هنا النقطة المهمة:
+
+       لا نقسم الكلام كل 10 أو 12 كلمة.
+
+       نحاول دمج الأسطر التي تكمل
+       نفس الجملة.
+    */
+
+    sentences = [];
+
+
+    let currentText = "";
+
+
+    for(let i=0;i<paragraphs.length;i++){
+
+        const text =
+        paragraphs[i];
+
+
+        if(!currentText){
+
+            currentText = text;
+
+        }else{
+
+            currentText +=
+            " " + text;
+
+        }
+
+
+        /*
+           نهاية الجملة عند علامات الترقيم
+        */
+
+        const endsSentence =
+        /[.!؟!?؛:]$/.test(text);
+
+
+        /*
+           إذا كان السطر يبدو عنوانًا
+           أو فقرة منفصلة
+        */
+
+        const looksLikeHeading =
+        text.length < 70 &&
+        !/[،,؛;.!؟!?]$/.test(text);
+
+
+        if(
+            endsSentence ||
+            looksLikeHeading
+        ){
+
+            sentences.push(
+                currentText.trim()
+            );
+
+            currentText = "";
+
+        }
+
+    }
+
+
+    if(currentText.trim()){
+
+        sentences.push(
+            currentText.trim()
+        );
+
+    }
+
+
+    /*
+       إذا خرجت جمل قليلة جدًا،
+       نستخدم الفقرات كما هي بدل
+       تقطيع النص.
+    */
+
+    if(sentences.length === 0){
+
+        sentences =
+        paragraphs;
+
+    }
+
+
+    currentSentence = -1;
+
+    sentenceBox.style.display =
+    "none";
+
+
+    updateSentenceInfo();
+
+}
+
+
+/* ==================================================
+   الجملة التالية
+================================================== */
+
+function showNextSentence(){
+
+    if(!pdfDocument){
+
+        return;
+
+    }
+
+
+    if(sentences.length === 0){
+
+        sentenceBox.textContent =
+        "لا يوجد نص قابل للاستخراج من هذه الصفحة.";
+
+        sentenceBox.style.display =
+        "block";
+
+        return;
+
+    }
+
+
+    if(
+        currentSentence <
+        sentences.length - 1
+    ){
+
+        currentSentence++;
+
+
+        sentenceBox.textContent =
+        sentences[currentSentence];
+
+
+        sentenceBox.style.display =
+        "block";
+
+
+        updateSentenceInfo();
+
+
+        sendState();
+
+    }
+
+    else{
+
+        /*
+           انتهت جمل الصفحة.
+           الانتقال تلقائيًا للصفحة التالية.
+        */
+
+        if(
+            currentPage <
+            pdfDocument.numPages
+        ){
+
+            currentPage++;
+
+            displayPage();
+
+        }
+
+    }
+
+}
+
+
+/* ==================================================
+   الجملة السابقة
+================================================== */
+
+function showPreviousSentence(){
+
+    if(!pdfDocument){
+        return;
+    }
+
+
+    if(currentSentence > 0){
+
+        currentSentence--;
+
+
+        sentenceBox.textContent =
+        sentences[currentSentence];
+
+
+        sentenceBox.style.display =
+        "block";
+
+
+        updateSentenceInfo();
+
+
+        sendState();
+
+    }
+
+    else if(currentPage > 1){
+
+        currentPage--;
+
+        displayPage();
+
+    }
+
+}
+
+
+/* ==================================================
+   الصفحات
+================================================== */
+
+function nextPage(){
+
+    if(
+        pdfDocument &&
+        currentPage <
+        pdfDocument.numPages
+    ){
+
+        currentPage++;
+
+        displayPage();
+
+    }
+
+}
+
+
+function previousPage(){
+
+    if(
+        pdfDocument &&
+        currentPage > 1
+    ){
+
+        currentPage--;
+
+        displayPage();
+
+    }
+
+}
+
+
+/* ==================================================
+   إخفاء الجملة
+================================================== */
+
+function hideSentence(){
+
+    sentenceBox.style.display =
+    "none";
+
+}
+
+
+/* ==================================================
+   التكبير
+================================================== */
+
+function zoomIn(){
+
+    if(!pdfDocument){
+        return;
+    }
+
+
+    currentScale += 0.15;
+
+
+    if(currentScale > 3){
+        currentScale = 3;
+    }
+
+
+    displayPage();
+
+}
+
+
+function zoomOut(){
+
+    if(!pdfDocument){
+        return;
+    }
+
+
+    currentScale -= 0.15;
+
+
+    if(currentScale < 0.5){
+        currentScale = 0.5;
+    }
+
+
+    displayPage();
+
+}
+
+
+function resetZoom(){
+
+    if(!pdfDocument){
+        return;
+    }
+
+
+    currentScale = 1;
+
+    displayPage();
+
+}
+
+
+/* ==================================================
+   معلومات الجملة
+================================================== */
+
+function updateSentenceInfo(){
+
+    const number =
+    currentSentence >= 0
+    ? currentSentence + 1
+    : 0;
+
+
+    document.getElementById(
+        "sentenceInfo"
+    ).textContent =
+    "جملة " +
+    number +
+    " / " +
+    sentences.length;
+
+}
+
+
+/* ==================================================
+   اتصال التلفزيون
+================================================== */
+
+if(!remoteModeEnabled){
+
+    const code =
+    String(
+        Math.floor(
+            100000 +
+            Math.random() * 900000
+        )
+    );
+
+
+    peer =
+    new Peer(code,{
+        debug:0
+    });
+
+
+    peer.on("open",function(id){
+
+        document.getElementById(
+            "connectionStatus"
+        ).textContent =
+        "كود التلفزيون: " + id;
+
+    });
+
+
+    peer.on("connection",function(conn){
+
+        connection = conn;
+
+
+        connection.on("open",function(){
+
+            document.getElementById(
+                "connectionStatus"
+            ).textContent =
+            "📱 الهاتف متصل ✓";
+
+            document.getElementById(
+                "connectionStatus"
+            ).style.color =
+            "#7ee8a0";
+
+
+            sendState();
+
         });
 
-        function renderPage(num) {
-            if (!pdfDoc) return;
-            pdfDoc.getPage(num).then(function(page) {
-                const canvas = document.getElementById('pdf-canvas');
-                const ctx = canvas.getContext('2d');
-                const viewport = page.getViewport({ scale: pageScale });
-                canvas.height = viewport.height;
-                canvas.width = viewport.width;
 
-                const renderContext = {
-                    canvasContext: ctx,
-                    viewport: viewport
-                };
-                page.render(renderContext);
-                document.getElementById('current-page').textContent = num;
+        connection.on("data",function(data){
+
+            handleCommand(data);
+
+        });
+
+
+        connection.on("close",function(){
+
+            document.getElementById(
+                "connectionStatus"
+            ).textContent =
+            "كود التلفزيون: " + code;
+
+        });
+
+    });
+
+
+    peer.on("error",function(error){
+
+        console.error(error);
+
+        document.getElementById(
+            "connectionStatus"
+        ).textContent =
+        "خطأ في الاتصال";
+
+    });
+
+}
+
+
+/* ==================================================
+   تنفيذ أوامر الهاتف
+================================================== */
+
+function handleCommand(data){
+
+    if(!data){
+        return;
+    }
+
+
+    switch(data.command){
+
+        case "nextSentence":
+
+            showNextSentence();
+
+            break;
+
+
+        case "previousSentence":
+
+            showPreviousSentence();
+
+            break;
+
+
+        case "nextPage":
+
+            nextPage();
+
+            break;
+
+
+        case "previousPage":
+
+            previousPage();
+
+            break;
+
+
+        case "hideSentence":
+
+            hideSentence();
+
+            break;
+
+
+        case "zoomIn":
+
+            zoomIn();
+
+            break;
+
+
+        case "zoomOut":
+
+            zoomOut();
+
+            break;
+
+
+        case "resetZoom":
+
+            resetZoom();
+
+            break;
+
+    }
+
+}
+
+
+/* ==================================================
+   إرسال حالة التلفزيون للهاتف
+================================================== */
+
+function sendState(){
+
+    if(
+        connection &&
+        connection.open
+    ){
+
+        connection.send({
+
+            type:"state",
+
+            page:currentPage,
+
+            sentence:
+            currentSentence >= 0
+            ? currentSentence + 1
+            : 0,
+
+            total:
+            sentences.length
+
+        });
+
+    }
+
+}
+
+
+/* ==================================================
+   وضع الريموت
+================================================== */
+
+if(remoteModeEnabled){
+
+    let remotePeer = null;
+
+    let remoteConnection = null;
+
+
+    document.getElementById(
+        "connectButton"
+    ).onclick = function(){
+
+        const code =
+        document.getElementById(
+            "tvCode"
+        ).value.trim();
+
+
+        if(!/^\d{6}$/.test(code)){
+
+            document.getElementById(
+                "remoteStatus"
+            ).textContent =
+            "اكتب كود التلفزيون المكون من 6 أرقام.";
+
+            return;
+
+        }
+
+
+        document.getElementById(
+            "remoteStatus"
+        ).textContent =
+        "جاري الاتصال...";
+
+
+        remotePeer =
+        new Peer();
+
+
+        remotePeer.on("open",function(){
+
+            remoteConnection =
+            remotePeer.connect(
+                code,
+                {
+                    reliable:true
+                }
+            );
+
+
+            remoteConnection.on(
+                "open",
+                function(){
+
+                    document.getElementById(
+                        "remoteStatus"
+                    ).textContent =
+                    "🟢 متصل بالتلفزيون";
+
+
+                    document.getElementById(
+                        "remoteStatus"
+                    ).style.color =
+                    "#7ee8a0";
+
+
+                    document.getElementById(
+                        "controls"
+                    ).style.display =
+                    "block";
+
+                }
+            );
+
+
+            remoteConnection.on(
+                "data",
+                function(data){
+
+                    if(
+                        data &&
+                        data.type === "state"
+                    ){
+
+                        document.getElementById(
+                            "remotePage"
+                        ).textContent =
+                        data.page;
+
+
+                        document.getElementById(
+                            "remoteSentence"
+                        ).textContent =
+                        data.sentence +
+                        " / " +
+                        data.total;
+
+                    }
+
+                }
+            );
+
+
+            remoteConnection.on(
+                "close",
+                function(){
+
+                    document.getElementById(
+                        "remoteStatus"
+                    ).textContent =
+                    "انقطع الاتصال.";
+
+                    document.getElementById(
+                        "remoteStatus"
+                    ).style.color =
+                    "#ffd166";
+
+                }
+            );
+
+        });
+
+
+        remotePeer.on(
+            "error",
+            function(){
+
+                document.getElementById(
+                    "remoteStatus"
+                ).textContent =
+                "❌ فشل الاتصال. تأكد من الكود.";
+
+                document.getElementById(
+                    "remoteStatus"
+                ).style.color =
+                "#ff6675";
+
+            }
+        );
+
+    };
+
+
+    /* إرسال أمر للتلفزيون */
+
+    function sendCommand(command){
+
+        if(
+            remoteConnection &&
+            remoteConnection.open
+        ){
+
+            remoteConnection.send({
+
+                command:command
+
             });
+
         }
 
-        // إرسال الأوامر من الريموت
-        function sendCommand(action, value = null) {
-            if(conn && conn.open) {
-                conn.send({ action: action, value: value });
-            } else {
-                alert('غير متصل بالشاشة حالياً!');
-            }
-        }
+    }
 
-        function sendPageJump() {
-            const target = parseInt(document.getElementById('page-target-input').value);
-            if(target) {
-                sendCommand('goto_page', target);
-            }
-        }
 
-        function sendAnnotation() {
-            const text = document.getElementById('annotation-text-input').value;
-            if(text) {
-                sendCommand('show_annotation', text);
-            }
-        }
+    document.getElementById(
+        "nextSentence"
+    ).onclick =
+    function(){
 
-        function clearAnnotation() {
-            sendCommand('clear_annotation');
-        }
+        sendCommand(
+            "nextSentence"
+        );
 
-        // استقبال وتنفيد الأوامر على الشاشة (TV)
-        function handleRemoteCommand(data) {
-            if (!pdfDoc && data.action !== 'show_annotation' && data.action !== 'clear_annotation') return;
+    };
 
-            switch(data.action) {
-                case 'next_page':
-                    if (pageNum < pdfDoc.numPages) {
-                        pageNum++;
-                        renderPage(pageNum);
-                    }
-                    break;
-                case 'prev_page':
-                    if (pageNum > 1) {
-                        pageNum--;
-                        renderPage(pageNum);
-                    }
-                    break;
-                case 'goto_page':
-                    if (data.value >= 1 && data.value <= pdfDoc.numPages) {
-                        pageNum = data.value;
-                        renderPage(pageNum);
-                    }
-                    break;
-                case 'zoom_in':
-                    pageScale += 0.2;
-                    renderPage(pageNum);
-                    break;
-                case 'zoom_out':
-                    if(pageScale > 0.6) pageScale -= 0.2;
-                    renderPage(pageNum);
-                    break;
-                case 'fit_width':
-                    pageScale = 1.0;
-                    renderPage(pageNum);
-                    break;
-                case 'toggle_header':
-                    isHeaderVisible = !isHeaderVisible;
-                    const header = document.getElementById('tv-header');
-                    if(isHeaderVisible) {
-                        header.classList.remove('hidden');
-                    } else {
-                        header.classList.add('hidden');
-                    }
-                    break;
-                case 'show_annotation':
-                    const annBox = document.getElementById('live-annotation');
-                    annBox.innerText = data.value;
-                    annBox.style.display = 'block';
-                    document.getElementById('tv-announcement-bar').innerText = data.value;
-                    break;
-                case 'clear_annotation':
-                    document.getElementById('live-annotation').style.display = 'none';
-                    document.getElementById('tv-announcement-bar').innerText = 'شريط الشرح العلوي جاهز';
-                    break;
-            }
-        }
-    </script>
+
+    document.getElementById(
+        "previousSentence"
+    ).onclick =
+    function(){
+
+        sendCommand(
+            "previousSentence"
+        );
+
+    };
+
+
+    document.getElementById(
+        "nextPage"
+    ).onclick =
+    function(){
+
+        sendCommand(
+            "nextPage"
+        );
+
+    };
+
+
+    document.getElementById(
+        "previousPage"
+    ).onclick =
+    function(){
+
+        sendCommand(
+            "previousPage"
+        );
+
+    };
+
+
+    document.getElementById(
+        "hideSentence"
+    ).onclick =
+    function(){
+
+        sendCommand(
+            "hideSentence"
+        );
+
+    };
+
+
+    document.getElementById(
+        "zoomIn"
+    ).onclick =
+    function(){
+
+        sendCommand(
+            "zoomIn"
+        );
+
+    };
+
+
+    document.getElementById(
+        "zoomOut"
+    ).onclick =
+    function(){
+
+        sendCommand(
+            "zoomOut"
+        );
+
+    };
+
+
+    document.getElementById(
+        "resetZoom"
+    ).onclick =
+    function(){
+
+        sendCommand(
+            "resetZoom"
+        );
+
+    };
+
+}
+
+</script>
+
 </body>
 </html>
