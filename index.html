@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>عارض المحاضرات الاحترافي PDF</title>
-    <!-- تضمين المكتبات الخارجية -->
+    <!-- مكتبات معالجة الـ PDF والاتصال اللاسلكي السحابي المباشر -->
     <script src="https://cloudflare.com"></script>
     <script src="https://unpkg.com"></script>
     <style>
@@ -29,7 +29,7 @@
             height: 100vh;
             width: 100vw;
         }
-        /* قسم العرض (التلفزيون) */
+        /* 📺 شاشة العرض (التلفزيون) */
         #tv-view {
             display: none;
             flex-direction: column;
@@ -48,22 +48,22 @@
             text-align: center;
         }
         .peer-code-box {
-            font-size: 2.5rem;
+            font-size: 2.8rem;
             font-weight: bold;
             letter-spacing: 5px;
             color: var(--accent-color);
             background: var(--card-bg);
-            padding: 15px 30px;
-            border-radius: 10px;
-            border: 2px dashed var(--accent-color);
+            padding: 15px 40px;
+            border-radius: 12px;
+            border: 3px dashed var(--accent-color);
         }
         .file-upload-btn {
             background-color: var(--accent-color);
             color: #fff;
-            padding: 12px 30px;
-            border-radius: 5px;
+            padding: 14px 35px;
+            border-radius: 8px;
             cursor: pointer;
-            font-size: 1.2rem;
+            font-size: 1.3rem;
             font-weight: bold;
             transition: 0.3s;
         }
@@ -76,40 +76,43 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            background: #1a1a1a;
+            background: #151515;
             position: relative;
+            width: 100%;
+            height: 100%;
         }
         #pdf-canvas {
-            max-width: 100%;
-            box-shadow: 0 0 20px rgba(0,0,0,0.6);
+            max-width: 95%;
+            max-height: 95%;
+            box-shadow: 0 0 30px rgba(0,0,0,0.7);
             display: block;
         }
         #caption-overlay {
             position: absolute;
-            bottom: 40px;
+            bottom: 5%;
             left: 5%;
             right: 5%;
-            background: rgba(0, 0, 0, 0.85);
+            background: rgba(0, 0, 0, 0.9);
             color: #fff;
-            padding: 25px 40px;
+            padding: 25px 45px;
             border-radius: 15px;
-            font-size: 2.2rem;
+            font-size: 2.5rem;
             line-height: 1.6;
             text-align: center;
-            border-bottom: 5px solid var(--accent-color);
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
+            border-bottom: 6px solid var(--accent-color);
+            text-shadow: 2px 2px 5px rgba(0,0,0,0.9);
             z-index: 10;
             transition: opacity 0.3s ease;
         }
-        #caption-overlay.hidden { opacity: 0; }
+        #caption-overlay.hidden { opacity: 0; pointer-events: none; }
 
-        /* قسم التحكم (الهاتف) */
+        /* 📱 شاشة التحكم (الهاتف) */
         #mobile-view {
             display: none;
             flex-direction: column;
             height: 100%;
             width: 100%;
-            padding: 15px;
+            padding: 20px;
             overflow-y: auto;
         }
         #mobile-login {
@@ -118,16 +121,16 @@
             justify-content: center;
             align-items: center;
             height: 100%;
-            gap: 20px;
+            gap: 25px;
         }
         .code-input {
-            width: 80%;
-            max-width: 280px;
-            font-size: 2rem;
+            width: 85%;
+            max-width: 300px;
+            font-size: 2.2rem;
             text-align: center;
-            padding: 10px;
-            letter-spacing: 5px;
-            border-radius: 8px;
+            padding: 12px;
+            letter-spacing: 6px;
+            border-radius: 10px;
             border: 2px solid var(--text-muted);
             background: var(--card-bg);
             color: #fff;
@@ -136,12 +139,12 @@
             background: var(--accent-color);
             color: white;
             border: none;
-            padding: 12px 25px;
-            font-size: 1.1rem;
-            border-radius: 8px;
+            padding: 15px 30px;
+            font-size: 1.2rem;
+            border-radius: 10px;
             cursor: pointer;
-            width: 80%;
-            max-width: 280px;
+            width: 85%;
+            max-width: 300px;
             font-weight: bold;
         }
         #mobile-dashboard {
@@ -155,7 +158,7 @@
             padding: 12px;
             border-radius: 8px;
             text-align: center;
-            font-size: 0.9rem;
+            font-size: 0.95rem;
             color: var(--text-muted);
         }
         .info-card {
@@ -163,13 +166,13 @@
             padding: 15px;
             border-radius: 10px;
             flex: 1;
-            min-height: 100px;
-            max-height: 180px;
+            min-height: 110px;
+            max-height: 200px;
             overflow-y: auto;
-            border-right: 4px solid var(--accent-color);
+            border-right: 5px solid var(--accent-color);
         }
         .info-label { font-size: 0.85rem; color: var(--text-muted); margin-bottom: 5px; }
-        .info-value { font-size: 1.1rem; font-weight: bold; line-height: 1.4; }
+        .info-value { font-size: 1.2rem; font-weight: bold; line-height: 1.5; }
         
         .controls-grid {
             display: grid;
@@ -180,7 +183,7 @@
             background: var(--card-bg);
             color: white;
             border: 1px solid #333;
-            padding: 18px;
+            padding: 20px 10px;
             font-size: 1.1rem;
             border-radius: 10px;
             cursor: pointer;
@@ -203,12 +206,12 @@
     <div id="tv-view">
         <div id="tv-setup">
             <h2>شاشة العرض الرئيسية (التلفزيون)</h2>
-            <p>أدخل هذا الرمز في الهاتف للتحكم عن بُعد:</p>
+            <p>أدخل هذا الرمز في شاشة التحكم بالهاتف للربط:</p>
             <div class="peer-code-box" id="tv-code-display">------</div>
-            <p>أو قم باختيار ملف الـ PDF مباشرة لبدء العرض:</p>
-            <label class="file-upload-btn" for="file-input">اختيار ملف PDF</label>
+            <p>اختر ملف الـ PDF لبدء إلقاء المحاضرة:</p>
+            <label class="file-upload-btn" for="file-input">اضغط لاختيار ملف PDF</label>
             <input type="file" id="file-input" accept="application/pdf">
-            <div id="tv-status" style="color: var(--text-muted);">جاري إعداد الاتصال...</div>
+            <div id="tv-status" style="color: var(--text-muted); margin-top: 10px;">جاري تشغيل خادم الاتصال الذكي...</div>
         </div>
         <div id="viewer-container">
             <canvas id="pdf-canvas"></canvas>
@@ -218,26 +221,26 @@
 
     <!-- 2. 📱 قسم التحكم (الهاتف) -->
     <div id="mobile-view">
-        <!-- مرحلة ربط الكود -->
+        <!-- مرحلة تسجيل الدخول والربط -->
         <div id="mobile-login">
-            <h2>التحكم عن بعد</h2>
+            <h2>لوحة التحكم الذكية</h2>
             <p style="color: var(--text-muted); text-align: center;">أدخل الرمز المكون من 6 أرقام الظاهر على شاشة التلفزيون</p>
             <input type="text" id="join-code" class="code-input" maxlength="6" placeholder="000000" inputmode="numeric">
-            <button class="btn" id="connect-btn">اتصال بالتلفزيون</button>
-            <div id="mobile-status" style="color: var(--btn-danger);"></div>
+            <button class="btn" id="connect-btn">ربط وتحكم الآن</button>
+            <div id="mobile-status" style="color: var(--btn-danger); text-align: center; margin-top: 10px;"></div>
         </div>
         
-        <!-- لوحة التحكم بعد الاتصال -->
+        <!-- لوحة الأزرار والتحكم الكامل بعد الاتصال -->
         <div id="mobile-dashboard" style="display: none;">
-            <div class="status-bar" id="dashboard-status">متصل بالتلفزيون ومستعد</div>
+            <div class="status-bar" id="dashboard-status">متصل تماماً بشاشة العرض ومستعد للعمل</div>
             
             <div class="info-card">
-                <div class="info-label">الجملة الحالية المعروضة:</div>
+                <div class="info-label">النص المعروض حالياً على التلفزيون:</div>
                 <div class="info-value" id="current-sentence-txt">-</div>
             </div>
             
             <div class="status-bar" style="font-weight: bold; color:#fff;" id="page-sentence-counter">
-                الصفحة: 0 / 0 | الجملة: 0 / 0
+                الصفحة: 0 / 0 | الجملة المنطقية: 0 / 0
             </div>
 
             <div class="controls-grid">
@@ -251,35 +254,28 @@
                 
                 <button class="ctrl-btn" id="btn-zoom-in">＋ تكبير</button>
                 <button class="ctrl-btn" id="btn-zoom-out">－ تصغير</button>
-                <button class="ctrl-btn full-width" id="btn-zoom-reset">100% إعادة الحجم</button>
+                <button class="ctrl-btn full-width" id="btn-zoom-reset">100% إعادة الحجم الافتراضي</button>
             </div>
         </div>
     </div>
 
     <script>
-        // إعدادات مكتبة PDF.js العامة
+        // إعدادات محرك PDF.js المتقدمة
         pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cloudflare.com';
 
-        // محددات الحالة والروابط
+        // قراءة المعاملات لمعرفة نوع الشاشة المطلوبة
         const urlParams = new URLSearchParams(window.location.search);
         const isControlMode = urlParams.get('control') === '1';
 
-        // متغيرات تطبيقية مشتركة المنطق
+        // المتغيرات التشغيلية
         let peer = null;
         let conn = null;
         let pdfDoc = null;
         let currentPageNum = 1;
-        let currentScale = 1.3;
+        let currentScale = 1.5; 
         let sentences = [];
         let currentSentenceIdx = -1;
         let isCaptionVisible = true;
 
-        // توليد رمز عشوائي نظيف مكون من 6 أرقام
+        // توليد معرف رقمي من 6 أرقام لتسهيل النقل
         function generateNumericCode() {
-            return Math.floor(100000 + Math.random() * 900000).toString();
-        }
-
-        // تفكيك ذكي للنص لاستخراج فقرات وجمل كاملة منطقياً (دعم كامل للعربية واللغات الأخرى)
-        function splitTextIntoSentences(textItems) {
-            // تجميع الأسطر بناءً على الارتفاع التقريبي (Y-coordinate) للحفاظ على الترتيب المنطقي
-            let lines = {};
