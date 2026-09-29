@@ -29,8 +29,8 @@
             height: 100vh;
             width: 100vw;
         }
-        /* 📺 شاشة العرض (التلفزيون) - تظهر افتراضياً */
-        #tv-view {
+        /* 📺 قسم العرض (Tv) - يظهر افتراضياً */
+        #Tv {
             display: flex;
             flex-direction: column;
             width: 100%;
@@ -106,8 +106,8 @@
         }
         #caption-overlay.hidden { opacity: 0; pointer-events: none; }
 
-        /* 📱 شاشة التحكم (الهاتف) - مخفية وتظهر عند الطلب */
-        #mobile-view {
+        /* 📱 قسم التحكم (Control) - مخفي وتظهر عند فتح الرابط المخصص */
+        #Control {
             display: none;
             flex-direction: column;
             height: 100%;
@@ -202,8 +202,8 @@
 </head>
 <body>
 
-    <!-- 1. 📺 قسم العرض (التلفزيون) -->
-    <div id="tv-view">
+    <!-- 1. 📺 قسم العرض (Tv) -->
+    <div id="Tv">
         <div id="tv-setup">
             <h2>شاشة العرض الرئيسية (التلفزيون)</h2>
             <p>أدخل هذا الرمز في شاشة التحكم بالهاتف للربط:</p>
@@ -219,8 +219,8 @@
         </div>
     </div>
 
-    <!-- 2. 📱 قسم التحكم (الهاتف) -->
-    <div id="mobile-view">
+    <!-- 2. 📱 قسم التحكم (Control) -->
+    <div id="Control">
         <div id="mobile-login">
             <h2>لوحة التحكم الذكية</h2>
             <p style="color: var(--text-muted); text-align: center;">أدخل الرمز المكون من 6 أرقام الظاهر على شاشة التلفزيون</p>
@@ -270,8 +270,8 @@
             return Math.floor(100000 + Math.random() * 900000).toString();
         }
 
-        // التبديل الصحيح والظهور التلقائي للواجهات بناءً على الرابط
+        // التبديل والظهور الصحيح للأقسام بناءً على الرابط المفتوح
         if (isControlMode) {
-            document.getElementById('tv-view').style.display = 'none';
-            document.getElementById('mobile-view').style.display = 'flex';
+            document.getElementById('Tv').style.display = 'none';
+            document.getElementById('Control').style.display = 'flex';
         } else {
