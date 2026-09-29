@@ -2,551 +2,301 @@
 <html lang="ar" dir="rtl">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
 
-<title>عارض المحاضرات الاحترافي</title>
+<title>عارض المحاضرات - أرض الأحياء</title>
 
-<!-- PDF.js -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
-
-<!-- PeerJS للتحكم من الهاتف -->
 <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
 
 <style>
-
 *{
     box-sizing:border-box;
-}
-
-html,
-body{
     margin:0;
-    width:100%;
-    height:100%;
-    font-family:Tahoma,Arial,sans-serif;
-    background:#05080d;
-    color:white;
+    padding:0;
 }
 
 body{
-    overflow:hidden;
+    font-family:Tahoma,Arial,sans-serif;
+    background:#071018;
+    color:white;
+    min-height:100vh;
 }
 
-button,
-input{
-    font-family:inherit;
-}
-
-/* =====================================================
-   الشاشة الرئيسية
-===================================================== */
-
-#app{
-    width:100%;
-    height:100vh;
-    position:relative;
-}
-
-/* =====================================================
+/* =========================
    قسم العرض
-===================================================== */
+========================= */
 
 #displaySection{
-
-    width:100%;
-    height:100%;
-
+    min-height:100vh;
+    background:#071018;
     display:flex;
     flex-direction:column;
-
-    background:#070a0f;
 }
-
-/* الشريط العلوي */
 
 .displayHeader{
-
-    height:65px;
-    min-height:65px;
-
-    background:#101722;
-
-    border-bottom:1px solid #293748;
-
+    height:70px;
+    background:#0d1b26;
     display:flex;
-
     align-items:center;
-
     justify-content:space-between;
-
     padding:0 25px;
-
+    border-bottom:2px solid #1e394d;
 }
 
-.displayTitle{
-
-    font-size:23px;
-
-    font-weight:bold;
-
-    white-space:nowrap;
-
-    overflow:hidden;
-
-    text-overflow:ellipsis;
-
+.displayHeader h1{
+    font-size:25px;
+    color:#42e695;
 }
 
-.connection{
-
-    color:#7ee8a0;
-
+.status{
+    background:#132a38;
+    padding:10px 18px;
+    border-radius:10px;
     font-size:15px;
-
 }
 
-/* منطقة PDF */
-
-.pdfArea{
-
-    flex:1;
-
+#pdfArea{
     position:relative;
-
-    overflow:auto;
-
+    flex:1;
     display:flex;
-
     justify-content:center;
-
-    align-items:flex-start;
-
-    padding:15px;
-
+    align-items:center;
+    padding:20px;
+    overflow:auto;
 }
 
 #pdfCanvas{
-
+    max-width:95%;
+    max-height:82vh;
     background:white;
-
-    display:block;
-
-    box-shadow:
-        0 10px 50px rgba(0,0,0,.7);
-
+    box-shadow:0 0 30px rgba(0,0,0,.5);
 }
 
-/* رسالة البداية */
-
-.startScreen{
-
+#sentenceBox{
     position:absolute;
-
-    top:50%;
-
+    bottom:30px;
     left:50%;
-
-    transform:translate(-50%,-50%);
-
-    text-align:center;
-
-    color:#aeb9c8;
-
-    font-size:25px;
-
-    line-height:2;
-
-}
-
-/* =====================================================
-   صندوق الجملة
-===================================================== */
-
-#sentenceOverlay{
-
-    position:fixed;
-
-    left:50%;
-
-    bottom:100px;
-
     transform:translateX(-50%);
-
-    width:min(92vw,1250px);
-
-    min-height:80px;
-
-    padding:18px 30px;
-
-    background:rgba(0,0,0,.84);
-
-    border:2px solid rgba(255,255,255,.2);
-
-    border-radius:18px;
-
-    box-shadow:
-        0 15px 45px rgba(0,0,0,.7);
-
+    width:min(90%,1000px);
+    background:rgba(0,0,0,.90);
+    border:2px solid #42e695;
+    border-radius:16px;
+    padding:20px 25px;
     text-align:center;
-
-    font-size:clamp(25px,3vw,48px);
-
+    font-size:27px;
     line-height:1.8;
-
     color:white;
-
-    z-index:100;
-
+    box-shadow:0 10px 40px rgba(0,0,0,.5);
     display:none;
-
 }
 
-/* =====================================================
-   الشريط السفلي
-===================================================== */
-
-.displayFooter{
-
-    height:65px;
-
-    min-height:65px;
-
-    background:#101722;
-
-    border-top:1px solid #293748;
-
-    display:flex;
-
-    align-items:center;
-
-    justify-content:center;
-
-    gap:30px;
-
-    font-size:16px;
-
+.displayBottom{
+    background:#0d1b26;
+    padding:12px;
+    text-align:center;
+    color:#a9bcc9;
 }
 
-.fileButton{
+#fileInput{
+    display:none;
+}
 
-    background:#1687ff;
-
-    color:white;
-
-    border:0;
-
-    padding:11px 20px;
-
+.uploadBtn{
+    display:inline-block;
+    background:#42e695;
+    color:#06100b;
+    padding:12px 25px;
     border-radius:10px;
-
     cursor:pointer;
-
     font-weight:bold;
-
+    margin:10px;
 }
 
-.fileButton:hover{
-
-    background:#0d75df;
-
-}
-
-/* =====================================================
+/* =========================
    قسم التحكم
-===================================================== */
+========================= */
 
 #controlSection{
-
-    display:none;
-
-    width:100%;
-
     min-height:100vh;
-
-    overflow:auto;
-
+    display:none;
+    justify-content:center;
+    align-items:center;
     background:
-        linear-gradient(
-            145deg,
-            #07111d,
-            #0d1929
-        );
-
-    padding:20px;
-
-}
-
-.controlCard{
-
-    width:min(100%,550px);
-
-    margin:auto;
-
-    background:#111c2a;
-
-    border:1px solid #2c4057;
-
-    border-radius:25px;
-
+        radial-gradient(circle at top,#173c50,#071018 65%);
     padding:25px;
-
-    box-shadow:
-        0 20px 70px rgba(0,0,0,.55);
-
 }
 
-.controlHeader{
+.controlContainer{
+    width:min(95%,520px);
+    background:#0d1b26;
+    border:1px solid #244457;
+    border-radius:25px;
+    padding:30px;
+    box-shadow:0 20px 60px rgba(0,0,0,.5);
+}
 
+.controlTitle{
     text-align:center;
+    margin-bottom:25px;
+}
 
+.controlTitle h2{
+    color:#42e695;
+    font-size:30px;
+    margin-bottom:8px;
+}
+
+.controlTitle p{
+    color:#a9bcc9;
+}
+
+.codeBox{
+    background:#071018;
+    border:1px solid #244457;
+    border-radius:15px;
+    padding:20px;
     margin-bottom:20px;
-
+    text-align:center;
 }
 
-.controlHeader h1{
-
-    margin:0 0 8px;
-
-    font-size:28px;
-
-}
-
-.controlHeader p{
-
-    margin:0;
-
-    color:#aebaca;
-
-    line-height:1.7;
-
-}
-
-/* الاتصال */
-
-label{
-
+.codeBox label{
     display:block;
-
-    margin:10px 0;
-
-    color:#dce5ef;
-
+    color:#a9bcc9;
+    margin-bottom:10px;
 }
 
 #tvCode{
-
     width:100%;
-
-    padding:16px;
-
-    background:#09111b;
-
-    border:1px solid #35495f;
-
-    border-radius:13px;
-
-    color:white;
-
-    outline:none;
-
-    font-size:21px;
-
-    text-align:center;
-
-    letter-spacing:5px;
-
-}
-
-.connectButton{
-
-    width:100%;
-
-    margin-top:12px;
-
-    padding:16px;
-
-    border:0;
-
-    border-radius:13px;
-
-    background:#1687ff;
-
-    color:white;
-
-    font-size:18px;
-
-    font-weight:bold;
-
-    cursor:pointer;
-
-}
-
-#controlStatus{
-
-    text-align:center;
-
-    margin:15px 0;
-
-    color:#ffd166;
-
-}
-
-/* معلومات العرض */
-
-.controlInfo{
-
-    background:#09111b;
-
-    border:1px solid #293b50;
-
-    border-radius:13px;
-
     padding:15px;
-
     text-align:center;
-
-    line-height:2;
-
-    color:#d6e0eb;
-
-    margin-bottom:12px;
-
+    font-size:25px;
+    letter-spacing:7px;
+    border-radius:10px;
+    border:2px solid #42e695;
+    background:#0d1b26;
+    color:white;
+    outline:none;
 }
 
-.controlInfo b{
-
-    color:#72bfff;
-
-}
-
-/* زر الجملة */
-
-.nextSentenceButton{
-
+.connectBtn{
     width:100%;
-
-    padding:22px;
-
     border:0;
-
-    border-radius:17px;
-
-    background:#19a957;
-
-    color:white;
-
-    font-size:27px;
-
+    padding:15px;
+    margin-top:12px;
+    border-radius:12px;
+    background:#42e695;
+    color:#06100b;
+    font-size:18px;
     font-weight:bold;
-
     cursor:pointer;
-
-    margin-bottom:12px;
-
 }
 
-.nextSentenceButton:active,
-.controlButton:active,
-.connectButton:active{
-
-    transform:scale(.97);
-
+.connectionStatus{
+    text-align:center;
+    margin:15px 0;
+    padding:10px;
+    border-radius:10px;
+    background:#132a38;
+    color:#a9bcc9;
 }
 
-/* شبكة التحكم */
-
-.controlGrid{
-
-    display:grid;
-
-    grid-template-columns:1fr 1fr;
-
-    gap:10px;
-
+.controlPanel{
+    margin-top:20px;
+    display:none;
 }
 
-.controlButton{
+.info{
+    display:flex;
+    justify-content:space-between;
+    background:#071018;
+    border-radius:12px;
+    padding:13px;
+    margin-bottom:15px;
+    color:#b9cad4;
+}
 
+.mainButton{
+    width:100%;
     border:0;
-
-    border-radius:13px;
-
-    padding:16px;
-
-    background:#27384c;
-
+    border-radius:14px;
+    padding:18px;
+    margin:6px 0;
+    background:#17384a;
     color:white;
-
-    font-size:16px;
-
+    font-size:19px;
     cursor:pointer;
-
 }
 
-.hideButton{
-
-    background:#d94352;
-
+.mainButton.next{
+    background:#42e695;
+    color:#06100b;
+    font-weight:bold;
 }
 
-/* التكبير */
-
-.zoomGrid{
-
+.row{
     display:grid;
-
-    grid-template-columns:1fr 1fr 1fr;
-
+    grid-template-columns:1fr 1fr;
     gap:10px;
-
-    margin-top:10px;
-
 }
 
-/* =====================================================
-   إخفاء
-===================================================== */
-
-.hidden{
-
-    display:none !important;
-
+.row button{
+    width:100%;
 }
 
-/* =====================================================
-   الهاتف
-===================================================== */
+.zoomRow{
+    display:grid;
+    grid-template-columns:1fr 1fr 1fr;
+    gap:8px;
+    margin-top:8px;
+}
 
-@media(max-width:500px){
+.zoomRow button{
+    border:0;
+    padding:14px 5px;
+    border-radius:10px;
+    background:#17384a;
+    color:white;
+    font-size:17px;
+}
 
-    .controlCard{
+.hint{
+    margin-top:20px;
+    text-align:center;
+    color:#708694;
+    font-size:13px;
+    line-height:1.7;
+}
 
-        padding:18px;
+@media(max-width:600px){
 
+    .displayHeader{
+        height:60px;
+        padding:0 12px;
     }
 
-    .controlHeader h1{
-
-        font-size:23px;
-
+    .displayHeader h1{
+        font-size:18px;
     }
 
-    .nextSentenceButton{
+    #sentenceBox{
+        font-size:20px;
+        padding:15px;
+        bottom:15px;
+    }
 
-        font-size:22px;
-
+    .controlContainer{
         padding:20px;
-
     }
 
+    .controlTitle h2{
+        font-size:25px;
+    }
 }
-
 </style>
 </head>
 
 <body>
-
-<div id="app">
 
 <!-- =====================================================
      📺 قسم العرض
@@ -554,79 +304,42 @@ label{
 
 <section id="displaySection">
 
-    <header class="displayHeader">
+    <div class="displayHeader">
 
-        <div
-            id="displayTitle"
-            class="displayTitle"
-        >
-            📺 عارض المحاضرات
+        <h1>📺 منصة عرض المحاضرات</h1>
+
+        <div class="status" id="displayStatus">
+            🔴 غير متصل
         </div>
 
-        <div
-            id="connectionStatus"
-            class="connection"
-        >
-            جاري تشغيل الريموت...
-        </div>
+    </div>
 
-    </header>
-
-
-    <main class="pdfArea">
+    <div id="pdfArea">
 
         <canvas id="pdfCanvas"></canvas>
 
-        <div
-            id="startScreen"
-            class="startScreen"
-        >
+        <div id="sentenceBox"></div>
 
-            📄 اختر ملف PDF للبدء
+    </div>
 
-            <br>
+    <div class="displayBottom">
 
-            ثم استخدم الهاتف كجهاز تحكم
-
-        </div>
-
-    </main>
-
-
-    <!-- الجملة تظهر هنا -->
-
-    <div id="sentenceOverlay"></div>
-
-
-    <footer class="displayFooter">
-
-        <button
-            id="choosePdf"
-            class="fileButton"
-        >
-            📄 اختيار ملف PDF
-        </button>
+        <label for="fileInput" class="uploadBtn">
+            📂 اختيار ملف PDF
+        </label>
 
         <input
-            id="pdfInput"
             type="file"
+            id="fileInput"
             accept="application/pdf"
-            hidden
         >
 
-        <span id="pageInfo">
-            صفحة 0 / 0
-        </span>
+        <div>
+            رمز التحكم:
+            <strong id="displayCode">------</strong>
+        </div>
 
-        <span id="sentenceInfo">
-            جملة 0 / 0
-        </span>
-
-        <span id="zoomInfo">
-            100%
-        </span>
-
-    </footer>
+    </div>
 
 </section>
 
@@ -637,153 +350,142 @@ label{
 
 <section id="controlSection">
 
-    <div class="controlCard">
+    <div class="controlContainer">
 
-        <div class="controlHeader">
+        <div class="controlTitle">
 
-            <h1>
-                📱 ريموت المحاضرات
-            </h1>
+            <h2>📱 قسم التحكم</h2>
 
             <p>
-                تحكم في ملف الـPDF الموجود على شاشة التلفزيون.
+                تحكم في العرض الموجود على التلفزيون
             </p>
 
         </div>
 
 
-        <label>
-            اكتب كود التلفزيون
-        </label>
+        <!-- الاتصال بالتلفزيون -->
 
+        <div class="codeBox">
 
-        <input
-            id="tvCode"
-            type="text"
-            inputmode="numeric"
-            maxlength="6"
-            placeholder="123456"
-        >
+            <label>
+                اكتب رمز التلفزيون
+            </label>
 
+            <input
+                id="tvCode"
+                type="tel"
+                maxlength="6"
+                placeholder="000000"
+            >
 
-        <button
-            id="connectButton"
-            class="connectButton"
-        >
-            🔗 اتصال بالتلفزيون
-        </button>
+            <button
+                class="connectBtn"
+                onclick="connectToTV()"
+            >
+                🔗 اتصال بالتلفزيون
+            </button>
 
-
-        <div id="controlStatus">
-            غير متصل
         </div>
 
 
         <div
-            id="controls"
-            class="hidden"
+            class="connectionStatus"
+            id="controlStatus"
+        >
+            🔴 غير متصل
+        </div>
+
+
+        <!-- لوحة التحكم -->
+
+        <div
+            class="controlPanel"
+            id="controlPanel"
         >
 
-            <div class="controlInfo">
+            <div class="info">
 
-                الصفحة:
+                <span>
+                    الصفحة:
+                    <strong id="pageInfo">1</strong>
+                </span>
 
-                <b id="remotePage">
-                    0
-                </b>
-
-                <br>
-
-                الجملة:
-
-                <b id="remoteSentence">
-                    0 / 0
-                </b>
+                <span>
+                    الجملة:
+                    <strong id="sentenceInfo">0</strong>
+                </span>
 
             </div>
 
 
-            <!-- =================================================
-                 زر الجملة التالية
-            ================================================== -->
+            <!-- الجمل -->
 
             <button
-                id="nextSentence"
-                class="nextSentenceButton"
+                class="mainButton next"
+                onclick="sendCommand('nextSentence')"
             >
                 ▶ الجملة التالية
             </button>
 
+            <button
+                class="mainButton"
+                onclick="sendCommand('previousSentence')"
+            >
+                ◀ الجملة السابقة
+            </button>
 
-            <!-- =================================================
-                 أزرار الصفحات والجمل
-            ================================================== -->
 
-            <div class="controlGrid">
-
-                <button
-                    id="previousSentence"
-                    class="controlButton"
-                >
-                    ◀ الجملة السابقة
-                </button>
-
+            <div class="row">
 
                 <button
-                    id="nextPage"
-                    class="controlButton"
+                    class="mainButton"
+                    onclick="sendCommand('nextPage')"
                 >
                     الصفحة التالية ▶
                 </button>
 
-
                 <button
-                    id="previousPage"
-                    class="controlButton"
+                    class="mainButton"
+                    onclick="sendCommand('previousPage')"
                 >
                     ◀ الصفحة السابقة
-                </button>
-
-
-                <button
-                    id="hideSentence"
-                    class="controlButton hideButton"
-                >
-                    👁 إخفاء الجملة
                 </button>
 
             </div>
 
 
-            <!-- =================================================
-                 التكبير
-            ================================================== -->
+            <button
+                class="mainButton"
+                onclick="sendCommand('hideSentence')"
+            >
+                👁 إخفاء الجملة
+            </button>
 
-            <div class="zoomGrid">
 
-                <button
-                    id="zoomOut"
-                    class="controlButton"
-                >
+            <!-- التكبير -->
+
+            <div class="zoomRow">
+
+                <button onclick="sendCommand('zoomOut')">
                     − تصغير
                 </button>
 
-
-                <button
-                    id="resetZoom"
-                    class="controlButton"
-                >
+                <button onclick="sendCommand('resetZoom')">
                     100%
                 </button>
 
-
-                <button
-                    id="zoomIn"
-                    class="controlButton"
-                >
+                <button onclick="sendCommand('zoomIn')">
                     + تكبير
                 </button>
 
+            </div>
+
+
+            <div class="hint">
+                استخدم «الجملة التالية» أثناء الشرح
+                لعرض جملة كاملة في كل مرة.
+                <br>
+                لا يتم تقسيم الجملة حسب عدد الكلمات.
             </div>
 
         </div>
@@ -791,8 +493,6 @@ label{
     </div>
 
 </section>
-
-</div>
 
 
 <script>
@@ -806,76 +506,112 @@ pdfjsLib.GlobalWorkerOptions.workerSrc =
 
 
 /* =====================================================
-   تحديد الوضع
+   معرفة الوضع
 ===================================================== */
-
-const params =
-new URLSearchParams(
-    window.location.search
-);
 
 const isControlMode =
-params.get("control") === "1";
-
+    new URLSearchParams(location.search).get("control") === "1";
 
 const displaySection =
-document.getElementById(
-    "displaySection"
-);
+    document.getElementById("displaySection");
 
 const controlSection =
-document.getElementById(
-    "controlSection"
-);
+    document.getElementById("controlSection");
 
-
-/* =====================================================
-   إذا كان الرابط ?control=1
-   يظهر قسم التحكم فقط
-===================================================== */
 
 if(isControlMode){
 
-    displaySection.style.display =
-    "none";
+    displaySection.style.display = "none";
+    controlSection.style.display = "flex";
 
-    controlSection.style.display =
-    "block";
+}else{
+
+    displaySection.style.display = "flex";
+    controlSection.style.display = "none";
 
 }
 
 
 /* =====================================================
-   المتغيرات
+   متغيرات العرض
 ===================================================== */
 
-let pdfDocument = null;
-
+let pdf = null;
 let currentPage = 1;
-
-let currentScale = 1;
+let currentSentence = -1;
 
 let sentences = [];
 
-let currentSentence = -1;
+let zoom = 1;
+
+let peer = null;
+let tvConnection = null;
+
+let displayCode =
+    Math.floor(100000 + Math.random() * 900000).toString();
 
 
 /* =====================================================
-   عناصر العرض
+   📺 وضع التلفزيون
 ===================================================== */
 
-const canvas =
-document.getElementById(
-    "pdfCanvas"
-);
+if(!isControlMode){
 
-const ctx =
-canvas.getContext("2d");
+    document.getElementById("displayCode").textContent =
+        displayCode;
 
-const sentenceOverlay =
-document.getElementById(
-    "sentenceOverlay"
-);
+    createTVConnection();
+
+}
+
+
+/* =====================================================
+   إنشاء اتصال التلفزيون
+===================================================== */
+
+function createTVConnection(){
+
+    peer = new Peer(displayCode);
+
+    peer.on("open", function(id){
+
+        document.getElementById("displayStatus").textContent =
+            "🟡 في انتظار الهاتف";
+
+    });
+
+
+    peer.on("connection", function(connection){
+
+        tvConnection = connection;
+
+        document.getElementById("displayStatus").textContent =
+            "🟢 الهاتف متصل";
+
+        connection.on("data", function(command){
+
+            handleCommand(command);
+
+        });
+
+        connection.on("close", function(){
+
+            document.getElementById("displayStatus").textContent =
+                "🟡 الهاتف غير متصل";
+
+        });
+
+    });
+
+
+    peer.on("error", function(){
+
+        document.getElementById("displayStatus").textContent =
+            "🔴 حدث خطأ في الاتصال";
+
+    });
+
+}
 
 
 /* =====================================================
@@ -884,75 +620,27 @@ document.getElementById(
 
 if(!isControlMode){
 
-    document.getElementById(
-        "choosePdf"
-    ).onclick = function(){
+    document
+    .getElementById("fileInput")
+    .addEventListener("change", async function(e){
 
-        document.getElementById(
-            "pdfInput"
-        ).click();
+        const file = e.target.files[0];
 
-    };
+        if(!file) return;
 
-
-    document.getElementById(
-        "pdfInput"
-    ).onchange = async function(){
-
-        const file =
-        this.files[0];
-
-
-        if(!file){
-
-            return;
-
-        }
-
-
-        try{
-
-            const buffer =
+        const arrayBuffer =
             await file.arrayBuffer();
 
-
-            pdfDocument =
+        pdf =
             await pdfjsLib.getDocument({
-                data:buffer
+                data:arrayBuffer
             }).promise;
 
+        currentPage = 1;
 
-            currentPage = 1;
+        await renderPage(currentPage);
 
-            currentScale = 1;
-
-
-            document.getElementById(
-                "displayTitle"
-            ).textContent =
-            "📺 " + file.name;
-
-
-            document.getElementById(
-                "startScreen"
-            ).style.display =
-            "none";
-
-
-            await renderPage();
-
-
-        }catch(error){
-
-            console.error(error);
-
-            alert(
-                "حدث خطأ أثناء فتح ملف PDF."
-            );
-
-        }
-
-    };
+    });
 
 }
 
@@ -961,62 +649,44 @@ if(!isControlMode){
    عرض الصفحة
 ===================================================== */
 
-async function renderPage(){
+async function renderPage(pageNumber){
 
-    if(!pdfDocument){
-
-        return;
-
-    }
-
+    if(!pdf) return;
 
     const page =
-    await pdfDocument.getPage(
-        currentPage
-    );
-
+        await pdf.getPage(pageNumber);
 
     const viewport =
-    page.getViewport({
-        scale:currentScale
-    });
+        page.getViewport({
+            scale:1.5 * zoom
+        });
 
+    const canvas =
+        document.getElementById("pdfCanvas");
+
+    const ctx =
+        canvas.getContext("2d");
 
     canvas.width =
-    viewport.width;
+        viewport.width;
 
     canvas.height =
-    viewport.height;
-
+        viewport.height;
 
     await page.render({
 
         canvasContext:ctx,
-
         viewport:viewport
 
     }).promise;
 
 
-    document.getElementById(
-        "pageInfo"
-    ).textContent =
-    "صفحة " +
-    currentPage +
-    " / " +
-    pdfDocument.numPages;
+    sentences =
+        await extractSentences(page);
 
+    currentSentence = -1;
 
-    document.getElementById(
-        "zoomInfo"
-    ).textContent =
-    Math.round(
-        currentScale * 100
-    ) + "%";
-
-
-    await extractSentences(page);
-
+    hideSentence();
 
     sendState();
 
@@ -1024,447 +694,227 @@ async function renderPage(){
 
 
 /* =====================================================
-   استخراج الجمل
+   استخراج النص بطريقة تحافظ على الجمل
 ===================================================== */
 
 async function extractSentences(page){
 
-    const content =
-    await page.getTextContent();
-
+    const textContent =
+        await page.getTextContent();
 
     const items =
-    content.items || [];
+        textContent.items
+        .filter(item =>
+            item.str &&
+            item.str.trim()
+        );
 
 
     if(!items.length){
 
-        sentences = [];
-
-        currentSentence = -1;
-
-        updateSentenceInfo();
-
-        return;
+        return [];
 
     }
 
 
     /*
-       نأخذ موقع كل قطعة نص.
-    */
-
-    let textItems =
-    items
-    .filter(item =>
-        item.str &&
-        item.str.trim()
-    )
-    .map(item => {
-
-        const t =
-        item.transform || [];
-
-
-        return {
-
-            text:item.str.trim(),
-
-            x:t[4] || 0,
-
-            y:t[5] || 0,
-
-            width:item.width || 0
-
-        };
-
-    });
-
-
-    /*
-       ترتيب الأسطر من أعلى لأسفل.
-    */
-
-    textItems.sort(
-        (a,b)=>{
-
-            const yDiff =
-            Math.abs(a.y-b.y);
-
-
-            if(yDiff > 5){
-
-                return b.y-a.y;
-
-            }
-
-
-            /*
-               العربية من اليمين لليسار.
-            */
-
-            return b.x-a.x;
-
-        }
-    );
-
-
-    /*
-       تجميع النص الموجود في نفس السطر.
+       تجميع النص حسب السطور.
+       لا نقسم كل عدد معين من الكلمات.
     */
 
     const lines = [];
 
-
-    textItems.forEach(item => {
-
-        let line = null;
+    const tolerance = 5;
 
 
-        for(const existing of lines){
+    for(const item of items){
 
-            if(
-                Math.abs(
-                    existing.y-item.y
-                ) <= 5
-            ){
+        const y =
+            Math.round(item.transform[5] / tolerance)
+            * tolerance;
 
-                line = existing;
-
-                break;
-
-            }
-
-        }
+        let line =
+            lines.find(l =>
+                Math.abs(l.y - y) <= tolerance
+            );
 
 
         if(!line){
 
             line = {
-
-                y:item.y,
-
+                y:y,
                 items:[]
-
             };
-
 
             lines.push(line);
 
         }
 
-
         line.items.push(item);
 
-    });
+    }
 
 
     /*
-       ترتيب النص داخل السطر.
+       ترتيب السطور من أعلى لأسفل
     */
 
-    lines.forEach(line => {
+    lines.sort((a,b)=>b.y-a.y);
 
-        line.items.sort(
-            (a,b)=>b.x-a.x
-        );
 
-    });
+    const cleanLines = [];
+
+
+    for(const line of lines){
+
+        /*
+           ترتيب العناصر داخل السطر
+           بطريقة مناسبة للعربية
+        */
+
+        line.items.sort((a,b)=>{
+
+            return b.transform[4] - a.transform[4];
+
+        });
+
+
+        let text =
+            line.items
+            .map(x => x.str.trim())
+            .filter(Boolean)
+            .join(" ");
+
+
+        text =
+            text
+            .replace(/\s+/g," ")
+            .trim();
+
+
+        if(text){
+
+            cleanLines.push(text);
+
+        }
+
+    }
 
 
     /*
-       تحويل السطور إلى نص.
+       تجميع السطور في جمل كاملة.
+       لا يوجد تقسيم حسب عدد الكلمات.
     */
 
-    const linesText =
-    lines
-    .map(line =>
+    const result = [];
 
-        line.items
-        .map(item=>item.text)
-        .join(" ")
-        .replace(/\s+/g," ")
-        .trim()
-
-    )
-    .filter(Boolean);
+    let paragraph = "";
 
 
-    /*
-       الآن نجمع الأسطر في جمل كاملة.
-
-       لا يوجد تقسيم كل 10 أو 12 كلمة.
-
-       الجملة تستمر حتى تصل إلى
-       علامة نهاية حقيقية.
-    */
-
-    sentences = [];
-
-
-    let currentText = "";
-
-
-    for(let i=0;i<linesText.length;i++){
+    for(let i=0;i<cleanLines.length;i++){
 
         const line =
-        linesText[i];
+            cleanLines[i];
 
 
-        if(!currentText){
+        if(!paragraph){
 
-            currentText = line;
+            paragraph = line;
 
         }else{
 
-            currentText +=
-            " " + line;
+            paragraph += " " + line;
 
         }
 
 
         /*
-           نهاية الجملة.
+           نهاية جملة حقيقية
         */
 
-        const sentenceEnd =
-        /[.!؟!?؛]$/.test(line);
+        if(/[.!؟!?؛:]$/.test(line)){
 
+            result.push(paragraph.trim());
 
-        /*
-           بعض ملفات PDF تحتوي على
-           عناوين قصيرة.
-        */
+            paragraph = "";
 
-        const nextLine =
-        linesText[i+1] || "";
-
-
-        const shortHeading =
-        currentText.length < 100 &&
-        nextLine.length > 0 &&
-        !/[،,؛:：]$/.test(line) &&
-        !/[.!؟!?؛]$/.test(line);
-
-
-        if(sentenceEnd){
-
-            sentences.push(
-                currentText.trim()
-            );
-
-            currentText = "";
+            continue;
 
         }
 
-        else if(
-            shortHeading &&
-            currentText.length < 60
-        ){
 
-            /*
-               العنوان يعامل كوحدة واحدة.
-            */
+        /*
+           لو السطر طويل جدًا، لا نقسمه بالكلمات.
+           نتركه كجملة/فقرة كاملة.
+        */
 
-            sentences.push(
-                currentText.trim()
-            );
+        const next =
+            cleanLines[i+1];
 
-            currentText = "";
+
+        if(!next){
+
+            if(paragraph.trim()){
+
+                result.push(
+                    paragraph.trim()
+                );
+
+            }
+
+            paragraph = "";
 
         }
 
     }
 
 
-    /*
-       أي نص متبقٍ.
-    */
+    if(paragraph.trim()){
 
-    if(currentText.trim()){
-
-        sentences.push(
-            currentText.trim()
+        result.push(
+            paragraph.trim()
         );
 
     }
 
 
-    /*
-       منع العناصر الفارغة.
-    */
-
-    sentences =
-    sentences
-    .map(x=>x.trim())
-    .filter(x=>x.length>0);
-
-
-    currentSentence = -1;
-
-
-    sentenceOverlay.style.display =
-    "none";
-
-
-    updateSentenceInfo();
+    return result;
 
 }
 
 
 /* =====================================================
-   الجملة التالية
+   عرض الجملة
 ===================================================== */
 
-function nextSentence(){
+function showSentence(){
 
-    if(!pdfDocument){
+    const box =
+        document.getElementById("sentenceBox");
 
-        return;
+    if(currentSentence < 0){
 
-    }
-
-
-    if(sentences.length === 0){
-
-        sentenceOverlay.textContent =
-        "هذه الصفحة لا تحتوي على نص قابل للاستخراج.";
-
-        sentenceOverlay.style.display =
-        "block";
+        box.style.display = "none";
 
         return;
 
     }
 
 
-    /*
-       إظهار الجملة التالية.
-    */
+    if(currentSentence >= sentences.length){
 
-    if(
-        currentSentence <
-        sentences.length-1
-    ){
+        box.style.display = "none";
 
-        currentSentence++;
+        return;
+
+    }
 
 
-        sentenceOverlay.textContent =
+    box.textContent =
         sentences[currentSentence];
 
-
-        sentenceOverlay.style.display =
+    box.style.display =
         "block";
-
-
-        updateSentenceInfo();
-
-
-        sendState();
-
-    }
-
-    else{
-
-        /*
-           انتهت جمل الصفحة.
-           ننتقل للصفحة التالية.
-        */
-
-        if(
-            currentPage <
-            pdfDocument.numPages
-        ){
-
-            currentPage++;
-
-            renderPage();
-
-        }
-
-    }
-
-}
-
-
-/* =====================================================
-   الجملة السابقة
-===================================================== */
-
-function previousSentence(){
-
-    if(!pdfDocument){
-
-        return;
-
-    }
-
-
-    if(currentSentence > 0){
-
-        currentSentence--;
-
-
-        sentenceOverlay.textContent =
-        sentences[currentSentence];
-
-
-        sentenceOverlay.style.display =
-        "block";
-
-
-        updateSentenceInfo();
-
-
-        sendState();
-
-    }
-
-    else if(currentPage > 1){
-
-        currentPage--;
-
-        renderPage();
-
-    }
-
-}
-
-
-/* =====================================================
-   الصفحات
-===================================================== */
-
-function nextPage(){
-
-    if(
-        pdfDocument &&
-        currentPage <
-        pdfDocument.numPages
-    ){
-
-        currentPage++;
-
-        renderPage();
-
-    }
-
-}
-
-
-function previousPage(){
-
-    if(
-        pdfDocument &&
-        currentPage > 1
-    ){
-
-        currentPage--;
-
-        renderPage();
-
-    }
 
 }
 
@@ -1475,259 +925,142 @@ function previousPage(){
 
 function hideSentence(){
 
-    sentenceOverlay.style.display =
-    "none";
+    const box =
+        document.getElementById("sentenceBox");
+
+    box.style.display =
+        "none";
 
 }
 
 
 /* =====================================================
-   التكبير
+   الأوامر
 ===================================================== */
 
-function zoomIn(){
+async function handleCommand(command){
 
-    if(!pdfDocument){
+    if(command === "nextSentence"){
 
-        return;
-
-    }
+        if(!pdf) return;
 
 
-    currentScale += .15;
+        if(currentSentence + 1 < sentences.length){
 
+            currentSentence++;
 
-    if(currentScale > 3){
+            showSentence();
 
-        currentScale = 3;
+        }else{
 
-    }
+            if(currentPage < pdf.numPages){
 
+                currentPage++;
 
-    renderPage();
+                await renderPage(currentPage);
 
-}
+                if(sentences.length > 0){
 
+                    currentSentence = 0;
 
-function zoomOut(){
+                    showSentence();
 
-    if(!pdfDocument){
+                }
 
-        return;
-
-    }
-
-
-    currentScale -= .15;
-
-
-    if(currentScale < .5){
-
-        currentScale = .5;
-
-    }
-
-
-    renderPage();
-
-}
-
-
-function resetZoom(){
-
-    if(!pdfDocument){
-
-        return;
-
-    }
-
-
-    currentScale = 1;
-
-    renderPage();
-
-}
-
-
-/* =====================================================
-   معلومات الجملة
-===================================================== */
-
-function updateSentenceInfo(){
-
-    const number =
-    currentSentence >= 0
-    ? currentSentence + 1
-    : 0;
-
-
-    document.getElementById(
-        "sentenceInfo"
-    ).textContent =
-    "جملة " +
-    number +
-    " / " +
-    sentences.length;
-
-}
-
-
-/* =====================================================
-   إنشاء اتصال التلفزيون
-===================================================== */
-
-if(!isControlMode){
-
-    const tvCode =
-    String(
-        Math.floor(
-            100000 +
-            Math.random()*900000
-        )
-    );
-
-
-    const peer =
-    new Peer(tvCode,{
-        debug:0
-    });
-
-
-    peer.on(
-        "open",
-        function(id){
-
-            document.getElementById(
-                "connectionStatus"
-            ).textContent =
-            "كود التلفزيون: " + id;
+            }
 
         }
-    );
-
-
-    peer.on(
-        "connection",
-        function(conn){
-
-            window.tvConnection =
-            conn;
-
-
-            conn.on(
-                "open",
-                function(){
-
-                    document.getElementById(
-                        "connectionStatus"
-                    ).textContent =
-                    "📱 الهاتف متصل ✓";
-
-
-                    sendState();
-
-                }
-            );
-
-
-            conn.on(
-                "data",
-                function(data){
-
-                    receiveCommand(data);
-
-                }
-            );
-
-
-            conn.on(
-                "close",
-                function(){
-
-                    document.getElementById(
-                        "connectionStatus"
-                    ).textContent =
-                    "كود التلفزيون: " +
-                    tvCode;
-
-                }
-            );
-
-        }
-    );
-
-}
-
-
-/* =====================================================
-   استقبال أوامر الهاتف
-===================================================== */
-
-function receiveCommand(data){
-
-    if(!data){
-
-        return;
 
     }
 
 
-    switch(data.command){
+    else if(command === "previousSentence"){
 
-        case "nextSentence":
+        if(currentSentence > 0){
 
-            nextSentence();
+            currentSentence--;
 
-            break;
+            showSentence();
 
+        }
 
-        case "previousSentence":
+        else if(currentPage > 1){
 
-            previousSentence();
+            currentPage--;
 
-            break;
+            await renderPage(currentPage);
 
+            if(sentences.length){
 
-        case "nextPage":
+                currentSentence =
+                    sentences.length - 1;
 
-            nextPage();
+                showSentence();
 
-            break;
+            }
 
+        }
 
-        case "previousPage":
-
-            previousPage();
-
-            break;
-
-
-        case "hideSentence":
-
-            hideSentence();
-
-            break;
+    }
 
 
-        case "zoomIn":
+    else if(command === "nextPage"){
 
-            zoomIn();
+        if(pdf && currentPage < pdf.numPages){
 
-            break;
+            currentPage++;
+
+            await renderPage(currentPage);
+
+        }
+
+    }
 
 
-        case "zoomOut":
+    else if(command === "previousPage"){
 
-            zoomOut();
+        if(pdf && currentPage > 1){
 
-            break;
+            currentPage--;
+
+            await renderPage(currentPage);
+
+        }
+
+    }
 
 
-        case "resetZoom":
+    else if(command === "hideSentence"){
 
-            resetZoom();
+        hideSentence();
 
-            break;
+    }
+
+
+    else if(command === "zoomIn"){
+
+        zoom += .2;
+
+        await renderPage(currentPage);
+
+    }
+
+
+    else if(command === "zoomOut"){
+
+        zoom =
+            Math.max(.6,zoom-.2);
+
+        await renderPage(currentPage);
+
+    }
+
+
+    else if(command === "resetZoom"){
+
+        zoom = 1;
+
+        await renderPage(currentPage);
 
     }
 
@@ -1740,271 +1073,154 @@ function receiveCommand(data){
 
 function sendState(){
 
-    if(
-        window.tvConnection &&
-        window.tvConnection.open
-    ){
+    if(!tvConnection) return;
 
-        window.tvConnection.send({
+    tvConnection.send({
 
-            type:"state",
+        type:"state",
 
-            page:currentPage,
+        page:currentPage,
 
-            sentence:
-            currentSentence >= 0
-            ? currentSentence+1
-            : 0,
+        totalPages:pdf ? pdf.numPages : 0,
 
-            total:
+        sentence:
+            currentSentence + 1,
+
+        totalSentences:
             sentences.length
 
-        });
-
-    }
+    });
 
 }
 
 
 /* =====================================================
-   قسم التحكم
+   📱 وضع الهاتف
 ===================================================== */
 
 if(isControlMode){
 
-    let remotePeer = null;
-
-    let remoteConnection = null;
-
-
-    document.getElementById(
-        "connectButton"
-    ).onclick = function(){
-
-        const code =
-        document.getElementById(
-            "tvCode"
-        ).value.trim();
-
-
-        if(!/^\d{6}$/.test(code)){
-
-            document.getElementById(
-                "controlStatus"
-            ).textContent =
-            "❌ اكتب كود التلفزيون المكون من 6 أرقام.";
-
-            return;
-
-        }
-
-
-        document.getElementById(
-            "controlStatus"
-        ).textContent =
-        "جاري الاتصال...";
-
-
-        remotePeer =
+    peer =
         new Peer();
 
 
-        remotePeer.on(
-            "open",
-            function(){
+    peer.on("open",function(){
 
-                remoteConnection =
-                remotePeer.connect(
-                    code,
-                    {
-                        reliable:true
-                    }
-                );
+        document.getElementById("controlStatus").textContent =
+            "🟢 جاهز للاتصال";
+
+    });
 
 
-                remoteConnection.on(
-                    "open",
-                    function(){
+    peer.on("error",function(){
 
-                        document.getElementById(
-                            "controlStatus"
-                        ).textContent =
-                        "🟢 متصل بالتلفزيون";
+        document.getElementById("controlStatus").textContent =
+            "🔴 تعذر الاتصال";
 
+    });
 
-                        document.getElementById(
-                            "controls"
-                        ).classList.remove(
-                            "hidden"
-                        );
-
-                    }
-                );
+}
 
 
-                remoteConnection.on(
-                    "data",
-                    function(data){
+/* =====================================================
+   الاتصال بالتلفزيون
+===================================================== */
 
-                        if(
-                            data &&
-                            data.type === "state"
-                        ){
+function connectToTV(){
 
-                            document.getElementById(
-                                "remotePage"
-                            ).textContent =
-                            data.page;
+    const code =
+        document
+        .getElementById("tvCode")
+        .value
+        .trim();
 
 
-                            document.getElementById(
-                                "remoteSentence"
-                            ).textContent =
-                            data.sentence +
-                            " / " +
-                            data.total;
+    if(code.length !== 6){
 
-                        }
+        alert("اكتب رمز التلفزيون المكون من 6 أرقام");
 
-                    }
-                );
-
-
-                remoteConnection.on(
-                    "close",
-                    function(){
-
-                        document.getElementById(
-                            "controlStatus"
-                        ).textContent =
-                        "🔴 انقطع الاتصال.";
-
-                    }
-                );
-
-            }
-        );
-
-
-        remotePeer.on(
-            "error",
-            function(){
-
-                document.getElementById(
-                    "controlStatus"
-                ).textContent =
-                "❌ فشل الاتصال. تأكد من كود التلفزيون.";
-
-            }
-        );
-
-    };
-
-
-    function sendCommand(command){
-
-        if(
-            remoteConnection &&
-            remoteConnection.open
-        ){
-
-            remoteConnection.send({
-
-                command:command
-
-            });
-
-        }
+        return;
 
     }
 
 
-    document.getElementById(
-        "nextSentence"
-    ).onclick = function(){
+    if(!peer){
 
-        sendCommand(
-            "nextSentence"
-        );
+        alert("انتظر حتى يكتمل الاتصال");
 
-    };
+        return;
+
+    }
 
 
-    document.getElementById(
-        "previousSentence"
-    ).onclick = function(){
-
-        sendCommand(
-            "previousSentence"
-        );
-
-    };
+    tvConnection =
+        peer.connect(code);
 
 
-    document.getElementById(
-        "nextPage"
-    ).onclick = function(){
+    tvConnection.on("open",function(){
 
-        sendCommand(
-            "nextPage"
-        );
+        document.getElementById("controlStatus").textContent =
+            "🟢 تم الاتصال بالتلفزيون";
 
-    };
+        document.getElementById("controlPanel").style.display =
+            "block";
 
-
-    document.getElementById(
-        "previousPage"
-    ).onclick = function(){
-
-        sendCommand(
-            "previousPage"
-        );
-
-    };
+    });
 
 
-    document.getElementById(
-        "hideSentence"
-    ).onclick = function(){
+    tvConnection.on("data",function(data){
 
-        sendCommand(
-            "hideSentence"
-        );
+        if(data.type === "state"){
 
-    };
+            document.getElementById("pageInfo").textContent =
+                data.page + " / " + data.totalPages;
 
+            document.getElementById("sentenceInfo").textContent =
+                data.sentence + " / " + data.totalSentences;
 
-    document.getElementById(
-        "zoomIn"
-    ).onclick = function(){
+        }
 
-        sendCommand(
-            "zoomIn"
-        );
-
-    };
+    });
 
 
-    document.getElementById(
-        "zoomOut"
-    ).onclick = function(){
+    tvConnection.on("close",function(){
 
-        sendCommand(
-            "zoomOut"
-        );
+        document.getElementById("controlStatus").textContent =
+            "🔴 انقطع الاتصال";
 
-    };
+        document.getElementById("controlPanel").style.display =
+            "none";
+
+    });
+
+}
 
 
-    document.getElementById(
-        "resetZoom"
-    ).onclick = function(){
+/* =====================================================
+   إرسال أمر من الهاتف
+===================================================== */
 
-        sendCommand(
-            "resetZoom"
-        );
+function sendCommand(command){
 
-    };
+    if(!tvConnection){
+
+        alert("اتصل بالتلفزيون أولاً");
+
+        return;
+
+    }
+
+
+    if(!tvConnection.open){
+
+        alert("الاتصال بالتلفزيون غير جاهز");
+
+        return;
+
+    }
+
+
+    tvConnection.send(command);
 
 }
 
