@@ -11,10 +11,10 @@
     
     <style>
         :root {
-            --bg-main: #0B0F19; /* خلفية داكنة فخمة وعميقة */
-            --bg-card: #151D30; /* خلفية الكروت اللامعة */
+            --bg-main: #0B0F19; 
+            --bg-card: #151D30; 
             --bg-card-hover: #1E2942;
-            --accent-glow: #00D2FC; /* أزرق سيبراني نيون مضيء */
+            --accent-glow: #00D2FC; 
             --accent-solid: #00A8CC;
             --text-primary: #F3F4F6;
             --text-secondary: #9CA3AF;
@@ -260,7 +260,7 @@
             background: var(--bg-card);
             color: #fff;
             border: 1px solid rgba(255, 255, 255, 0.05);
-            padding: 22px 10px; /* أزرار عملاقة وسهلة اللمس */
+            padding: 22px 10px; 
             font-size: 1.15rem;
             font-weight: 600;
             border-radius: 18px;
@@ -286,8 +286,6 @@
             box-shadow: 0 4px 12px rgba(0, 180, 219, 0.3);
         }
         
-        .ctrl-btn.primary:active { background: #007399; }
-        
         .ctrl-btn.danger { 
             background: linear-gradient(135deg, #FF4B72 0%, #DC2626 100%); 
             border: none; 
@@ -312,3 +310,9 @@
             <input type="file" id="file-input" accept="application/pdf">
             <div id="tv-status" style="color: var(--accent-glow); margin-top: 10px; font-weight: 600;">جاري تشغيل خادم الاتصال الذكي...</div>
         </div>
+        <div id="viewer-container">
+            <canvas id="pdf-canvas"></canvas>
+            <div id="caption-overlay" class="hidden"></div>
+        </div>
+    </div>
+
