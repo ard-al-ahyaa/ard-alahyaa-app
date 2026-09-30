@@ -1,280 +1,1663 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>منصة عرض واجهات المحاضرات الاحترافي</title>
-    
-    <!-- استدعاء أحدث المكتبات المستقرة للتشغيل الفوري السحابي -->
-    <script src="https://cloudflare.com"></script>
-    <script src="https://unpkg.com"></script>
-    
-    <style>
-        :root {
-            --surface-main: #090D16;
-            --surface-panel: #111827;
-            --surface-element: #1F2937;
-            --brand-color: #00E5FF;
-            --brand-deep: #00B8D4;
-            --text-main: #F9FAFB;
-            --text-muted: #9CA3AF;
-            --color-danger: #FF3366;
-            --color-success: #00E676;
-        }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
 
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            font-family: system-ui, -apple-system, sans-serif;
-        }
+<title>عارض المحاضرات - تحكم من الهاتف</title>
 
-        body {
-            background-color: var(--surface-main);
-            color: var(--text-main);
-            height: 100vh;
-            width: 100vw;
-            overflow: hidden;
-        }
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
 
-        /* ========================================================
-           📺 واجهة قسم العرض الرئيسي [Tv]
-        ======================================================== */
-        #Tv {
-            display: flex;
-            flex-direction: column;
-            width: 100%;
-            height: 100%;
-            position: relative;
-        }
+<style>
+*{
+    box-sizing:border-box;
+}
 
-        #tv-setup-screen {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            height: 100%;
-            padding: 30px;
-            text-align: center;
-            background: linear-gradient(180deg, #111827 0%, #090D16 100%);
-        }
+html,body{
+    margin:0;
+    padding:0;
+    width:100%;
+    min-height:100%;
+    font-family:Tahoma,Arial,sans-serif;
+    background:#071018;
+    color:#fff;
+}
 
-        .code-display-widget {
-            font-size: 4rem;
-            font-weight: 900;
-            color: var(--brand-color);
-            background-color: var(--surface-panel);
-            padding: 15px 45px;
-            border-radius: 24px;
-            border: 3px solid var(--brand-deep);
-            margin: 20px 0;
-            letter-spacing: 10px;
-            box-shadow: 0 0 30px rgba(0, 229, 255, 0.2);
-        }
+button,input,textarea{
+    font-family:inherit;
+}
 
-        .upload-trigger-btn {
-            background: linear-gradient(135deg, var(--brand-color) 0%, var(--brand-deep) 100%);
-            color: #000;
-            font-weight: 800;
-            font-size: 1.25rem;
-            padding: 16px 40px;
-            border-radius: 16px;
-            cursor: pointer;
-            transition: transform 0.2s, opacity 0.2s;
-            box-shadow: 0 10px 20px rgba(0, 229, 255, 0.15);
-        }
+button{
+    cursor:pointer;
+}
 
-        .upload-trigger-btn:hover { transform: scale(1.03); }
-        #file-selector { display: none; }
+.hidden{
+    display:none!important;
+}
 
-        #pdf-render-area {
-            flex: 1;
-            width: 100%;
-            height: 100%;
-            overflow: auto;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background-color: #05070B;
-        }
+/* اختيار الوضع */
 
-        #pdf-core-canvas {
-            max-width: 96%;
-            max-height: 96%;
-            box-shadow: 0 25px 60px rgba(0,0,0,0.8);
-            border-radius: 12px;
-        }
+#modeScreen{
+    min-height:100vh;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:20px;
+}
 
-        #text-overlay-banner {
-            position: absolute;
-            bottom: 4%;
-            left: 5%;
-            right: 5%;
-            background-color: rgba(17, 24, 39, 0.96);
-            border: 2px solid rgba(0, 229, 255, 0.4);
-            padding: 25px 40px;
-            border-radius: 24px;
-            font-size: 2.6rem;
-            font-weight: 800;
-            line-height: 1.6;
-            text-align: center;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.5);
-            z-index: 999;
-            transition: opacity 0.3s ease, transform 0.3s ease;
-        }
+.mode-box{
+    width:min(700px,100%);
+    background:#101c27;
+    border:1px solid #26394b;
+    border-radius:24px;
+    padding:30px;
+    text-align:center;
+    box-shadow:0 20px 60px #0008;
+}
 
-        #text-overlay-banner.hidden-node {
-            opacity: 0;
-            transform: translateY(30px);
-            pointer-events: none;
-        }
+.logo{
+    font-size:38px;
+    font-weight:bold;
+    margin-bottom:10px;
+}
 
-        /* ========================================================
-           📱 واجهة قسم لوحة التحكم عن بعد [Control]
-        ======================================================== */
-        #Control {
-            display: none;
-            flex-direction: column;
-            height: 100%;
-            width: 100%;
-            padding: 20px;
-            background-color: var(--surface-main);
-        }
+.subtitle{
+    color:#aebdca;
+    margin-bottom:30px;
+    line-height:1.8;
+}
 
-        #control-gateway {
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            height: 100%;
-            gap: 20px;
-        }
+.mode-buttons{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:18px;
+}
 
-        .numeric-pin-field {
-            width: 85%;
-            max-width: 300px;
-            font-size: 2.6rem;
-            font-weight: 800;
-            text-align: center;
-            padding: 12px;
-            letter-spacing: 8px;
-            border-radius: 20px;
-            border: 2px solid var(--surface-element);
-            background-color: var(--surface-panel);
-            color: #fff;
-        }
+.mode-btn{
+    border:0;
+    border-radius:18px;
+    padding:25px 15px;
+    background:#172b3b;
+    color:#fff;
+    font-size:22px;
+    font-weight:bold;
+    border:1px solid #2c4559;
+}
 
-        .action-submit-btn {
-            background: linear-gradient(135deg, var(--brand-color) 0%, var(--brand-deep) 100%);
-            color: #000;
-            font-size: 1.2rem;
-            font-weight: 700;
-            padding: 16px;
-            border-radius: 18px;
-            width: 85%;
-            max-width: 300px;
-            border: none;
-            cursor: pointer;
-        }
+.mode-btn:hover{
+    background:#1e3a50;
+}
 
-        #control-panel-dashboard {
-            display: flex;
-            flex-direction: column;
-            height: 100%;
-            gap: 15px;
-        }
+.mode-icon{
+    display:block;
+    font-size:48px;
+    margin-bottom:12px;
+}
 
-        .status-badge {
-            background-color: var(--surface-panel);
-            padding: 12px;
-            border-radius: 12px;
-            text-align: center;
-            font-size: 0.95rem;
-            font-weight: 600;
-        }
+/* عام */
 
-        .preview-text-box {
-            background-color: var(--surface-panel);
-            border-right: 6px solid var(--brand-color);
-            padding: 20px;
-            border-radius: 18px;
-            flex: 1;
-            min-height: 120px;
-            max-height: 200px;
-            overflow-y: auto;
-        }
+.app{
+    min-height:100vh;
+}
 
-        .grid-button-matrix {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 12px;
-        }
+.topbar{
+    background:#0c1720;
+    border-bottom:1px solid #263847;
+    padding:14px 18px;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:15px;
+    position:sticky;
+    top:0;
+    z-index:50;
+}
 
-        .matrix-btn {
-            background-color: var(--surface-panel);
-            color: #fff;
-            border: 1px solid var(--surface-element);
-            padding: 24px 10px;
-            font-size: 1.1rem;
-            font-weight: 700;
-            border-radius: 20px;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 6px;
-            transition: background-color 0.2s;
-        }
+.top-title{
+    font-size:20px;
+    font-weight:bold;
+}
 
-        .matrix-btn:active { background-color: var(--surface-element); }
-        .matrix-btn.highlight { background: linear-gradient(135deg, #00B4DB 0%, #0083B0 100%); border: none; }
-        .matrix-btn.alert { background: linear-gradient(135deg, var(--color-danger) 0%, #C31432 100%); border: none; }
-        .span-two-columns { grid-column: span 2; }
-    </style>
+.small-btn{
+    border:1px solid #354b5d;
+    background:#142431;
+    color:#fff;
+    border-radius:10px;
+    padding:9px 13px;
+}
+
+/* الهاتف */
+
+.phone-layout{
+    display:grid;
+    grid-template-columns:360px 1fr;
+    gap:15px;
+    padding:15px;
+    max-width:1400px;
+    margin:auto;
+}
+
+.control-panel{
+    background:#101c27;
+    border:1px solid #26394b;
+    border-radius:18px;
+    padding:16px;
+    height:max-content;
+}
+
+.section{
+    margin-bottom:18px;
+}
+
+.section-title{
+    font-weight:bold;
+    margin-bottom:9px;
+    color:#dce8f1;
+}
+
+input[type="file"],
+input[type="text"],
+textarea{
+    width:100%;
+    background:#08121a;
+    color:#fff;
+    border:1px solid #304757;
+    border-radius:10px;
+    padding:12px;
+    outline:none;
+}
+
+textarea{
+    min-height:120px;
+    resize:vertical;
+    line-height:1.8;
+    direction:rtl;
+    text-align:right;
+}
+
+input:focus,textarea:focus{
+    border-color:#3fa9ff;
+}
+
+.connection{
+    background:#09141d;
+    border:1px solid #2b4253;
+    border-radius:12px;
+    padding:12px;
+    margin-bottom:12px;
+}
+
+.connection-code{
+    font-size:25px;
+    font-weight:bold;
+    letter-spacing:3px;
+    text-align:center;
+    direction:ltr;
+    margin:10px 0;
+    color:#5fc2ff;
+}
+
+.status{
+    padding:9px;
+    border-radius:8px;
+    background:#172631;
+    color:#b8c8d4;
+    font-size:14px;
+    line-height:1.6;
+}
+
+.status.ok{
+    background:#123c2a;
+    color:#8ff0bb;
+}
+
+.row{
+    display:flex;
+    gap:8px;
+}
+
+.row>*{
+    flex:1;
+}
+
+.control-btn{
+    width:100%;
+    min-height:48px;
+    border:0;
+    border-radius:10px;
+    background:#1d3445;
+    color:#fff;
+    font-size:17px;
+    font-weight:bold;
+    margin-bottom:8px;
+}
+
+.control-btn:hover{
+    background:#284b63;
+}
+
+.primary{
+    background:#087f5b;
+}
+
+.primary:hover{
+    background:#099d70;
+}
+
+.danger{
+    background:#7c2730;
+}
+
+.danger:hover{
+    background:#9c303b;
+}
+
+.page-info{
+    text-align:center;
+    padding:8px;
+    color:#b8c6d0;
+}
+
+.pdf-preview{
+    background:#080d12;
+    border:1px solid #26394b;
+    border-radius:18px;
+    padding:12px;
+    min-height:500px;
+    display:flex;
+    justify-content:center;
+    align-items:flex-start;
+    overflow:auto;
+}
+
+#phoneCanvas{
+    max-width:100%;
+    height:auto;
+    background:#fff;
+    box-shadow:0 10px 30px #0009;
+}
+
+/* التلفزيون */
+
+.tv-screen{
+    min-height:100vh;
+    background:#000;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    position:relative;
+    overflow:hidden;
+}
+
+.tv-canvas-wrap{
+    position:relative;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    max-width:100%;
+    max-height:100vh;
+}
+
+#tvCanvas{
+    display:block;
+    max-width:100vw;
+    max-height:100vh;
+    background:#fff;
+}
+
+#sentenceOverlay{
+    position:absolute;
+    left:5%;
+    right:5%;
+    bottom:7%;
+    padding:18px 25px;
+    border-radius:15px;
+    background:rgba(0,0,0,.78);
+    color:#fff;
+    font-size:42px;
+    font-weight:bold;
+    line-height:1.7;
+    text-align:center;
+    direction:rtl;
+    unicode-bidi:plaintext;
+    white-space:pre-wrap;
+    word-break:normal;
+    overflow-wrap:break-word;
+    text-shadow:0 2px 4px #000;
+    border:1px solid #ffffff30;
+}
+
+#tvWaiting{
+    position:absolute;
+    inset:0;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    text-align:center;
+    color:#bac7d0;
+    padding:30px;
+}
+
+.wait-box{
+    max-width:700px;
+}
+
+.wait-title{
+    font-size:38px;
+    color:#fff;
+    font-weight:bold;
+    margin-bottom:15px;
+}
+
+.tv-code{
+    font-size:35px;
+    color:#5fc2ff;
+    font-weight:bold;
+    direction:ltr;
+    letter-spacing:5px;
+    margin:20px 0;
+}
+
+.tv-help{
+    line-height:2;
+    font-size:18px;
+}
+
+.tv-controls{
+    position:absolute;
+    top:15px;
+    left:15px;
+    display:flex;
+    gap:8px;
+    opacity:.18;
+    transition:.2s;
+}
+
+.tv-controls:hover{
+    opacity:1;
+}
+
+.tv-controls button{
+    border:0;
+    background:#17232dcc;
+    color:#fff;
+    padding:10px 14px;
+    border-radius:8px;
+}
+
+@media(max-width:800px){
+    .mode-buttons{
+        grid-template-columns:1fr;
+    }
+
+    .phone-layout{
+        grid-template-columns:1fr;
+    }
+
+    .pdf-preview{
+        order:2;
+    }
+
+    #sentenceOverlay{
+        font-size:25px;
+        bottom:5%;
+    }
+}
+
+@media(max-width:500px){
+    .logo{
+        font-size:29px;
+    }
+
+    .control-panel{
+        padding:12px;
+    }
+
+    .top-title{
+        font-size:16px;
+    }
+}
+</style>
 </head>
+
 <body>
 
-    <!-- 📺 SECTION 1: Tv -->
-    <div id="Tv">
-        <div id="tv-setup-screen">
-            <h2>شاشة العرض التلفزيونية</h2>
-            <p style="color: var(--text-muted);">أدخل رمز الاقتران الرقمي التالي في جهاز التحكم:</p>
-            <div class="code-display-widget" id="tv-code-box">------</div>
-            <p style="color: var(--text-muted); margin-bottom: 10px;">اختر المحاضرة لبدء الشرح بصيغة PDF:</p>
-            <label class="upload-trigger-btn" for="file-selector">📂 اختيار ملف المحاضرة</label>
-            <input type="file" id="file-selector" accept="application/pdf">
-            <div id="tv-networking-status" style="color: var(--brand-color); margin-top: 15px; font-weight: 700;">جاري إنشاء قناة ربط مشفرة...</div>
+<!-- اختيار الوضع -->
+
+<div id="modeScreen">
+
+    <div class="mode-box">
+
+        <div class="logo">📚 عارض المحاضرات</div>
+
+        <div class="subtitle">
+            تحكم في عرض الـ PDF من الهاتف واعرضه على التلفزيون
+            <br>
+            مع إظهار وإخفاء الجملة أثناء الشرح
         </div>
-        <div id="pdf-render-area">
-            <canvas id="pdf-core-canvas"></canvas>
-            <div id="text-overlay-banner" class="hidden-node"></div>
+
+        <div class="mode-buttons">
+
+            <button class="mode-btn" id="phoneModeBtn">
+                <span class="mode-icon">📱</span>
+                الهاتف للتحكم
+            </button>
+
+            <button class="mode-btn" id="tvModeBtn">
+                <span class="mode-icon">📺</span>
+                التلفزيون للعرض
+            </button>
+
         </div>
+
     </div>
 
-    <!-- 📱 SECTION 2: Control -->
-    <div id="Control">
-        <div id="control-gateway">
-            <h2>جهاز التحكم عن بعد</h2>
-            <p style="color: var(--text-muted); text-align: center;">اكتب الرمز المكون من 6 أرقام الظاهر على شاشة التلفزيون للربط</p>
-            <input type="text" id="pin-input" class="numeric-pin-field" maxlength="6" placeholder="000000" inputmode="numeric">
-            <button class="action-submit-btn" id="gateway-connect-btn">⚡ بدء الاتصال الفوري</button>
-            <div id="gateway-error-log" style="color: var(--color-danger); font-weight: 700;"></div>
+</div>
+
+
+<!-- =========================
+     وضع الهاتف
+========================= -->
+
+<div id="phoneApp" class="app hidden">
+
+    <div class="topbar">
+
+        <div class="top-title">
+            📱 لوحة تحكم المحاضرة
         </div>
-        
-        <div id="control-panel-dashboard" style="display: none;">
-            <div class="status-badge" id="live-connection-indicator" style="color: var(--color-success);">🟢 القناة متصلة ومزامنة تلقائية نشطة</div>
-            
-            <div class="preview-text-box">
-                <div style="font-size: 0.85rem; color: var(--brand-color); margin-bottom: 5px; font-weight: 700;">النص المعروض حالياً:</div>
-                <div id="dashboard-text-preview" style="font-size: 1.25rem; font-weight: 700; line-height: 1.5;">-</div>
+
+        <button class="small-btn" id="backFromPhone">
+            تغيير الوضع
+        </button>
+
+    </div>
+
+
+    <div class="phone-layout">
+
+        <!-- لوحة التحكم -->
+
+        <div class="control-panel">
+
+            <div class="section">
+
+                <div class="section-title">
+                    1 - الاتصال بالتلفزيون
+                </div>
+
+                <div class="connection">
+
+                    <div>
+                        افتح الملف نفسه على التلفزيون واختر:
+                        <b>التلفزيون للعرض</b>
+                    </div>
+
+                    <br>
+
+                    <div>
+                        سيظهر كود على شاشة التلفزيون.
+                    </div>
+
+                    <br>
+
+                    <input
+                        type="text"
+                        id="tvCodeInput"
+                        placeholder="اكتب كود التلفزيون هنا"
+                        dir="ltr"
+                        autocomplete="off"
+                    >
+
+                    <br><br>
+
+                    <button
+                        class="control-btn primary"
+                        id="connectBtn"
+                    >
+                        🔗 اتصال بالتلفزيون
+                    </button>
+
+                    <div id="phoneStatus" class="status">
+                        غير متصل بالتلفزيون
+                    </div>
+
+                </div>
+
             </div>
-            
-            <div class="status-badge" id="dashboard-counter-label" style="font-weight: 800; background-color: rgba(0, 229, 255, 0.1);">
-                الصفحة: 0 / 0 | الجملة: 0 / 0
+
+
+            <div class="section">
+
+                <div class="section-title">
+                    2 - اختيار ملف PDF
+                </div>
+
+                <input
+                    type="file"
+                    id="pdfInput"
+                    accept="application/pdf"
+                >
+
             </div>
-            
-            <div class="grid-button-matrix">
-                <button class="matrix-btn highlight" id="ctrl-next-sentence">▶ الجملة التالية</button>
-                <button class="matrix-btn highlight" id="ctrl-prev-sentence">◀ الجملة السابقة</button>
-                <button class="matrix-btn" id="ctrl-next-page">الصفحة التالية ▶</button>
-                <button class="ctrl-btn matrix-btn" id="ctrl-prev-page">◀ الصفحة السابقة</button>
+
+
+            <div class="section">
+
+                <div class="section-title">
+                    3 - التحكم في صفحات PDF
+                </div>
+
+                <div class="row">
+
+                    <button
+                        class="control-btn"
+                        id="prevBtn"
+                    >
+                        ⬅ السابق
+                    </button>
+
+                    <button
+                        class="control-btn"
+                        id="nextBtn"
+                    >
+                        التالي ➡
+                    </button>
+
+                </div>
+
+                <div id="pageInfo" class="page-info">
+                    لم يتم اختيار PDF
+                </div>
+
+            </div>
+
+
+            <div class="section">
+
+                <div class="section-title">
+                    4 - الجملة التي تظهر على التلفزيون
+                </div>
+
+                <textarea
+                    id="sentenceInput"
+                    placeholder="اكتب الجملة التي تريد ظهورها على التلفزيون..."
+                ></textarea>
+
+                <br>
+
+                <button
+                    class="control-btn primary"
+                    id="showSentenceBtn"
+                >
+                    👁 إظهار الجملة
+                </button>
+
+                <button
+                    class="control-btn danger"
+                    id="hideSentenceBtn"
+                >
+                    ✕ إخفاء الجملة
+                </button>
+
+            </div>
+
+
+            <div class="section">
+
+                <div class="section-title">
+                    5 - حجم الجملة
+                </div>
+
+                <div class="row">
+
+                    <button
+                        class="control-btn"
+                        id="fontDownBtn"
+                    >
+                        🔽 تصغير
+                    </button>
+
+                    <button
+                        class="control-btn"
+                        id="fontUpBtn"
+                    >
+                        🔼 تكبير
+                    </button>
+
+                </div>
+
+            </div>
+
+
+            <div class="section">
+
+                <button
+                    class="control-btn"
+                    id="sendPageBtn"
+                >
+                    📺 إرسال الصفحة للتلفزيون
+                </button>
+
+                <button
+                    class="control-btn"
+                    id="clearBtn"
+                >
+                    🧹 مسح الجملة
+                </button>
+
+            </div>
+
+        </div>
+
+
+        <!-- معاينة PDF على الهاتف -->
+
+        <div class="pdf-preview">
+
+            <canvas id="phoneCanvas"></canvas>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<!-- =========================
+     وضع التلفزيون
+========================= -->
+
+<div id="tvApp" class="app hidden">
+
+    <div class="tv-screen">
+
+        <div id="tvWaiting">
+
+            <div class="wait-box">
+
+                <div class="wait-title">
+                    📺 جاهز لاستقبال التحكم
+                </div>
+
+                <div>
+                    افتح الهاتف واختر
+                    <b>الهاتف للتحكم</b>
+                </div>
+
+                <div class="tv-code" id="tvCode">
+                    جاري إنشاء الكود...
+                </div>
+
+                <div class="tv-help">
+                    اكتب هذا الكود في الهاتف للاتصال بالتلفزيون.
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <div id="tvCanvasWrap" class="tv-canvas-wrap hidden">
+
+            <canvas id="tvCanvas"></canvas>
+
+            <div
+                id="sentenceOverlay"
+                class="hidden"
+            ></div>
+
+        </div>
+
+
+        <div class="tv-controls">
+
+            <button id="tvBackBtn">
+                تغيير الوضع
+            </button>
+
+            <button id="tvHideSentenceBtn">
+                إخفاء الجملة
+            </button>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<script>
+
+"use strict";
+
+/* =========================
+   إعداد PDF.js
+========================= */
+
+pdfjsLib.GlobalWorkerOptions.workerSrc =
+"https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
+
+
+/* =========================
+   العناصر
+========================= */
+
+const modeScreen = document.getElementById("modeScreen");
+
+const phoneApp = document.getElementById("phoneApp");
+const tvApp = document.getElementById("tvApp");
+
+const phoneModeBtn = document.getElementById("phoneModeBtn");
+const tvModeBtn = document.getElementById("tvModeBtn");
+
+const backFromPhone = document.getElementById("backFromPhone");
+const tvBackBtn = document.getElementById("tvBackBtn");
+
+const pdfInput = document.getElementById("pdfInput");
+const phoneCanvas = document.getElementById("phoneCanvas");
+const tvCanvas = document.getElementById("tvCanvas");
+
+const phoneStatus = document.getElementById("phoneStatus");
+
+const tvCode = document.getElementById("tvCode");
+const tvCodeInput = document.getElementById("tvCodeInput");
+const connectBtn = document.getElementById("connectBtn");
+
+const sentenceInput = document.getElementById("sentenceInput");
+const sentenceOverlay = document.getElementById("sentenceOverlay");
+
+const pageInfo = document.getElementById("pageInfo");
+
+const phoneCtx = phoneCanvas.getContext("2d");
+const tvCtx = tvCanvas.getContext("2d");
+
+let pdfDocument = null;
+let currentPage = 1;
+
+let peer = null;
+let connection = null;
+
+let tvPeer = null;
+let tvConnection = null;
+
+let sentenceFontSize = 42;
+
+let currentPdfData = null;
+
+
+/* =========================
+   وظائف عامة
+========================= */
+
+function showMode(mode){
+
+    modeScreen.classList.add("hidden");
+    phoneApp.classList.add("hidden");
+    tvApp.classList.add("hidden");
+
+    if(mode === "phone"){
+        phoneApp.classList.remove("hidden");
+        initializePhone();
+    }
+
+    if(mode === "tv"){
+        tvApp.classList.remove("hidden");
+        initializeTV();
+    }
+}
+
+
+function resetApp(){
+
+    if(connection){
+        try{
+            connection.close();
+        }catch(e){}
+        connection = null;
+    }
+
+    if(peer){
+        try{
+            peer.destroy();
+        }catch(e){}
+        peer = null;
+    }
+
+    if(tvConnection){
+        try{
+            tvConnection.close();
+        }catch(e){}
+        tvConnection = null;
+    }
+
+    if(tvPeer){
+        try{
+            tvPeer.destroy();
+        }catch(e){}
+        tvPeer = null;
+    }
+
+    phoneApp.classList.add("hidden");
+    tvApp.classList.add("hidden");
+    modeScreen.classList.remove("hidden");
+
+    phoneStatus.textContent = "غير متصل بالتلفزيون";
+    phoneStatus.classList.remove("ok");
+}
+
+
+/* =========================
+   زر اختيار الوضع
+========================= */
+
+phoneModeBtn.addEventListener("click",function(){
+    showMode("phone");
+});
+
+tvModeBtn.addEventListener("click",function(){
+    showMode("tv");
+});
+
+backFromPhone.addEventListener("click",resetApp);
+tvBackBtn.addEventListener("click",resetApp);
+
+
+/* =========================
+   وضع التلفزيون
+========================= */
+
+let tvInitialized = false;
+
+function initializeTV(){
+
+    if(tvInitialized) return;
+
+    tvInitialized = true;
+
+    createTVPeer();
+}
+
+
+function createTVPeer(){
+
+    tvPeer = new Peer();
+
+    tvPeer.on("open",function(id){
+
+        tvCode.textContent = id;
+
+    });
+
+
+    tvPeer.on("connection",function(conn){
+
+        tvConnection = conn;
+
+        tvConnection.on("open",function(){
+
+            showTVConnected();
+
+        });
+
+
+        tvConnection.on("data",function(data){
+
+            handleTVCommand(data);
+
+        });
+
+
+        tvConnection.on("close",function(){
+
+            showTVWaiting();
+
+        });
+
+    });
+
+
+    tvPeer.on("error",function(error){
+
+        console.error(error);
+
+        tvCode.textContent = "خطأ في الاتصال";
+
+    });
+
+}
+
+
+function showTVConnected(){
+
+    const waiting = document.getElementById("tvWaiting");
+
+    waiting.classList.add("hidden");
+
+    document
+        .getElementById("tvCanvasWrap")
+        .classList.remove("hidden");
+
+}
+
+
+function showTVWaiting(){
+
+    document
+        .getElementById("tvWaiting")
+        .classList.remove("hidden");
+
+    document
+        .getElementById("tvCanvasWrap")
+        .classList.add("hidden");
+
+}
+
+
+function handleTVCommand(data){
+
+    if(!data || typeof data !== "object"){
+        return;
+    }
+
+
+    if(data.type === "page"){
+
+        drawPageOnTV(data.image);
+
+    }
+
+
+    if(data.type === "sentence"){
+
+        sentenceOverlay.textContent = data.text || "";
+
+        sentenceFontSize = Number(data.fontSize) || 42;
+
+        sentenceOverlay.style.fontSize =
+            sentenceFontSize + "px";
+
+        sentenceOverlay.classList.remove("hidden");
+
+    }
+
+
+    if(data.type === "hideSentence"){
+
+        sentenceOverlay.classList.add("hidden");
+
+    }
+
+
+    if(data.type === "font"){
+
+        sentenceFontSize =
+            Number(data.fontSize) || sentenceFontSize;
+
+        sentenceOverlay.style.fontSize =
+            sentenceFontSize + "px";
+
+    }
+
+}
+
+
+/*
+   نرسل صورة الصفحة إلى التلفزيون.
+   هذا يجعل التلفزيون يعرض نفس الصفحة
+   حتى لو لم يكن لديه ملف PDF نفسه.
+*/
+
+function drawPageOnTV(imageData){
+
+    const img = new Image();
+
+    img.onload = function(){
+
+        tvCanvas.width = img.naturalWidth;
+        tvCanvas.height = img.naturalHeight;
+
+        tvCtx.clearRect(
+            0,
+            0,
+            tvCanvas.width,
+            tvCanvas.height
+        );
+
+        tvCtx.drawImage(
+            img,
+            0,
+            0
+        );
+
+    };
+
+    img.src = imageData;
+
+}
+
+
+/* =========================
+   إخفاء الجملة من التلفزيون
+========================= */
+
+document
+    .getElementById("tvHideSentenceBtn")
+    .addEventListener("click",function(){
+
+        sentenceOverlay.classList.add("hidden");
+
+    });
+
+
+/* =========================
+   وضع الهاتف
+========================= */
+
+let phoneInitialized = false;
+
+function initializePhone(){
+
+    if(phoneInitialized) return;
+
+    phoneInitialized = true;
+
+    createPhonePeer();
+
+}
+
+
+function createPhonePeer(){
+
+    peer = new Peer();
+
+    peer.on("open",function(){
+
+        setPhoneStatus(
+            "الهاتف جاهز. اكتب كود التلفزيون ثم اضغط اتصال."
+        );
+
+    });
+
+
+    peer.on("error",function(error){
+
+        console.error(error);
+
+        setPhoneStatus(
+            "حدث خطأ في الاتصال. حاول مرة أخرى."
+        );
+
+    });
+
+}
+
+
+function setPhoneStatus(text,ok=false){
+
+    phoneStatus.textContent = text;
+
+    phoneStatus.classList.toggle(
+        "ok",
+        ok
+    );
+
+}
+
+
+/* =========================
+   الاتصال بالتلفزيون
+========================= */
+
+connectBtn.addEventListener("click",function(){
+
+    const code =
+        tvCodeInput.value.trim();
+
+    if(!code){
+
+        setPhoneStatus(
+            "اكتب كود التلفزيون أولًا."
+        );
+
+        return;
+    }
+
+
+    if(!peer){
+
+        setPhoneStatus(
+            "جاري تجهيز الاتصال، حاول بعد لحظات."
+        );
+
+        return;
+    }
+
+
+    setPhoneStatus(
+        "جاري الاتصال بالتلفزيون..."
+    );
+
+
+    connection =
+        peer.connect(
+            code,
+            {
+                reliable:true
+            }
+        );
+
+
+    connection.on("open",function(){
+
+        setPhoneStatus(
+            "تم الاتصال بالتلفزيون بنجاح ✓",
+            true
+        );
+
+    });
+
+
+    connection.on("close",function(){
+
+        setPhoneStatus(
+            "تم فصل الاتصال بالتلفزيون."
+        );
+
+    });
+
+
+    connection.on("error",function(error){
+
+        console.error(error);
+
+        setPhoneStatus(
+            "فشل الاتصال بالتلفزيون."
+        );
+
+    });
+
+});
+
+
+/* =========================
+   إرسال أمر
+========================= */
+
+function sendCommand(data){
+
+    if(
+        !connection ||
+        !connection.open
+    ){
+
+        setPhoneStatus(
+            "الهاتف غير متصل بالتلفزيون."
+        );
+
+        return false;
+    }
+
+
+    try{
+
+        connection.send(data);
+
+        return true;
+
+    }catch(error){
+
+        console.error(error);
+
+        setPhoneStatus(
+            "تعذر إرسال الأمر."
+        );
+
+        return false;
+    }
+
+}
+
+
+/* =========================
+   اختيار PDF
+========================= */
+
+pdfInput.addEventListener("change",async function(event){
+
+    const file =
+        event.target.files[0];
+
+    if(!file){
+        return;
+    }
+
+
+    if(file.type !== "application/pdf"){
+
+        alert("من فضلك اختر ملف PDF.");
+
+        return;
+    }
+
+
+    try{
+
+        const arrayBuffer =
+            await file.arrayBuffer();
+
+        currentPdfData =
+            new Uint8Array(arrayBuffer);
+
+
+        pdfDocument =
+            await pdfjsLib.getDocument({
+                data:currentPdfData
+            }).promise;
+
+
+        currentPage = 1;
+
+        await renderPhonePage();
+
+
+    }catch(error){
+
+        console.error(error);
+
+        alert(
+            "تعذر فتح ملف PDF."
+        );
+
+    }
+
+});
+
+
+/* =========================
+   عرض صفحة PDF على الهاتف
+========================= */
+
+async function renderPhonePage(){
+
+    if(!pdfDocument){
+        return;
+    }
+
+
+    if(
+        currentPage < 1 ||
+        currentPage > pdfDocument.numPages
+    ){
+
+        return;
+    }
+
+
+    const page =
+        await pdfDocument.getPage(
+            currentPage
+        );
+
+
+    /*
+       مقياس مناسب للهاتف
+    */
+
+    const baseViewport =
+        page.getViewport({
+            scale:1
+        });
+
+
+    const maxWidth =
+        Math.min(
+            850,
+            window.innerWidth - 50
+        );
+
+
+    const scale =
+        Math.min(
+            2,
+            Math.max(
+                1,
+                maxWidth / baseViewport.width
+            )
+        );
+
+
+    const viewport =
+        page.getViewport({
+            scale:scale
+        });
+
+
+    phoneCanvas.width =
+        viewport.width;
+
+    phoneCanvas.height =
+        viewport.height;
+
+
+    await page.render({
+
+        canvasContext:phoneCtx,
+
+        viewport:viewport
+
+    }).promise;
+
+
+    pageInfo.textContent =
+        "الصفحة " +
+        currentPage +
+        " من " +
+        pdfDocument.numPages;
+
+
+    /*
+       إرسال الصفحة تلقائيًا إلى التلفزيون
+    */
+
+    sendCurrentPageToTV();
+
+}
+
+
+/* =========================
+   إرسال الصفحة للتلفزيون
+========================= */
+
+function sendCurrentPageToTV(){
+
+    if(!phoneCanvas.width){
+        return;
+    }
+
+
+    try{
+
+        const image =
+            phoneCanvas.toDataURL(
+                "image/jpeg",
+                0.85
+            );
+
+
+        sendCommand({
+
+            type:"page",
+
+            image:image
+
+        });
+
+    }catch(error){
+
+        console.error(error);
+
+    }
+
+}
+
+
+/* =========================
+   زر إرسال الصفحة
+========================= */
+
+document
+    .getElementById("sendPageBtn")
+    .addEventListener("click",function(){
+
+        sendCurrentPageToTV();
+
+    });
+
+
+/* =========================
+   السابق
+========================= */
+
+document
+    .getElementById("prevBtn")
+    .addEventListener("click",async function(){
+
+        if(!pdfDocument){
+            return;
+        }
+
+
+        if(currentPage <= 1){
+            return;
+        }
+
+
+        currentPage--;
+
+        await renderPhonePage();
+
+    });
+
+
+/* =========================
+   التالي
+========================= */
+
+document
+    .getElementById("nextBtn")
+    .addEventListener("click",async function(){
+
+        if(!pdfDocument){
+            return;
+        }
+
+
+        if(
+            currentPage >=
+            pdfDocument.numPages
+        ){
+
+            return;
+        }
+
+
+        currentPage++;
+
+        await renderPhonePage();
+
+    });
+
+
+/* =========================
+   إظهار الجملة
+========================= */
+
+document
+    .getElementById("showSentenceBtn")
+    .addEventListener("click",function(){
+
+        const text =
+            sentenceInput.value.trim();
+
+
+        if(!text){
+
+            alert(
+                "اكتب الجملة أولًا."
+            );
+
+            return;
+        }
+
+
+        sendCommand({
+
+            type:"sentence",
+
+            text:text,
+
+            fontSize:sentenceFontSize
+
+        });
+
+    });
+
+
+/* =========================
+   إخفاء الجملة
+========================= */
+
+document
+    .getElementById("hideSentenceBtn")
+    .addEventListener("click",function(){
+
+        sendCommand({
+
+            type:"hideSentence"
+
+        });
+
+    });
+
+
+/* =========================
+   تكبير الجملة
+========================= */
+
+document
+    .getElementById("fontUpBtn")
+    .addEventListener("click",function(){
+
+        sentenceFontSize += 4;
+
+        if(sentenceFontSize > 100){
+
+            sentenceFontSize = 100;
+
+        }
+
+
+        sendCommand({
+
+            type:"font",
+
+            fontSize:sentenceFontSize
+
+        });
+
+    });
+
+
+/* =========================
+   تصغير الجملة
+========================= */
+
+document
+    .getElementById("fontDownBtn")
+    .addEventListener("click",function(){
+
+        sentenceFontSize -= 4;
+
+        if(sentenceFontSize < 18){
+
+            sentenceFontSize = 18;
+
+        }
+
+
+        sendCommand({
+
+            type:"font",
+
+            fontSize:sentenceFontSize
+
+        });
+
+    });
+
+
+/* =========================
+   مسح الجملة
+========================= */
+
+document
+    .getElementById("clearBtn")
+    .addEventListener("click",function(){
+
+        sentenceInput.value = "";
+
+        sendCommand({
+
+            type:"hideSentence"
+
+        });
+
+    });
+
+
+/* =========================
+   تغيير حجم المعاينة
+========================= */
+
+window.addEventListener(
+    "resize",
+    function(){
+
+        if(pdfDocument){
+
+            renderPhonePage();
+
+        }
+
+    }
+);
+
+
+/* =========================
+   لوحة المفاتيح
+========================= */
+
+document.addEventListener(
+    "keydown",
+    function(event){
+
+        /*
+           لا نستخدم الاختصارات
+           أثناء الكتابة في الجملة.
+        */
+
+        if(
+            document.activeElement ===
+            sentenceInput
+        ){
+
+            return;
+        }
+
+
+        if(event.key === "ArrowRight"){
+
+            document
+                .getElementById("nextBtn")
+                .click();
+
+        }
+
+
+        if(event.key === "ArrowLeft"){
+
+            document
+                .getElementById("prevBtn")
+                .click();
+
+        }
+
+    }
+);
+
+</script>
+
+</body>
+                        </html>
