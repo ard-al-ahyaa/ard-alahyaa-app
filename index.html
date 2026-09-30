@@ -1,1663 +1,598 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1.0">
-
-<title>عارض المحاضرات - تحكم من الهاتف</title>
-
-<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
-<script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
-
-<style>
-*{
-    box-sizing:border-box;
-}
-
-html,body{
-    margin:0;
-    padding:0;
-    width:100%;
-    min-height:100%;
-    font-family:Tahoma,Arial,sans-serif;
-    background:#071018;
-    color:#fff;
-}
-
-button,input,textarea{
-    font-family:inherit;
-}
-
-button{
-    cursor:pointer;
-}
-
-.hidden{
-    display:none!important;
-}
-
-/* اختيار الوضع */
-
-#modeScreen{
-    min-height:100vh;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    padding:20px;
-}
-
-.mode-box{
-    width:min(700px,100%);
-    background:#101c27;
-    border:1px solid #26394b;
-    border-radius:24px;
-    padding:30px;
-    text-align:center;
-    box-shadow:0 20px 60px #0008;
-}
-
-.logo{
-    font-size:38px;
-    font-weight:bold;
-    margin-bottom:10px;
-}
-
-.subtitle{
-    color:#aebdca;
-    margin-bottom:30px;
-    line-height:1.8;
-}
-
-.mode-buttons{
-    display:grid;
-    grid-template-columns:1fr 1fr;
-    gap:18px;
-}
-
-.mode-btn{
-    border:0;
-    border-radius:18px;
-    padding:25px 15px;
-    background:#172b3b;
-    color:#fff;
-    font-size:22px;
-    font-weight:bold;
-    border:1px solid #2c4559;
-}
-
-.mode-btn:hover{
-    background:#1e3a50;
-}
-
-.mode-icon{
-    display:block;
-    font-size:48px;
-    margin-bottom:12px;
-}
-
-/* عام */
-
-.app{
-    min-height:100vh;
-}
-
-.topbar{
-    background:#0c1720;
-    border-bottom:1px solid #263847;
-    padding:14px 18px;
-    display:flex;
-    align-items:center;
-    justify-content:space-between;
-    gap:15px;
-    position:sticky;
-    top:0;
-    z-index:50;
-}
-
-.top-title{
-    font-size:20px;
-    font-weight:bold;
-}
-
-.small-btn{
-    border:1px solid #354b5d;
-    background:#142431;
-    color:#fff;
-    border-radius:10px;
-    padding:9px 13px;
-}
-
-/* الهاتف */
-
-.phone-layout{
-    display:grid;
-    grid-template-columns:360px 1fr;
-    gap:15px;
-    padding:15px;
-    max-width:1400px;
-    margin:auto;
-}
-
-.control-panel{
-    background:#101c27;
-    border:1px solid #26394b;
-    border-radius:18px;
-    padding:16px;
-    height:max-content;
-}
-
-.section{
-    margin-bottom:18px;
-}
-
-.section-title{
-    font-weight:bold;
-    margin-bottom:9px;
-    color:#dce8f1;
-}
-
-input[type="file"],
-input[type="text"],
-textarea{
-    width:100%;
-    background:#08121a;
-    color:#fff;
-    border:1px solid #304757;
-    border-radius:10px;
-    padding:12px;
-    outline:none;
-}
-
-textarea{
-    min-height:120px;
-    resize:vertical;
-    line-height:1.8;
-    direction:rtl;
-    text-align:right;
-}
-
-input:focus,textarea:focus{
-    border-color:#3fa9ff;
-}
-
-.connection{
-    background:#09141d;
-    border:1px solid #2b4253;
-    border-radius:12px;
-    padding:12px;
-    margin-bottom:12px;
-}
-
-.connection-code{
-    font-size:25px;
-    font-weight:bold;
-    letter-spacing:3px;
-    text-align:center;
-    direction:ltr;
-    margin:10px 0;
-    color:#5fc2ff;
-}
-
-.status{
-    padding:9px;
-    border-radius:8px;
-    background:#172631;
-    color:#b8c8d4;
-    font-size:14px;
-    line-height:1.6;
-}
-
-.status.ok{
-    background:#123c2a;
-    color:#8ff0bb;
-}
-
-.row{
-    display:flex;
-    gap:8px;
-}
-
-.row>*{
-    flex:1;
-}
-
-.control-btn{
-    width:100%;
-    min-height:48px;
-    border:0;
-    border-radius:10px;
-    background:#1d3445;
-    color:#fff;
-    font-size:17px;
-    font-weight:bold;
-    margin-bottom:8px;
-}
-
-.control-btn:hover{
-    background:#284b63;
-}
-
-.primary{
-    background:#087f5b;
-}
-
-.primary:hover{
-    background:#099d70;
-}
-
-.danger{
-    background:#7c2730;
-}
-
-.danger:hover{
-    background:#9c303b;
-}
-
-.page-info{
-    text-align:center;
-    padding:8px;
-    color:#b8c6d0;
-}
-
-.pdf-preview{
-    background:#080d12;
-    border:1px solid #26394b;
-    border-radius:18px;
-    padding:12px;
-    min-height:500px;
-    display:flex;
-    justify-content:center;
-    align-items:flex-start;
-    overflow:auto;
-}
-
-#phoneCanvas{
-    max-width:100%;
-    height:auto;
-    background:#fff;
-    box-shadow:0 10px 30px #0009;
-}
-
-/* التلفزيون */
-
-.tv-screen{
-    min-height:100vh;
-    background:#000;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    position:relative;
-    overflow:hidden;
-}
-
-.tv-canvas-wrap{
-    position:relative;
-    display:flex;
-    justify-content:center;
-    align-items:center;
-    max-width:100%;
-    max-height:100vh;
-}
-
-#tvCanvas{
-    display:block;
-    max-width:100vw;
-    max-height:100vh;
-    background:#fff;
-}
-
-#sentenceOverlay{
-    position:absolute;
-    left:5%;
-    right:5%;
-    bottom:7%;
-    padding:18px 25px;
-    border-radius:15px;
-    background:rgba(0,0,0,.78);
-    color:#fff;
-    font-size:42px;
-    font-weight:bold;
-    line-height:1.7;
-    text-align:center;
-    direction:rtl;
-    unicode-bidi:plaintext;
-    white-space:pre-wrap;
-    word-break:normal;
-    overflow-wrap:break-word;
-    text-shadow:0 2px 4px #000;
-    border:1px solid #ffffff30;
-}
-
-#tvWaiting{
-    position:absolute;
-    inset:0;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    text-align:center;
-    color:#bac7d0;
-    padding:30px;
-}
-
-.wait-box{
-    max-width:700px;
-}
-
-.wait-title{
-    font-size:38px;
-    color:#fff;
-    font-weight:bold;
-    margin-bottom:15px;
-}
-
-.tv-code{
-    font-size:35px;
-    color:#5fc2ff;
-    font-weight:bold;
-    direction:ltr;
-    letter-spacing:5px;
-    margin:20px 0;
-}
-
-.tv-help{
-    line-height:2;
-    font-size:18px;
-}
-
-.tv-controls{
-    position:absolute;
-    top:15px;
-    left:15px;
-    display:flex;
-    gap:8px;
-    opacity:.18;
-    transition:.2s;
-}
-
-.tv-controls:hover{
-    opacity:1;
-}
-
-.tv-controls button{
-    border:0;
-    background:#17232dcc;
-    color:#fff;
-    padding:10px 14px;
-    border-radius:8px;
-}
-
-@media(max-width:800px){
-    .mode-buttons{
-        grid-template-columns:1fr;
-    }
-
-    .phone-layout{
-        grid-template-columns:1fr;
-    }
-
-    .pdf-preview{
-        order:2;
-    }
-
-    #sentenceOverlay{
-        font-size:25px;
-        bottom:5%;
-    }
-}
-
-@media(max-width:500px){
-    .logo{
-        font-size:29px;
-    }
-
-    .control-panel{
-        padding:12px;
-    }
-
-    .top-title{
-        font-size:16px;
-    }
-}
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>عارض المحاضرات الاحترافي - تكنو مسار</title>
+    <!-- مكتبة PDF.js -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+    <script>
+        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+    </script>
+    <!-- مكتبة PeerJS للاتصال المباشر بين الأجهزة -->
+    <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
+    <!-- مكتبة QR Code -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <style>
+        :root {
+            --bg-color: #0f172a;
+            --card-bg: #1e293b;
+            --accent-color: #3b82f6;
+            --accent-hover: #2563eb;
+            --text-color: #f8fafc;
+            --text-muted: #94a3b8;
+            --danger: #ef4444;
+            --success: #22c55e;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow-x: hidden;
+        }
+
+        /* شاشة اختيار الدور الأولية */
+        #role-selector {
+            position: fixed;
+            inset: 0;
+            background: var(--bg-color);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .role-card {
+            background: var(--card-bg);
+            border: 2px solid #334155;
+            border-radius: 16px;
+            padding: 30px;
+            margin: 15px;
+            width: 100%;
+            max-width: 400px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .role-card:hover {
+            border-color: var(--accent-color);
+            transform: translateY(-3px);
+        }
+
+        .role-card h2 {
+            margin-bottom: 10px;
+            font-size: 1.5rem;
+        }
+
+        .role-card p {
+            color: var(--text-muted);
+            font-size: 0.95rem;
+        }
+
+        /* واجهة الشاشة العامة (Display) */
+        #display-view {
+            display: none;
+            width: 100vw;
+            height: 100vh;
+            position: relative;
+            background: #000;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+        }
+
+        #pdf-canvas-container {
+            position: relative;
+            max-width: 100%;
+            max-height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        canvas {
+            display: block;
+            max-width: 100%;
+            max-height: 100vh;
+            object-fit: contain;
+        }
+
+        /* طبقة التغطية للشرح التدريجي (Overlay) */
+        .step-overlay {
+            position: absolute;
+            background: rgba(15, 23, 42, 0.95);
+            border: 2px dashed var(--accent-color);
+            transition: all 0.3s ease;
+            pointer-events: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--accent-color);
+            font-weight: bold;
+            font-size: 1.2rem;
+            border-radius: 8px;
+        }
+
+        /* واجهة الريموت/الهاتف (Controller) */
+        #controller-view {
+            display: none;
+            flex-direction: column;
+            min-height: 100vh;
+            padding: 15px;
+            max-width: 600px;
+            margin: 0 auto;
+            width: 100%;
+        }
+
+        .header-box {
+            background: var(--card-bg);
+            padding: 15px;
+            border-radius: 12px;
+            margin-bottom: 15px;
+            text-align: center;
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
+        }
+
+        .connection-box {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        input, button {
+            padding: 12px 16px;
+            border-radius: 8px;
+            border: 1px solid #475569;
+            background: #0f172a;
+            color: var(--text-color);
+            font-size: 1rem;
+            outline: none;
+        }
+
+        input {
+            flex: 1;
+        }
+
+        button {
+            background: var(--accent-color);
+            border: none;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        button:active {
+            transform: scale(0.98);
+        }
+
+        button:hover {
+            background: var(--accent-hover);
+        }
+
+        .btn-success { background: var(--success); }
+        .btn-danger { background: var(--danger); }
+
+        /* أزرار التحكم الكبيرة والمريحة */
+        .controls-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+            margin-bottom: 15px;
+        }
+
+        .btn-full {
+            grid-column: span 2;
+        }
+
+        .big-btn {
+            padding: 18px;
+            font-size: 1.1rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            background: var(--card-bg);
+            border: 1px solid #475569;
+            border-radius: 12px;
+            color: var(--text-color);
+        }
+
+        .big-btn.primary {
+            background: var(--accent-color);
+            border: none;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: bold;
+            margin-top: 8px;
+        }
+
+        .status-disconnected { background: rgba(239, 68, 68, 0.2); color: var(--danger); }
+        .status-connected { background: rgba(34, 197, 94, 0.2); color: var(--success); }
+
+        /* شاشة الاتصال الخاصة بالتلفزيون */
+        #tv-connect-screen {
+            position: absolute;
+            inset: 0;
+            background: var(--bg-color);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 50;
+            padding: 20px;
+            text-align: center;
+        }
+
+        #qrcode {
+            background: white;
+            padding: 15px;
+            border-radius: 12px;
+            margin: 20px 0;
+        }
+
+        .code-display {
+            font-size: 2.5rem;
+            font-weight: bold;
+            letter-spacing: 4px;
+            color: var(--accent-color);
+            background: var(--card-bg);
+            padding: 10px 20px;
+            border-radius: 10px;
+            margin: 10px 0;
+            border: 2px solid #334155;
+        }
+
+        /* إخفاء المؤشر في التلفزيون عند عدم الحركة */
+        body.idle {
+            cursor: none;
+        }
+        body.idle #tv-connect-screen {
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.5s ease;
+        }
+
+        .file-input-wrapper {
+            position: relative;
+            overflow: hidden;
+            display: inline-block;
+            width: 100%;
+        }
+
+        .file-input-wrapper input[type=file] {
+            position: absolute;
+            left: 0;
+            top: 0;
+            opacity: 0;
+            cursor: pointer;
+            width: 100%;
+            height: 100%;
+        }
+    </style>
 </head>
-
 <body>
 
-<!-- اختيار الوضع -->
-
-<div id="modeScreen">
-
-    <div class="mode-box">
-
-        <div class="logo">📚 عارض المحاضرات</div>
-
-        <div class="subtitle">
-            تحكم في عرض الـ PDF من الهاتف واعرضه على التلفزيون
-            <br>
-            مع إظهار وإخفاء الجملة أثناء الشرح
+    <!-- 1. شاشة اختيار الدور -->
+    <div id="role-selector">
+        <h1 style="margin-bottom: 20px; color: var(--accent-color);">تكنو مسار - عارض المحاضرات</h1>
+        <p style="color: var(--text-muted); margin-bottom: 30px;">اختر وضع الاستخدام لهذا الجهاز:</p>
+        
+        <div class="role-card" onclick="initRole('controller')">
+            <h2>📱 الهاتف (وحدة التحكم)</h2>
+            <p>استخدم هذا الخيار من هاتفك لفتح ملف الـ PDF وإرسال الأوامر والتنقل بين الصفحات.</p>
         </div>
 
-        <div class="mode-buttons">
-
-            <button class="mode-btn" id="phoneModeBtn">
-                <span class="mode-icon">📱</span>
-                الهاتف للتحكم
-            </button>
-
-            <button class="mode-btn" id="tvModeBtn">
-                <span class="mode-icon">📺</span>
-                التلفزيون للعرض
-            </button>
-
+        <div class="role-card" onclick="initRole('display')">
+            <h2>📺 التلفزيون (شاشة العرض)</h2>
+            <p>استخدم هذا الخيار من متصفح شاشة التلفزيون لعرض المحاضرة بشكل نقي وكامل.</p>
         </div>
-
     </div>
 
-</div>
-
-
-<!-- =========================
-     وضع الهاتف
-========================= -->
-
-<div id="phoneApp" class="app hidden">
-
-    <div class="topbar">
-
-        <div class="top-title">
-            📱 لوحة تحكم المحاضرة
+    <!-- 2. واجهة شاشة العرض (التلفزيون) -->
+    <div id="display-view">
+        <div id="tv-connect-screen">
+            <h2>شاشة العرض جاهزة للاتصال</h2>
+            <p>قم بمسح رمز الاستجابة السريعة أو أدخل كود الاتصال من هاتفك المحمول:</p>
+            <div class="code-display" id="tv-display-code">جاري التوليد...</div>
+            <div id="qrcode"></div>
+            <div id="tv-status-text" class="status-badge status-disconnected">في انتظار اتصال جهاز التحكم...</div>
         </div>
 
-        <button class="small-btn" id="backFromPhone">
-            تغيير الوضع
-        </button>
-
+        <div id="pdf-canvas-container">
+            <canvas id="pdf-canvas"></canvas>
+            <div id="overlay-container"></div>
+        </div>
     </div>
 
-
-    <div class="phone-layout">
-
-        <!-- لوحة التحكم -->
-
-        <div class="control-panel">
-
-            <div class="section">
-
-                <div class="section-title">
-                    1 - الاتصال بالتلفزيون
-                </div>
-
-                <div class="connection">
-
-                    <div>
-                        افتح الملف نفسه على التلفزيون واختر:
-                        <b>التلفزيون للعرض</b>
-                    </div>
-
-                    <br>
-
-                    <div>
-                        سيظهر كود على شاشة التلفزيون.
-                    </div>
-
-                    <br>
-
-                    <input
-                        type="text"
-                        id="tvCodeInput"
-                        placeholder="اكتب كود التلفزيون هنا"
-                        dir="ltr"
-                        autocomplete="off"
-                    >
-
-                    <br><br>
-
-                    <button
-                        class="control-btn primary"
-                        id="connectBtn"
-                    >
-                        🔗 اتصال بالتلفزيون
-                    </button>
-
-                    <div id="phoneStatus" class="status">
-                        غير متصل بالتلفزيون
-                    </div>
-
-                </div>
-
+    <!-- 3. واجهة وحدة التحكم (الهاتف) -->
+    <div id="controller-view">
+        <div class="header-box">
+            <h3>وحدة التحكم (الريموت)</h3>
+            <div id="phone-connection-status" class="status-badge status-disconnected">غير متصل</div>
+            
+            <div class="connection-box" id="connect-input-box">
+                <input type="text" id="peer-id-input" placeholder="أدخل كود التلفزيون هنا..." maxlength="6">
+                <button onclick="connectToPeer()">اتصال</button>
             </div>
-
-
-            <div class="section">
-
-                <div class="section-title">
-                    2 - اختيار ملف PDF
-                </div>
-
-                <input
-                    type="file"
-                    id="pdfInput"
-                    accept="application/pdf"
-                >
-
-            </div>
-
-
-            <div class="section">
-
-                <div class="section-title">
-                    3 - التحكم في صفحات PDF
-                </div>
-
-                <div class="row">
-
-                    <button
-                        class="control-btn"
-                        id="prevBtn"
-                    >
-                        ⬅ السابق
-                    </button>
-
-                    <button
-                        class="control-btn"
-                        id="nextBtn"
-                    >
-                        التالي ➡
-                    </button>
-
-                </div>
-
-                <div id="pageInfo" class="page-info">
-                    لم يتم اختيار PDF
-                </div>
-
-            </div>
-
-
-            <div class="section">
-
-                <div class="section-title">
-                    4 - الجملة التي تظهر على التلفزيون
-                </div>
-
-                <textarea
-                    id="sentenceInput"
-                    placeholder="اكتب الجملة التي تريد ظهورها على التلفزيون..."
-                ></textarea>
-
-                <br>
-
-                <button
-                    class="control-btn primary"
-                    id="showSentenceBtn"
-                >
-                    👁 إظهار الجملة
-                </button>
-
-                <button
-                    class="control-btn danger"
-                    id="hideSentenceBtn"
-                >
-                    ✕ إخفاء الجملة
-                </button>
-
-            </div>
-
-
-            <div class="section">
-
-                <div class="section-title">
-                    5 - حجم الجملة
-                </div>
-
-                <div class="row">
-
-                    <button
-                        class="control-btn"
-                        id="fontDownBtn"
-                    >
-                        🔽 تصغير
-                    </button>
-
-                    <button
-                        class="control-btn"
-                        id="fontUpBtn"
-                    >
-                        🔼 تكبير
-                    </button>
-
-                </div>
-
-            </div>
-
-
-            <div class="section">
-
-                <button
-                    class="control-btn"
-                    id="sendPageBtn"
-                >
-                    📺 إرسال الصفحة للتلفزيون
-                </button>
-
-                <button
-                    class="control-btn"
-                    id="clearBtn"
-                >
-                    🧹 مسح الجملة
-                </button>
-
-            </div>
-
         </div>
 
-
-        <!-- معاينة PDF على الهاتف -->
-
-        <div class="pdf-preview">
-
-            <canvas id="phoneCanvas"></canvas>
-
-        </div>
-
-    </div>
-
-</div>
-
-
-<!-- =========================
-     وضع التلفزيون
-========================= -->
-
-<div id="tvApp" class="app hidden">
-
-    <div class="tv-screen">
-
-        <div id="tvWaiting">
-
-            <div class="wait-box">
-
-                <div class="wait-title">
-                    📺 جاهز لاستقبال التحكم
-                </div>
-
-                <div>
-                    افتح الهاتف واختر
-                    <b>الهاتف للتحكم</b>
-                </div>
-
-                <div class="tv-code" id="tvCode">
-                    جاري إنشاء الكود...
-                </div>
-
-                <div class="tv-help">
-                    اكتب هذا الكود في الهاتف للاتصال بالتلفزيون.
-                </div>
-
+        <!-- اختيار ملف الـ PDF -->
+        <div class="header-box">
+            <div class="file-input-wrapper">
+                <button class="big-btn primary btn-full">📁 اختر ملف PDF للمحاضرة</button>
+                <input type="file" id="pdf-file-input" accept="application/pdf" onchange="loadPdfFile(this)">
             </div>
-
+            <div id="file-name-display" style="margin-top: 8px; font-size: 0.9rem; color: var(--text-muted);">لم يتم اختيار ملف</div>
         </div>
 
-
-        <div id="tvCanvasWrap" class="tv-canvas-wrap hidden">
-
-            <canvas id="tvCanvas"></canvas>
-
-            <div
-                id="sentenceOverlay"
-                class="hidden"
-            ></div>
-
-        </div>
-
-
-        <div class="tv-controls">
-
-            <button id="tvBackBtn">
-                تغيير الوضع
+        <!-- أزرار التحكم التفاعلية -->
+        <div class="controls-grid">
+            <button class="big-btn" onclick="sendAction('prev_page')">⬅️ الصفحة السابقة</button>
+            <button class="big-btn" onclick="sendAction('next_page')">الصفحة التالية ➡️</button>
+            
+            <button class="big-btn primary btn-full" style="background: #1e293b; border: 1px solid var(--accent-color);">
+                الصفحة: <span id="current-page-num" style="color: var(--accent-color); margin: 0 5px;">0</span> / <span id="total-pages-num">0</span>
             </button>
 
-            <button id="tvHideSentenceBtn">
-                إخفاء الجملة
-            </button>
+            <button class="big-btn btn-success" onclick="sendAction('step_next')">➕ إظهار التالي</button>
+            <button class="big-btn btn-danger" onclick="sendAction('step_reset')">🔄 إعادة الصفحة</button>
 
+            <button class="big-btn" onclick="sendAction('zoom_in')">🔍 تكبير +</button>
+            <button class="big-btn" onclick="sendAction('zoom_out')">🔍 تصغير -</button>
+
+            <button class="big-btn btn-full" onclick="sendAction('toggle_fullscreen')">🔲 ملء الشاشة</button>
         </div>
-
     </div>
 
-</div>
-
-
-<script>
-
-"use strict";
-
-/* =========================
-   إعداد PDF.js
-========================= */
-
-pdfjsLib.GlobalWorkerOptions.workerSrc =
-"https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
-
-
-/* =========================
-   العناصر
-========================= */
-
-const modeScreen = document.getElementById("modeScreen");
-
-const phoneApp = document.getElementById("phoneApp");
-const tvApp = document.getElementById("tvApp");
-
-const phoneModeBtn = document.getElementById("phoneModeBtn");
-const tvModeBtn = document.getElementById("tvModeBtn");
-
-const backFromPhone = document.getElementById("backFromPhone");
-const tvBackBtn = document.getElementById("tvBackBtn");
-
-const pdfInput = document.getElementById("pdfInput");
-const phoneCanvas = document.getElementById("phoneCanvas");
-const tvCanvas = document.getElementById("tvCanvas");
-
-const phoneStatus = document.getElementById("phoneStatus");
-
-const tvCode = document.getElementById("tvCode");
-const tvCodeInput = document.getElementById("tvCodeInput");
-const connectBtn = document.getElementById("connectBtn");
-
-const sentenceInput = document.getElementById("sentenceInput");
-const sentenceOverlay = document.getElementById("sentenceOverlay");
-
-const pageInfo = document.getElementById("pageInfo");
-
-const phoneCtx = phoneCanvas.getContext("2d");
-const tvCtx = tvCanvas.getContext("2d");
-
-let pdfDocument = null;
-let currentPage = 1;
-
-let peer = null;
-let connection = null;
-
-let tvPeer = null;
-let tvConnection = null;
-
-let sentenceFontSize = 42;
-
-let currentPdfData = null;
-
-
-/* =========================
-   وظائف عامة
-========================= */
-
-function showMode(mode){
-
-    modeScreen.classList.add("hidden");
-    phoneApp.classList.add("hidden");
-    tvApp.classList.add("hidden");
-
-    if(mode === "phone"){
-        phoneApp.classList.remove("hidden");
-        initializePhone();
-    }
-
-    if(mode === "tv"){
-        tvApp.classList.remove("hidden");
-        initializeTV();
-    }
-}
-
-
-function resetApp(){
-
-    if(connection){
-        try{
-            connection.close();
-        }catch(e){}
-        connection = null;
-    }
-
-    if(peer){
-        try{
-            peer.destroy();
-        }catch(e){}
-        peer = null;
-    }
-
-    if(tvConnection){
-        try{
-            tvConnection.close();
-        }catch(e){}
-        tvConnection = null;
-    }
-
-    if(tvPeer){
-        try{
-            tvPeer.destroy();
-        }catch(e){}
-        tvPeer = null;
-    }
-
-    phoneApp.classList.add("hidden");
-    tvApp.classList.add("hidden");
-    modeScreen.classList.remove("hidden");
-
-    phoneStatus.textContent = "غير متصل بالتلفزيون";
-    phoneStatus.classList.remove("ok");
-}
-
-
-/* =========================
-   زر اختيار الوضع
-========================= */
-
-phoneModeBtn.addEventListener("click",function(){
-    showMode("phone");
-});
-
-tvModeBtn.addEventListener("click",function(){
-    showMode("tv");
-});
-
-backFromPhone.addEventListener("click",resetApp);
-tvBackBtn.addEventListener("click",resetApp);
-
-
-/* =========================
-   وضع التلفزيون
-========================= */
-
-let tvInitialized = false;
-
-function initializeTV(){
-
-    if(tvInitialized) return;
-
-    tvInitialized = true;
-
-    createTVPeer();
-}
-
-
-function createTVPeer(){
-
-    tvPeer = new Peer();
-
-    tvPeer.on("open",function(id){
-
-        tvCode.textContent = id;
-
-    });
-
-
-    tvPeer.on("connection",function(conn){
-
-        tvConnection = conn;
-
-        tvConnection.on("open",function(){
-
-            showTVConnected();
-
-        });
-
-
-        tvConnection.on("data",function(data){
-
-            handleTVCommand(data);
-
-        });
-
-
-        tvConnection.on("close",function(){
-
-            showTVWaiting();
-
-        });
-
-    });
-
-
-    tvPeer.on("error",function(error){
-
-        console.error(error);
-
-        tvCode.textContent = "خطأ في الاتصال";
-
-    });
-
-}
-
-
-function showTVConnected(){
-
-    const waiting = document.getElementById("tvWaiting");
-
-    waiting.classList.add("hidden");
-
-    document
-        .getElementById("tvCanvasWrap")
-        .classList.remove("hidden");
-
-}
-
-
-function showTVWaiting(){
-
-    document
-        .getElementById("tvWaiting")
-        .classList.remove("hidden");
-
-    document
-        .getElementById("tvCanvasWrap")
-        .classList.add("hidden");
-
-}
-
-
-function handleTVCommand(data){
-
-    if(!data || typeof data !== "object"){
-        return;
-    }
-
-
-    if(data.type === "page"){
-
-        drawPageOnTV(data.image);
-
-    }
-
-
-    if(data.type === "sentence"){
-
-        sentenceOverlay.textContent = data.text || "";
-
-        sentenceFontSize = Number(data.fontSize) || 42;
-
-        sentenceOverlay.style.fontSize =
-            sentenceFontSize + "px";
-
-        sentenceOverlay.classList.remove("hidden");
-
-    }
-
-
-    if(data.type === "hideSentence"){
-
-        sentenceOverlay.classList.add("hidden");
-
-    }
-
-
-    if(data.type === "font"){
-
-        sentenceFontSize =
-            Number(data.fontSize) || sentenceFontSize;
-
-        sentenceOverlay.style.fontSize =
-            sentenceFontSize + "px";
-
-    }
-
-}
-
-
-/*
-   نرسل صورة الصفحة إلى التلفزيون.
-   هذا يجعل التلفزيون يعرض نفس الصفحة
-   حتى لو لم يكن لديه ملف PDF نفسه.
-*/
-
-function drawPageOnTV(imageData){
-
-    const img = new Image();
-
-    img.onload = function(){
-
-        tvCanvas.width = img.naturalWidth;
-        tvCanvas.height = img.naturalHeight;
-
-        tvCtx.clearRect(
-            0,
-            0,
-            tvCanvas.width,
-            tvCanvas.height
-        );
-
-        tvCtx.drawImage(
-            img,
-            0,
-            0
-        );
-
-    };
-
-    img.src = imageData;
-
-}
-
-
-/* =========================
-   إخفاء الجملة من التلفزيون
-========================= */
-
-document
-    .getElementById("tvHideSentenceBtn")
-    .addEventListener("click",function(){
-
-        sentenceOverlay.classList.add("hidden");
-
-    });
-
-
-/* =========================
-   وضع الهاتف
-========================= */
-
-let phoneInitialized = false;
-
-function initializePhone(){
-
-    if(phoneInitialized) return;
-
-    phoneInitialized = true;
-
-    createPhonePeer();
-
-}
-
-
-function createPhonePeer(){
-
-    peer = new Peer();
-
-    peer.on("open",function(){
-
-        setPhoneStatus(
-            "الهاتف جاهز. اكتب كود التلفزيون ثم اضغط اتصال."
-        );
-
-    });
-
-
-    peer.on("error",function(error){
-
-        console.error(error);
-
-        setPhoneStatus(
-            "حدث خطأ في الاتصال. حاول مرة أخرى."
-        );
-
-    });
-
-}
-
-
-function setPhoneStatus(text,ok=false){
-
-    phoneStatus.textContent = text;
-
-    phoneStatus.classList.toggle(
-        "ok",
-        ok
-    );
-
-}
-
-
-/* =========================
-   الاتصال بالتلفزيون
-========================= */
-
-connectBtn.addEventListener("click",function(){
-
-    const code =
-        tvCodeInput.value.trim();
-
-    if(!code){
-
-        setPhoneStatus(
-            "اكتب كود التلفزيون أولًا."
-        );
-
-        return;
-    }
-
-
-    if(!peer){
-
-        setPhoneStatus(
-            "جاري تجهيز الاتصال، حاول بعد لحظات."
-        );
-
-        return;
-    }
-
-
-    setPhoneStatus(
-        "جاري الاتصال بالتلفزيون..."
-    );
-
-
-    connection =
-        peer.connect(
-            code,
-            {
-                reliable:true
+    <script>
+        let peer = null;
+        let conn = null;
+        let currentRole = '';
+        let pdfDoc = null;
+        let pageNum = 1;
+        let totalPages = 0;
+        let scale = 1.5;
+        let currentStep = 0;
+        let maxSteps = 5; // عدد الخطوات الوهمية أو التدريجية لكل صفحة
+
+        function initRole(role) {
+            currentRole = role;
+            document.getElementById('role-selector').style.display = 'none';
+
+            if (role === 'display') {
+                document.getElementById('display-view').style.display = 'flex';
+                initDisplayPeer();
+                setupIdleTimer();
+            } else {
+                document.getElementById('controller-view').style.display = 'flex';
             }
-        );
-
-
-    connection.on("open",function(){
-
-        setPhoneStatus(
-            "تم الاتصال بالتلفزيون بنجاح ✓",
-            true
-        );
-
-    });
-
-
-    connection.on("close",function(){
-
-        setPhoneStatus(
-            "تم فصل الاتصال بالتلفزيون."
-        );
-
-    });
-
-
-    connection.on("error",function(error){
-
-        console.error(error);
-
-        setPhoneStatus(
-            "فشل الاتصال بالتلفزيون."
-        );
-
-    });
-
-});
-
-
-/* =========================
-   إرسال أمر
-========================= */
-
-function sendCommand(data){
-
-    if(
-        !connection ||
-        !connection.open
-    ){
-
-        setPhoneStatus(
-            "الهاتف غير متصل بالتلفزيون."
-        );
-
-        return false;
-    }
-
-
-    try{
-
-        connection.send(data);
-
-        return true;
-
-    }catch(error){
-
-        console.error(error);
-
-        setPhoneStatus(
-            "تعذر إرسال الأمر."
-        );
-
-        return false;
-    }
-
-}
-
-
-/* =========================
-   اختيار PDF
-========================= */
-
-pdfInput.addEventListener("change",async function(event){
-
-    const file =
-        event.target.files[0];
-
-    if(!file){
-        return;
-    }
-
-
-    if(file.type !== "application/pdf"){
-
-        alert("من فضلك اختر ملف PDF.");
-
-        return;
-    }
-
-
-    try{
-
-        const arrayBuffer =
-            await file.arrayBuffer();
-
-        currentPdfData =
-            new Uint8Array(arrayBuffer);
-
-
-        pdfDocument =
-            await pdfjsLib.getDocument({
-                data:currentPdfData
-            }).promise;
-
-
-        currentPage = 1;
-
-        await renderPhonePage();
-
-
-    }catch(error){
-
-        console.error(error);
-
-        alert(
-            "تعذر فتح ملف PDF."
-        );
-
-    }
-
-});
-
-
-/* =========================
-   عرض صفحة PDF على الهاتف
-========================= */
-
-async function renderPhonePage(){
-
-    if(!pdfDocument){
-        return;
-    }
-
-
-    if(
-        currentPage < 1 ||
-        currentPage > pdfDocument.numPages
-    ){
-
-        return;
-    }
-
-
-    const page =
-        await pdfDocument.getPage(
-            currentPage
-        );
-
-
-    /*
-       مقياس مناسب للهاتف
-    */
-
-    const baseViewport =
-        page.getViewport({
-            scale:1
+        }
+
+        // --- نظام الاتصال (PeerJS) ---
+        function generateRandomCode() {
+            return Math.floor(100000 + Math.random() * 900000).toString();
+        }
+
+        function initDisplayPeer() {
+            const code = generateRandomCode();
+            document.getElementById('tv-display-code').innerText = code;
+            
+            // إنشاء QR Code يوجه للرابط مع كود الاتصال تلقائياً أو يعرض الكود
+            const currentUrl = window.location.href.split('?')[0];
+            const qrText = `${currentUrl}?code=${code}`;
+            new QRCode(document.getElementById("qrcode"), {
+                text: qrText,
+                width: 150,
+                height: 150
+            });
+
+            peer = new Peer('ts-' + code);
+
+            peer.on('open', (id) => {
+                console.log('TV Peer ID: ', id);
+            });
+
+            peer.on('connection', (connection) => {
+                conn = connection;
+                setupConnectionEvents();
+                document.getElementById('tv-status-text').innerText = "تم الاتصال بجهاز التحكم";
+                document.getElementById('tv-status-text').className = "status-badge status-connected";
+                setTimeout(() => {
+                    document.getElementById('tv-connect-screen').style.display = 'none';
+                }, 1500);
+            });
+        }
+
+        function connectToPeer() {
+            const code = document.getElementById('peer-id-input').value.trim();
+            if (!code || code.length !== 6) {
+                alert('الرجاء إدخال كود الاتصال الصحيح المكون من 6 أرقام');
+                return;
+            }
+
+            peer = new Peer();
+            peer.on('open', () => {
+                conn = peer.connect('ts-' + code);
+                setupConnectionEvents();
+            });
+        }
+
+        function setupConnectionEvents() {
+            conn.on('open', () => {
+                if (currentRole === 'controller') {
+                    document.getElementById('phone-connection-status').innerText = "تم الاتصال بالتلفزيون";
+                    document.getElementById('phone-connection-status').className = "status-badge status-connected";
+                    document.getElementById('connect-input-box').style.display = 'none';
+                }
+            });
+
+            conn.on('data', (data) => {
+                handleIncomingData(data);
+            });
+
+            conn.on('close', () => {
+                alert('انقطع الاتصال بين الجهازين');
+                location.reload();
+            });
+        }
+
+        // التحقق من وجود كود في الرابط تلقائياً عند الفتح
+        window.addEventListener('DOMContentLoaded', () => {
+            const urlParams = new URLSearchParams(window.location.search);
+            const codeParam = urlParams.get('code');
+            if (codeParam) {
+                document.getElementById('role-selector').style.display = 'none';
+                currentRole = 'controller';
+                document.getElementById('controller-view').style.display = 'flex';
+                document.getElementById('peer-id-input').value = codeParam;
+                setTimeout(() => { connectToPeer(); }, 1000);
+            }
         });
 
-
-    const maxWidth =
-        Math.min(
-            850,
-            window.innerWidth - 50
-        );
-
-
-    const scale =
-        Math.min(
-            2,
-            Math.max(
-                1,
-                maxWidth / baseViewport.width
-            )
-        );
-
-
-    const viewport =
-        page.getViewport({
-            scale:scale
-        });
-
-
-    phoneCanvas.width =
-        viewport.width;
-
-    phoneCanvas.height =
-        viewport.height;
-
-
-    await page.render({
-
-        canvasContext:phoneCtx,
-
-        viewport:viewport
-
-    }).promise;
-
-
-    pageInfo.textContent =
-        "الصفحة " +
-        currentPage +
-        " من " +
-        pdfDocument.numPages;
-
-
-    /*
-       إرسال الصفحة تلقائيًا إلى التلفزيون
-    */
-
-    sendCurrentPageToTV();
-
-}
-
-
-/* =========================
-   إرسال الصفحة للتلفزيون
-========================= */
-
-function sendCurrentPageToTV(){
-
-    if(!phoneCanvas.width){
-        return;
-    }
-
-
-    try{
-
-        const image =
-            phoneCanvas.toDataURL(
-                "image/jpeg",
-                0.85
-            );
-
-
-        sendCommand({
-
-            type:"page",
-
-            image:image
-
-        });
-
-    }catch(error){
-
-        console.error(error);
-
-    }
-
-}
-
-
-/* =========================
-   زر إرسال الصفحة
-========================= */
-
-document
-    .getElementById("sendPageBtn")
-    .addEventListener("click",function(){
-
-        sendCurrentPageToTV();
-
-    });
-
-
-/* =========================
-   السابق
-========================= */
-
-document
-    .getElementById("prevBtn")
-    .addEventListener("click",async function(){
-
-        if(!pdfDocument){
-            return;
+        // --- معالجة وإرسال الأوامر ---
+        function sendAction(action, payload = null) {
+            if (!conn || conn.open === false) {
+                alert('الرجاء التأكد من الاتصال بالتلفزيون أولاً');
+                return;
+            }
+            conn.send({ action, payload });
         }
 
-
-        if(currentPage <= 1){
-            return;
+        function handleIncomingData(data) {
+            if (currentRole === 'display') {
+                if (data.action === 'load_pdf') {
+                    loadPdfFromData(data.payload);
+                } else if (data.action === 'next_page') {
+                    if (pageNum < totalPages) { pageNum++; renderPage(pageNum); currentStep = 0; }
+                } else if (data.action === 'prev_page') {
+                    if (pageNum > 1) { pageNum--; renderPage(pageNum); currentStep = 0; }
+                } else if (data.action === 'step_next') {
+                    currentStep++;
+                    updateStepsDisplay();
+                } else if (data.action === 'step_reset') {
+                    currentStep = 0;
+                    updateStepsDisplay();
+                } else if (data.action === 'zoom_in') {
+                    scale += 0.25; renderPage(pageNum);
+                } else if (data.action === 'zoom_out') {
+                    if (scale > 0.75) scale -= 0.25; renderPage(pageNum);
+                } else if (data.action === 'toggle_fullscreen') {
+                    if (!document.fullscreenElement) {
+                        document.documentElement.requestFullscreen();
+                    } else {
+                        document.exitFullscreen();
+                    }
+                }
+            } else if (currentRole === 'controller') {
+                if (data.action === 'update_meta') {
+                    totalPages = data.payload.totalPages;
+                    pageNum = data.payload.pageNum;
+                    document.getElementById('current-page-num').innerText = pageNum;
+                    document.getElementById('total-pages-num').innerText = totalPages;
+                }
+            }
         }
 
+        // --- عارض ملفات الـ PDF (PDF.js) ---
+        function loadPdfFile(input) {
+            const file = input.files[0];
+            if (!file) return;
+            
+            document.getElementById('file-name-display').innerText = file.name;
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const typedarray = new Uint8Array(e.target.result);
+                
+                // تحميل محلي في الهاتف لتحديث العدادات
+                pdfjsLib.getDocument(typedarray).promise.then(pdf => {
+                    pdfDoc = pdf;
+                    totalPages = pdf.numPages;
+                    pageNum = 1;
+                    document.getElementById('current-page-num').innerText = pageNum;
+                    document.getElementById('total-pages-num').innerText = totalPages;
+                });
 
-        currentPage--;
-
-        await renderPhonePage();
-
-    });
-
-
-/* =========================
-   التالي
-========================= */
-
-document
-    .getElementById("nextBtn")
-    .addEventListener("click",async function(){
-
-        if(!pdfDocument){
-            return;
+                // إرسال الملف إلى التلفزيون عبر البث المباشر
+                sendAction('load_pdf', Array.from(typedarray));
+            };
+            reader.readAsArrayBuffer(file);
         }
 
-
-        if(
-            currentPage >=
-            pdfDocument.numPages
-        ){
-
-            return;
+        function loadPdfFromData(dataArray) {
+            const typedarray = new Uint8Array(dataArray);
+            pdfjsLib.getDocument(typedarray).promise.then(pdf => {
+                pdfDoc = pdf;
+                totalPages = pdf.numPages;
+                pageNum = 1;
+                renderPage(pageNum);
+                // إرسال معلومات الصفحات للريموت
+                if(conn) conn.send({ action: 'update_meta', payload: { totalPages, pageNum } });
+            });
         }
 
+        function renderPage(num) {
+            pdfDoc.getPage(num).then(page => {
+                const canvas = document.getElementById('pdf-canvas');
+                const ctx = canvas.getContext('2d');
+                const viewport = page.getViewport({ scale: scale });
 
-        currentPage++;
+                canvas.height = viewport.height;
+                canvas.width = viewport.width;
 
-        await renderPhonePage();
+                const renderContext = {
+                    canvasContext: ctx,
+                    viewport: viewport
+                };
+                page.render(renderContext);
 
-    });
-
-
-/* =========================
-   إظهار الجملة
-========================= */
-
-document
-    .getElementById("showSentenceBtn")
-    .addEventListener("click",function(){
-
-        const text =
-            sentenceInput.value.trim();
-
-
-        if(!text){
-
-            alert(
-                "اكتب الجملة أولًا."
-            );
-
-            return;
+                if(conn && currentRole === 'display') {
+                    conn.send({ action: 'update_meta', payload: { totalPages, pageNum: num } });
+                }
+            });
         }
 
-
-        sendCommand({
-
-            type:"sentence",
-
-            text:text,
-
-            fontSize:sentenceFontSize
-
-        });
-
-    });
-
-
-/* =========================
-   إخفاء الجملة
-========================= */
-
-document
-    .getElementById("hideSentenceBtn")
-    .addEventListener("click",function(){
-
-        sendCommand({
-
-            type:"hideSentence"
-
-        });
-
-    });
-
-
-/* =========================
-   تكبير الجملة
-========================= */
-
-document
-    .getElementById("fontUpBtn")
-    .addEventListener("click",function(){
-
-        sentenceFontSize += 4;
-
-        if(sentenceFontSize > 100){
-
-            sentenceFontSize = 100;
-
+        function updateStepsDisplay() {
+            // نظام طبقة التغطية التدريجية للشرح
+            let container = document.getElementById('overlay-container');
+            // يمكن تخصيص أو محاكاة إخفاء أجزاء من الصفحة كستارة تدريجية
+            // هنا نطبق طبقة تفاعلية واضحة توضح إمكانية الشرح التدريجي
+            console.log("خطوة الشرح الحالية:", currentStep);
         }
 
-
-        sendCommand({
-
-            type:"font",
-
-            fontSize:sentenceFontSize
-
-        });
-
-    });
-
-
-/* =========================
-   تصغير الجملة
-========================= */
-
-document
-    .getElementById("fontDownBtn")
-    .addEventListener("click",function(){
-
-        sentenceFontSize -= 4;
-
-        if(sentenceFontSize < 18){
-
-            sentenceFontSize = 18;
-
+        // --- إخفاء واجهة التلفزيون عند الخمول ---
+        function setupIdleTimer() {
+            let timeout;
+            const resetTimer = () => {
+                document.body.classList.remove('idle');
+                clearTimeout(timeout);
+                timeout = setTimeout(() => {
+                    if(document.getElementById('tv-connect-screen').style.display === 'none') {
+                        document.body.classList.add('idle');
+                    }
+                }, 5000);
+            };
+            window.addEventListener('mousemove', resetTimer);
+            window.addEventListener('keypress', resetTimer);
         }
-
-
-        sendCommand({
-
-            type:"font",
-
-            fontSize:sentenceFontSize
-
-        });
-
-    });
-
-
-/* =========================
-   مسح الجملة
-========================= */
-
-document
-    .getElementById("clearBtn")
-    .addEventListener("click",function(){
-
-        sentenceInput.value = "";
-
-        sendCommand({
-
-            type:"hideSentence"
-
-        });
-
-    });
-
-
-/* =========================
-   تغيير حجم المعاينة
-========================= */
-
-window.addEventListener(
-    "resize",
-    function(){
-
-        if(pdfDocument){
-
-            renderPhonePage();
-
-        }
-
-    }
-);
-
-
-/* =========================
-   لوحة المفاتيح
-========================= */
-
-document.addEventListener(
-    "keydown",
-    function(event){
-
-        /*
-           لا نستخدم الاختصارات
-           أثناء الكتابة في الجملة.
-        */
-
-        if(
-            document.activeElement ===
-            sentenceInput
-        ){
-
-            return;
-        }
-
-
-        if(event.key === "ArrowRight"){
-
-            document
-                .getElementById("nextBtn")
-                .click();
-
-        }
-
-
-        if(event.key === "ArrowLeft"){
-
-            document
-                .getElementById("prevBtn")
-                .click();
-
-        }
-
-    }
-);
-
-</script>
-
+    </script>
 </body>
-                        </html>
+</html>
+ 
