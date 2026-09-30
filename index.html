@@ -3,21 +3,16 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>عارض المحاضرات الذكي - تلفزيون سامسونج والهاتف</title>
-    <!-- PDF.js CDN -->
+    <title>عارض المحاضرات الاحترافي - تكنو مسار</title>
+    <!-- مكتبة PDF.js -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
     <script>
         pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
     </script>
-    <!-- PeerJS CDN للاتصال المباشر بدون خوادم قواعد بيانات -->
-    <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
-    <!-- QR Code Generator CDN -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-    
     <style>
         :root {
-            --bg-dark: #090d16;
-            --card-bg: #131d31;
+            --bg-color: #0b0f19;
+            --card-bg: #131b2e;
             --accent: #2563eb;
             --accent-hover: #1d4ed8;
             --text-main: #f8fafc;
@@ -34,7 +29,7 @@
         }
 
         body {
-            background-color: var(--bg-dark);
+            background-color: var(--bg-color);
             color: var(--text-main);
             min-height: 100vh;
             display: flex;
@@ -42,49 +37,42 @@
             overflow-x: hidden;
         }
 
-        /* واجهة اختيار الدور الأولية */
-        #role-select-screen {
+        /* شاشة اختيار الدور */
+        #role-screen {
             position: fixed;
             inset: 0;
-            background: var(--bg-dark);
+            background: var(--bg-color);
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            z-index: 2000;
+            z-index: 9999;
             padding: 20px;
             text-align: center;
         }
 
-        .role-box {
+        .role-card {
             background: var(--card-bg);
             border: 2px solid #1e293b;
             border-radius: 16px;
-            padding: 30px;
-            margin: 15px;
+            padding: 25px;
+            margin: 12px;
             width: 100%;
-            max-width: 420px;
+            max-width: 400px;
             cursor: pointer;
-            transition: all 0.25s ease;
+            transition: all 0.2s ease;
         }
 
-        .role-box:hover {
+        .role-card:hover {
             border-color: var(--accent);
-            transform: translateY(-4px);
+            transform: translateY(-3px);
         }
 
-        .role-box h2 {
-            font-size: 1.6rem;
-            margin-bottom: 10px;
-        }
+        .role-card h2 { font-size: 1.5rem; margin-bottom: 8px; }
+        .role-card p { color: var(--text-muted); font-size: 0.9rem; }
 
-        .role-box p {
-            color: var(--text-muted);
-            font-size: 0.95rem;
-        }
-
-        /* شاشة العرض (التلفزيون) */
-        #display-screen {
+        /* واجهة التلفزيون (شاشة العرض) */
+        #tv-display-view {
             display: none;
             width: 100vw;
             height: 100vh;
@@ -95,39 +83,7 @@
             overflow: hidden;
         }
 
-        #tv-pairing-overlay {
-            position: absolute;
-            inset: 0;
-            background: var(--bg-dark);
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            z-index: 100;
-            padding: 20px;
-            text-align: center;
-        }
-
-        .pairing-code {
-            font-size: 3rem;
-            font-weight: bold;
-            letter-spacing: 6px;
-            color: var(--accent);
-            background: var(--card-bg);
-            padding: 12px 24px;
-            border-radius: 12px;
-            margin: 15px 0;
-            border: 2px solid #334155;
-        }
-
-        #qrcode-box {
-            background: white;
-            padding: 15px;
-            border-radius: 12px;
-            margin: 15px 0;
-        }
-
-        #pdf-canvas-container {
+        #pdf-render-area {
             width: 100%;
             height: 100%;
             display: flex;
@@ -143,8 +99,7 @@
             object-fit: contain;
         }
 
-        /* شاشة إخفاء المحتوى (شاشة سوداء نظيفة) */
-        #blackout-layer {
+        #blackout-screen {
             position: absolute;
             inset: 0;
             background: #000;
@@ -152,31 +107,31 @@
             display: none;
         }
 
-        .page-indicator-tv {
+        .tv-page-badge {
             position: absolute;
             bottom: 15px;
             left: 20px;
-            background: rgba(0, 0, 0, 0.6);
+            background: rgba(0, 0, 0, 0.7);
             color: var(--text-muted);
             padding: 6px 12px;
             border-radius: 6px;
-            font-size: 0.9rem;
+            font-size: 0.85rem;
             z-index: 60;
             pointer-events: none;
         }
 
-        /* واجهة الريموت (الهاتف) */
-        #controller-screen {
+        /* واجهة ريموت الهاتف */
+        #phone-remote-view {
             display: none;
             flex-direction: column;
             min-height: 100vh;
-            padding: 16px;
+            padding: 15px;
             max-width: 600px;
             margin: 0 auto;
             width: 100%;
         }
 
-        .panel-card {
+        .remote-panel {
             background: var(--card-bg);
             border-radius: 14px;
             padding: 16px;
@@ -184,27 +139,14 @@
             box-shadow: 0 4px 6px -1px rgba(0,0,0,0.2);
         }
 
-        .connection-row {
-            display: flex;
-            gap: 10px;
-            margin-top: 10px;
-        }
-
-        input[type="text"], button {
-            padding: 14px 18px;
+        input[type="number"], button {
+            padding: 14px 16px;
             border-radius: 10px;
             border: 1px solid #334155;
-            background: #090d16;
+            background: #0b0f19;
             color: var(--text-main);
             font-size: 1rem;
             outline: none;
-        }
-
-        input[type="text"] {
-            flex: 1;
-            text-align: center;
-            letter-spacing: 2px;
-            font-weight: bold;
         }
 
         button {
@@ -215,35 +157,28 @@
             transition: background 0.2s, transform 0.1s;
         }
 
-        button:active {
-            transform: scale(0.97);
-        }
-
-        button:hover {
-            background: var(--accent-hover);
-        }
+        button:active { transform: scale(0.97); }
+        button:hover { background: var(--accent-hover); }
 
         .btn-success { background: var(--success); }
         .btn-danger { background: var(--danger); }
         .btn-secondary { background: #334155; }
 
-        .controls-grid {
+        .remote-grid {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
             gap: 12px;
         }
 
-        .span-2 {
-            grid-column: span 2;
-        }
+        .span-2 { grid-column: span 2; }
 
-        .big-btn {
-            padding: 20px;
-            font-size: 1.15rem;
+        .remote-btn {
+            padding: 18px;
+            font-size: 1.1rem;
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 10px;
+            gap: 8px;
             border-radius: 12px;
         }
 
@@ -255,18 +190,16 @@
             font-weight: bold;
             margin-top: 6px;
         }
+        .status-on { background: rgba(22, 163, 74, 0.15); color: var(--success); }
 
-        .status-disconnected { background: rgba(220, 38, 38, 0.15); color: var(--danger); }
-        .status-connected { background: rgba(22, 163, 74, 0.15); color: var(--success); }
-
-        .file-upload-wrapper {
+        .file-input-box {
             position: relative;
             overflow: hidden;
             display: block;
             width: 100%;
         }
 
-        .file-upload-wrapper input[type="file"] {
+        .file-input-box input[type="file"] {
             position: absolute;
             left: 0;
             top: 0;
@@ -279,280 +212,198 @@
 </head>
 <body>
 
-    <!-- 1. شاشة اختيار وضع الاستخدام -->
-    <div id="role-select-screen">
+    <!-- 1. شاشة اختيار الدور الأولية -->
+    <div id="role-screen">
         <h1 style="margin-bottom: 10px; color: var(--accent);">عارض المحاضرات الاحترافي</h1>
-        <p style="color: var(--text-muted); margin-bottom: 25px;">اختر دور هذا الجهاز للبدء الفوري:</p>
+        <p style="color: var(--text-muted); margin-bottom: 25px;">اختر وضع الاستخدام لهذا الجهاز:</p>
         
-        <div class="role-box" onclick="selectRole('controller')">
-            <h2>📱 الهاتف (وحدة التحكم - ريموت)</h2>
-            <p>اختر هذا الوضع من هاتفك لفتح واختيار ملف الـ PDF وإرسال الأوامر.</p>
+        <div class="role-card" onclick="setAppRole('controller')">
+            <h2>📱 الهاتف (ريموت التحكم)</h2>
+            <p>اختر هذا الخيار من هاتفك لفتح ملف الـ PDF وإرسال الأوامر.</p>
         </div>
 
-        <div class="role-box" onclick="selectRole('display')">
+        <div class="role-card" onclick="setAppRole('display')">
             <h2>📺 التلفزيون (شاشة العرض)</h2>
-            <p>اختر هذا الوضع من متصفح شاشة سامسونج لعرض المحاضرة بشكل نقي وكامل.</p>
+            <p>اختر هذا الخيار من متصفح شاشة سامسونج لعرض المحاضرة.</p>
         </div>
     </div>
 
-    <!-- 2. واجهة شاشة العرض (التلفزيون) -->
-    <div id="display-screen">
-        <div id="tv-pairing-overlay">
-            <h2>شاشة العرض جاهزة للاتصال</h2>
-            <p>امسح الرمز أو أدخل كود الاتصال من هاتفك المحمول:</p>
-            <div class="pairing-code" id="tv-code-display">------</div>
-            <div id="qrcode-box"></div>
-            <div id="tv-connection-status" class="status-badge status-disconnected">في انتظار اتصال الريموت...</div>
-        </div>
-
-        <div id="blackout-layer"></div>
-
-        <div id="pdf-canvas-container">
+    <!-- 2. واجهة شاشة التلفزيون -->
+    <div id="display-view">
+        <div id="blackout-screen"></div>
+        <div id="pdf-render-area">
             <canvas id="pdf-canvas"></canvas>
         </div>
-        <div class="page-indicator-tv" id="tv-page-indicator">الصفحة: 0 / 0</div>
+        <div class="tv-page-badge" id="tv-page-badge">الصفحة: 0 / 0</div>
     </div>
 
-    <!-- 3. واجهة وحدة التحكم (الهاتف) -->
-    <div id="controller-screen">
-        <div class="panel-card" style="text-align: center;">
+    <!-- 3. واجهة ريموت الهاتف -->
+    <div id="phone-remote-view">
+        <div class="remote-panel" style="text-align: center;">
             <h3>وحدة التحكم (الريموت)</h3>
-            <div id="phone-connection-status" class="status-badge status-disconnected">غير متصل بالتلفزيون</div>
-            
-            <div class="connection-row" id="connection-input-area">
-                <input type="text" id="pairing-input-code" placeholder="أدخل كود التلفزيون" maxlength="6">
-                <button onclick="connectToTV()">اتصال</button>
-            </div>
+            <div class="status-badge status-on">متصل وجاهز للتحكم</div>
         </div>
 
-        <div class="panel-card">
-            <div class="file-upload-wrapper">
-                <button class="big-btn btn-success span-2" style="width: 100%;">📁 اختيار ملف PDF للمحاضرة</button>
-                <input type="file" id="pdf-file-picker" accept="application/pdf" onchange="handlePdfSelection(this)">
+        <div class="remote-panel">
+            <div class="file-input-box">
+                <button class="remote-btn btn-success span-2" style="width: 100%;">📁 اختيار ملف PDF للمحاضرة</button>
+                <input type="file" id="pdf-selector" accept="application/pdf" onchange="processSelectedPdf(this)">
             </div>
-            <div id="selected-file-name" style="margin-top: 8px; font-size: 0.85rem; color: var(--text-muted); text-align: center;">لم يتم اختيار ملف بعد</div>
+            <div id="file-name-label" style="margin-top: 8px; font-size: 0.85rem; color: var(--text-muted); text-align: center;">لم يتم اختيار ملف</div>
         </div>
 
-        <div class="controls-grid">
-            <button class="big-btn btn-secondary" onclick="sendAction('prev_page')">⬅️ السابق</button>
-            <button class="big-btn btn-secondary" onclick="sendAction('next_page')">التالي ➡️</button>
+        <div class="remote-grid">
+            <button class="remote-btn btn-secondary" onclick="sendRemoteCommand('prev_page')">⬅️ الصفحة السابقة</button>
+            <button class="remote-btn btn-secondary" onclick="sendRemoteCommand('next_page')">الصفحة التالية ➡️</button>
 
-            <button class="big-btn btn-success span-2" onclick="sendAction('show_page')">👁️️ إظهار الصفحة</button>
-            <button class="big-btn btn-danger span-2" onclick="sendAction('hide_page')">🕶️ إخفاء الصفحة (شاشة سوداء)</button>
+            <button class="remote-btn btn-success span-2" onclick="sendRemoteCommand('show_page')">👁 إظهار الصفحة</button>
+            <button class="remote-btn btn-danger span-2" onclick="sendRemoteCommand('hide_page')">🕶️ إخفاء الصفحة (شاشة سوداء)</button>
 
-            <div class="span-2" style="display: flex; gap: 8px; align-items: center; background: #090d16; padding: 10px; border-radius: 10px; border: 1px solid #334155;">
-                <input type="number" id="target-page-input" placeholder="رقم" min="1" style="flex: 1; padding: 10px; text-align: center;">
-                <button onclick="jumpToPage()" style="padding: 10px 16px;">الانتقال لصفحة</button>
+            <div class="span-2" style="display: flex; gap: 8px; align-items: center; background: #0b0f19; padding: 10px; border-radius: 10px; border: 1px solid #334155;">
+                <input type="number" id="jump-page-input" placeholder="رقم" min="1" style="flex: 1; padding: 10px;">
+                <button onclick="executeJump()" style="padding: 10px 16px;">الانتقال لصفحة</button>
             </div>
 
-            <button class="big-btn span-2" style="background: #1e293b; border: 1px solid #475569;">
-                الصفحة الحالية: <span id="current-page-num" style="color: var(--accent); margin-right: 5px;">0</span> / <span id="total-pages-num">0</span>
+            <button class="remote-btn span-2" style="background: #1e293b; border: 1px solid #475569;">
+                الصفحة الحالية: <span id="current-page-display" style="color: var(--accent); margin-right: 5px;">0</span> / <span id="total-pages-display">0</span>
             </button>
         </div>
     </div>
 
     <script>
-        let currentRole = '';
-        let peer = null;
-        let conn = null;
-        let pdfDoc = null;
-        let pageNum = 1;
-        let totalPages = 0;
-        let scale = 1.6; // مقاس تكبير افتراضي مناسب للشاشات الكبيرة
+        const channel = new BroadcastChannel('technomasar_lecture_channel');
+        let appRole = '';
+        let loadedPdfDoc = null;
+        let activePageNum = 1;
+        let totalPagesCount = 0;
+        let renderScale = 1.8;
 
-        function selectRole(role) {
-            currentRole = role;
-            document.getElementById('role-select-screen').style.display = 'none';
+        function setAppRole(role) {
+            appRole = role;
+            document.getElementById('role-screen').style.display = 'none';
 
             if (role === 'display') {
-                document.getElementById('display-screen').style.display = 'flex';
-                initTVPeer();
+                document.getElementById('display-view').style.display = 'flex';
+                // جلب آخر ملف تم فتحه إن وجد
+                const savedPdf = localStorage.getItem('last_pdf_buffer');
+                if (savedPdf) {
+                    const bufferArray = JSON.parse(savedPdf);
+                    loadPdfFromBuffer(new Uint8Array(bufferArray));
+                }
             } else {
-                document.getElementById('controller-screen').style.display = 'flex';
-                // فحص إذا كان هناك كود في الرابط مسبقاً
-                const urlParams = new URLSearchParams(window.location.search);
-                const codeParam = urlParams.get('code');
-                if (codeParam) {
-                    document.getElementById('pairing-input-code').value = codeParam;
-                    setTimeout(() => connectToTV(), 600);
-                }
+                document.getElementById('phone-remote-view').style.display = 'flex';
             }
         }
 
-        // توليد كود عشوائي من 6 أرقام للتلفزيون
-        function generateCode() {
-            return Math.floor(100000 + Math.random() * 900000).toString();
-        }
-
-        function initTVPeer() {
-            const code = generateCode();
-            document.getElementById('tv-code-display').innerText = code;
-
-            // بناء رابط QR Code مع تضمين الكود لتسهيل الفتح على الهاتف
-            const baseUrl = window.location.href.split('?')[0];
-            const qrTargetUrl = `${baseUrl}?code=${code}`;
-            new QRCode(document.getElementById("qrcode-box"), {
-                text: qrTargetUrl,
-                width: 140,
-                height: 140
-            });
-
-            // إنشاء اتصال فريد يعتمد على البادئة لتجنب التعارض
-            peer = new Peer('ts-lect-' + code);
-
-            peer.on('connection', (connection) => {
-                conn = connection;
-                setupConnectionListeners();
-                document.getElementById('tv-connection-status').innerText = "تم الاتصال بنجاح بجهاز التحكم";
-                document.getElementById('tv-connection-status').className = "status-badge status-connected";
-                setTimeout(() => {
-                    document.getElementById('tv-pairing-overlay').style.display = 'none';
-                }, 1200);
-            });
-
-            peer.on('error', (err) => {
-                console.error(err);
-                alert('حدث خطأ في اتصال الشبكة، يرجى إعادة تحميل الصفحة.');
-            });
-        }
-
-        function connectToTV() {
-            const code = document.getElementById('pairing-input-code').value.trim();
-            if (!code || code.length !== 6) {
-                alert('يرجى إدخال كود الاتصال الصحيح المكون من 6 أرقام');
-                return;
-            }
-
-            peer = new Peer();
-            peer.on('open', () => {
-                conn = peer.connect('ts-lect-' + code);
-                setupConnectionListeners();
-            });
-
-            peer.on('error', () => {
-                alert('تعذر الاتصال بالتلفزيون. تأكد من صحة الكود وأن الجهازين على نفس الشبكة.');
-            });
-        }
-
-        function setupConnectionListeners() {
-            conn.on('open', () => {
-                if (currentRole === 'controller') {
-                    document.getElementById('phone-connection-status').innerText = "تم الاتصال بالتلفزيون";
-                    document.getElementById('phone-connection-status').className = "status-badge status-connected";
-                    document.getElementById('connection-input-area').style.display = 'none';
+        // استقبال الأوامر في التلفزيون
+        channel.onmessage = (event) => {
+            const packet = event.data;
+            if (appRole === 'display') {
+                if (packet.action === 'load_pdf') {
+                    loadPdfFromBuffer(new Uint8Array(packet.payload));
+                } else if (packet.action === 'next_page') {
+                    if (activePageNum < totalPagesCount) {
+                        activePageNum++;
+                        renderPdfPage(activePageNum);
+                    }
+                } else if (packet.action === 'prev_page') {
+                    if (activePageNum > 1) {
+                        activePageNum--;
+                        renderPdfPage(activePageNum);
+                    }
+                } else if (packet.action === 'jump_page') {
+                    let target = parseInt(packet.payload);
+                    if (target >= 1 && target <= totalPagesCount) {
+                        activePageNum = target;
+                        renderPdfPage(activePageNum);
+                    }
+                } else if (packet.action === 'show_page') {
+                    document.getElementById('blackout-screen').style.display = 'none';
+                } else if (packet.action === 'hide_page') {
+                    document.getElementById('blackout-screen').style.display = 'block';
                 }
-            });
-
-            conn.on('data', (data) => {
-                handleRemoteData(data);
-            });
-
-            conn.on('close', () => {
-                alert('انقطع الاتصال بين الهاتف والتلفزيون');
-                location.reload();
-            });
-        }
-
-        function sendAction(action, payload = null) {
-            if (!conn || !conn.open) {
-                alert('الرجاء التأكد من إتمام الاتصال بالتلفزيون أولاً');
-                return;
-            }
-            conn.send({ action, payload });
-        }
-
-        function handleRemoteData(data) {
-            if (currentRole === 'display') {
-                if (data.action === 'load_pdf') {
-                    loadPdfBuffer(data.payload);
-                } else if (data.action === 'next_page') {
-                    if (pageNum < totalPages) { pageNum++; renderPage(pageNum); }
-                } else if (data.action === 'prev_page') {
-                    if (pageNum > 1) { pageNum--; renderPage(pageNum); }
-                } else if (data.action === 'jump_page') {
-                    let p = parseInt(data.payload);
-                    if (p >= 1 && p <= totalPages) { pageNum = p; renderPage(pageNum); }
-                } else if (data.action === 'show_page') {
-                    document.getElementById('blackout-layer').style.display = 'none';
-                } else if (data.action === 'hide_page') {
-                    document.getElementById('blackout-layer').style.display = 'block';
-                }
-            } else if (currentRole === 'controller') {
-                if (data.action === 'update_meta') {
-                    totalPages = data.payload.totalPages;
-                    pageNum = data.payload.pageNum;
-                    document.getElementById('current-page-num').innerText = pageNum;
-                    document.getElementById('total-pages-num').innerText = totalPages;
+            } else if (appRole === 'controller') {
+                if (packet.action === 'sync_meta') {
+                    totalPagesCount = packet.payload.total;
+                    activePageNum = packet.payload.current;
+                    document.getElementById('current-page-display').innerText = activePageNum;
+                    document.getElementById('total-pages-display').innerText = totalPagesCount;
                 }
             }
+        };
+
+        function sendRemoteCommand(actionType, payloadData = null) {
+            channel.postMessage({ action: actionType, payload: payloadData });
+            // إذا كان الأمر في الهاتف، نحدث العدادات محلياً للاستجابة السريعة
+            if (actionType === 'next_page' && activePageNum < totalPagesCount) activePageNum++;
+            if (actionType === 'prev_page' && activePageNum > 1) activePageNum--;
+            document.getElementById('current-page-display').innerText = activePageNum;
         }
 
-        // --- معالجة PDF ---
-        function handlePdfSelection(input) {
-            const file = input.files[0];
-            if (!file) return;
+        // معالجة ملفات PDF من الهاتف
+        function processSelectedPdf(fileInput) {
+            const selectedFile = fileInput.files[0];
+            if (!selectedFile) return;
 
-            document.getElementById('selected-file-name').innerText = file.name;
+            document.getElementById('file-name-label').innerText = selectedFile.name;
             const reader = new FileReader();
             reader.onload = function(e) {
-                const buffer = new Uint8Array(e.target.result);
+                const rawBuffer = new Uint8Array(e.target.result);
+                const bufferArray = Array.from(rawBuffer);
                 
-                // قراءة الـ PDF محلياً في الهاتف لمعرفة عدد الصفحات
-                pdfjsLib.getDocument(buffer).promise.then(pdf => {
-                    pdfDoc = pdf;
-                    totalPages = pdf.numPages;
-                    pageNum = 1;
-                    document.getElementById('current-page-num').innerText = pageNum;
-                    document.getElementById('total-pages-num').innerText = totalPages;
+                // تخزين الملف مؤقتاً ليتزامن مع التلفزيون
+                localStorage.setItem('last_pdf_buffer', JSON.stringify(bufferArray));
+
+                pdfjsLib.getDocument(rawBuffer).promise.then(pdf => {
+                    loadedPdfDoc = pdf;
+                    totalPagesCount = pdf.numPages;
+                    activePageNum = 1;
+                    document.getElementById('current-page-display').innerText = activePageNum;
+                    document.getElementById('total-pages-display').innerText = totalPagesCount;
                 });
 
-                // إرسال الملف كاملاً إلى التلفزيون عبر البث المباشر
-                sendAction('load_pdf', Array.from(buffer));
+                sendRemoteCommand('load_pdf', bufferArray);
             };
-            reader.readAsArrayBuffer(file);
+            reader.readAsArrayBuffer(selectedFile);
         }
 
-        function loadPdfBuffer(bufferArray) {
-            const buffer = new Uint8Array(bufferArray);
-            pdfjsLib.getDocument(buffer).promise.then(pdf => {
-                pdfDoc = pdf;
-                totalPages = pdf.numPages;
-                pageNum = 1;
-                renderPage(pageNum);
+        function loadPdfFromBuffer(rawBuffer) {
+            pdfjsLib.getDocument(rawBuffer).promise.then(pdf => {
+                loadedPdfDoc = pdf;
+                totalPagesCount = pdf.numPages;
+                activePageNum = 1;
+                renderPdfPage(activePageNum);
             });
         }
 
-        function renderPage(num) {
-            pdfDoc.getPage(num).then(page => {
-                const canvas = document.getElementById('pdf-canvas');
-                const ctx = canvas.getContext('2d');
-                const viewport = page.getViewport({ scale: scale });
+        function renderPdfPage(pageNum) {
+            if (!loadedPdfDoc) return;
+            loadedPdfDoc.getPage(pageNum).then(page => {
+                const canvasEl = document.getElementById('pdf-canvas');
+                const canvasCtx = canvasEl.getContext('2d');
+                const pageViewport = page.getViewport({ scale: renderScale });
 
-                canvas.height = viewport.height;
-                canvas.width = viewport.width;
+                canvasEl.height = pageViewport.height;
+                canvasEl.width = pageViewport.width;
 
                 page.render({
-                    canvasContext: ctx,
-                    viewport: viewport
+                    canvasContext: canvasCtx,
+                    viewport: pageViewport
                 });
 
-                document.getElementById('tv-page-indicator').innerText = `الصفحة: ${num} / ${totalPages}`;
-
-                // إرسال التحديثات للريموت
-                if (conn && currentRole === 'display') {
-                    conn.send({ action: 'update_meta', payload: { totalPages, pageNum: num } });
-                }
+                document.getElementById('tv-page-badge').innerText = `الصفحة: ${pageNum} / ${totalPagesCount}`;
+                channel.postMessage({ action: 'sync_meta', payload: { total: totalPagesCount, current: pageNum } });
             });
         }
 
-        function jumpToPage() {
-            const inputVal = document.getElementById('target-page-input').value;
-            const target = parseInt(inputVal);
-            if (!target || target < 1) {
-                alert('يرجى إدخال رقم صفحة صحيح');
+        function executeJump() {
+            const inputVal = document.getElementById('jump-page-input').value;
+            const targetPage = parseInt(inputVal);
+            if (!targetPage || targetPage < 1) {
+                alert('الرجاء إدخال رقم صفحة صحيح');
                 return;
             }
-            sendAction('jump_page', target);
+            sendRemoteCommand('jump_page', targetPage);
         }
     </script>
 </body>
