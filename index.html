@@ -1,598 +1,1642 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>عارض المحاضرات الاحترافي - تكنو مسار</title>
-    <!-- مكتبة PDF.js -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
-    <script>
-        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
-    </script>
-    <!-- مكتبة PeerJS للاتصال المباشر بين الأجهزة -->
-    <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
-    <!-- مكتبة QR Code -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-    <style>
-        :root {
-            --bg-color: #0f172a;
-            --card-bg: #1e293b;
-            --accent-color: #3b82f6;
-            --accent-hover: #2563eb;
-            --text-color: #f8fafc;
-            --text-muted: #94a3b8;
-            --danger: #ef4444;
-            --success: #22c55e;
-        }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-        }
+<title>عارض المحاضرات - هاتف وتلفزيون</title>
 
-        body {
-            background-color: var(--bg-color);
-            color: var(--text-color);
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-            overflow-x: hidden;
-        }
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 
-        /* شاشة اختيار الدور الأولية */
-        #role-selector {
-            position: fixed;
-            inset: 0;
-            background: var(--bg-color);
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            z-index: 1000;
-            padding: 20px;
-            text-align: center;
-        }
+<style>
+*{
+    box-sizing:border-box;
+    margin:0;
+    padding:0;
+    font-family:Arial,Tahoma,sans-serif;
+}
 
-        .role-card {
-            background: var(--card-bg);
-            border: 2px solid #334155;
-            border-radius: 16px;
-            padding: 30px;
-            margin: 15px;
-            width: 100%;
-            max-width: 400px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
+body{
+    background:#0f172a;
+    color:#fff;
+    min-height:100vh;
+}
 
-        .role-card:hover {
-            border-color: var(--accent-color);
-            transform: translateY(-3px);
-        }
+button,input{
+    font-family:inherit;
+}
 
-        .role-card h2 {
-            margin-bottom: 10px;
-            font-size: 1.5rem;
-        }
+button{
+    cursor:pointer;
+}
 
-        .role-card p {
-            color: var(--text-muted);
-            font-size: 0.95rem;
-        }
+#role-selector{
+    min-height:100vh;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    padding:20px;
+    text-align:center;
+}
 
-        /* واجهة الشاشة العامة (Display) */
-        #display-view {
-            display: none;
-            width: 100vw;
-            height: 100vh;
-            position: relative;
-            background: #000;
-            justify-content: center;
-            align-items: center;
-            overflow: hidden;
-        }
+#role-selector h1{
+    color:#3b82f6;
+    margin-bottom:15px;
+}
 
-        #pdf-canvas-container {
-            position: relative;
-            max-width: 100%;
-            max-height: 100%;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-        }
+.role-card{
+    width:100%;
+    max-width:430px;
+    background:#1e293b;
+    border:2px solid #334155;
+    border-radius:18px;
+    padding:28px;
+    margin:10px;
+    cursor:pointer;
+    transition:.2s;
+}
 
-        canvas {
-            display: block;
-            max-width: 100%;
-            max-height: 100vh;
-            object-fit: contain;
-        }
+.role-card:hover{
+    border-color:#3b82f6;
+    transform:translateY(-3px);
+}
 
-        /* طبقة التغطية للشرح التدريجي (Overlay) */
-        .step-overlay {
-            position: absolute;
-            background: rgba(15, 23, 42, 0.95);
-            border: 2px dashed var(--accent-color);
-            transition: all 0.3s ease;
-            pointer-events: none;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: var(--accent-color);
-            font-weight: bold;
-            font-size: 1.2rem;
-            border-radius: 8px;
-        }
+.role-card h2{
+    margin-bottom:10px;
+}
 
-        /* واجهة الريموت/الهاتف (Controller) */
-        #controller-view {
-            display: none;
-            flex-direction: column;
-            min-height: 100vh;
-            padding: 15px;
-            max-width: 600px;
-            margin: 0 auto;
-            width: 100%;
-        }
+.role-card p{
+    color:#94a3b8;
+    line-height:1.7;
+}
 
-        .header-box {
-            background: var(--card-bg);
-            padding: 15px;
-            border-radius: 12px;
-            margin-bottom: 15px;
-            text-align: center;
-            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
-        }
+/* TV */
 
-        .connection-box {
-            display: flex;
-            gap: 10px;
-            margin-top: 10px;
-        }
+#display-view{
+    display:none;
+    width:100vw;
+    height:100vh;
+    background:#000;
+    position:fixed;
+    inset:0;
+    align-items:center;
+    justify-content:center;
+    overflow:hidden;
+}
 
-        input, button {
-            padding: 12px 16px;
-            border-radius: 8px;
-            border: 1px solid #475569;
-            background: #0f172a;
-            color: var(--text-color);
-            font-size: 1rem;
-            outline: none;
-        }
+#pdf-canvas-container{
+    position:relative;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    width:100%;
+    height:100%;
+}
 
-        input {
-            flex: 1;
-        }
+#pdf-canvas{
+    max-width:100%;
+    max-height:100%;
+    display:block;
+}
 
-        button {
-            background: var(--accent-color);
-            border: none;
-            font-weight: bold;
-            cursor: pointer;
-            transition: background 0.2s;
-        }
+#tv-connect-screen{
+    position:absolute;
+    inset:0;
+    z-index:20;
+    background:#0f172a;
+    display:flex;
+    flex-direction:column;
+    justify-content:center;
+    align-items:center;
+    text-align:center;
+    padding:20px;
+}
 
-        button:active {
-            transform: scale(0.98);
-        }
+#tv-connect-screen h2{
+    margin-bottom:12px;
+}
 
-        button:hover {
-            background: var(--accent-hover);
-        }
+#tv-connect-screen p{
+    color:#94a3b8;
+    max-width:600px;
+    line-height:1.7;
+}
 
-        .btn-success { background: var(--success); }
-        .btn-danger { background: var(--danger); }
+#tv-code{
+    font-size:42px;
+    font-weight:bold;
+    letter-spacing:8px;
+    color:#3b82f6;
+    background:#1e293b;
+    padding:12px 25px;
+    border-radius:15px;
+    margin:20px 0;
+}
 
-        /* أزرار التحكم الكبيرة والمريحة */
-        .controls-grid {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 12px;
-            margin-bottom: 15px;
-        }
+#qrcode{
+    background:#fff;
+    padding:12px;
+    border-radius:12px;
+}
 
-        .btn-full {
-            grid-column: span 2;
-        }
+.status{
+    margin-top:15px;
+    padding:8px 15px;
+    border-radius:30px;
+    background:rgba(239,68,68,.2);
+    color:#ef4444;
+    font-weight:bold;
+}
 
-        .big-btn {
-            padding: 18px;
-            font-size: 1.1rem;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-            background: var(--card-bg);
-            border: 1px solid #475569;
-            border-radius: 12px;
-            color: var(--text-color);
-        }
+.status.ok{
+    background:rgba(34,197,94,.2);
+    color:#22c55e;
+}
 
-        .big-btn.primary {
-            background: var(--accent-color);
-            border: none;
-        }
+/* PHONE */
 
-        .status-badge {
-            display: inline-block;
-            padding: 6px 12px;
-            border-radius: 20px;
-            font-size: 0.85rem;
-            font-weight: bold;
-            margin-top: 8px;
-        }
+#controller-view{
+    display:none;
+    max-width:600px;
+    width:100%;
+    margin:auto;
+    padding:15px;
+}
 
-        .status-disconnected { background: rgba(239, 68, 68, 0.2); color: var(--danger); }
-        .status-connected { background: rgba(34, 197, 94, 0.2); color: var(--success); }
+.box{
+    background:#1e293b;
+    border-radius:15px;
+    padding:15px;
+    margin-bottom:15px;
+}
 
-        /* شاشة الاتصال الخاصة بالتلفزيون */
-        #tv-connect-screen {
-            position: absolute;
-            inset: 0;
-            background: var(--bg-color);
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            z-index: 50;
-            padding: 20px;
-            text-align: center;
-        }
+.box h2,
+.box h3{
+    margin-bottom:10px;
+    text-align:center;
+}
 
-        #qrcode {
-            background: white;
-            padding: 15px;
-            border-radius: 12px;
-            margin: 20px 0;
-        }
+.connection{
+    display:flex;
+    gap:8px;
+}
 
-        .code-display {
-            font-size: 2.5rem;
-            font-weight: bold;
-            letter-spacing: 4px;
-            color: var(--accent-color);
-            background: var(--card-bg);
-            padding: 10px 20px;
-            border-radius: 10px;
-            margin: 10px 0;
-            border: 2px solid #334155;
-        }
+input{
+    flex:1;
+    min-width:0;
+    background:#0f172a;
+    color:white;
+    border:1px solid #475569;
+    border-radius:10px;
+    padding:14px;
+    font-size:18px;
+    text-align:center;
+}
 
-        /* إخفاء المؤشر في التلفزيون عند عدم الحركة */
-        body.idle {
-            cursor: none;
-        }
-        body.idle #tv-connect-screen {
-            opacity: 0;
-            pointer-events: none;
-            transition: opacity 0.5s ease;
-        }
+button{
+    border:0;
+    border-radius:10px;
+    padding:14px;
+    background:#3b82f6;
+    color:#fff;
+    font-size:16px;
+    font-weight:bold;
+}
 
-        .file-input-wrapper {
-            position: relative;
-            overflow: hidden;
-            display: inline-block;
-            width: 100%;
-        }
+button:active{
+    transform:scale(.97);
+}
 
-        .file-input-wrapper input[type=file] {
-            position: absolute;
-            left: 0;
-            top: 0;
-            opacity: 0;
-            cursor: pointer;
-            width: 100%;
-            height: 100%;
-        }
-    </style>
+.green{
+    background:#16a34a;
+}
+
+.red{
+    background:#dc2626;
+}
+
+.gray{
+    background:#334155;
+}
+
+.file-box{
+    position:relative;
+    overflow:hidden;
+}
+
+.file-box button{
+    width:100%;
+}
+
+.file-box input[type=file]{
+    position:absolute;
+    inset:0;
+    opacity:0;
+    cursor:pointer;
+}
+
+#file-name{
+    color:#94a3b8;
+    text-align:center;
+    margin-top:10px;
+    word-break:break-word;
+}
+
+.controls{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:10px;
+}
+
+.controls button{
+    min-height:65px;
+}
+
+.full{
+    grid-column:1 / -1;
+}
+
+.page-info{
+    background:#0f172a;
+    border:1px solid #334155;
+    text-align:center;
+    padding:18px;
+    border-radius:12px;
+    font-size:20px;
+}
+
+#phone-status{
+    text-align:center;
+    margin:10px 0;
+    padding:10px;
+    border-radius:10px;
+    background:#3f1d1d;
+    color:#ff7777;
+}
+
+#phone-status.ok{
+    background:#12351f;
+    color:#4ade80;
+}
+
+.small{
+    color:#94a3b8;
+    font-size:13px;
+    line-height:1.6;
+    text-align:center;
+    margin-top:8px;
+}
+
+.hidden{
+    display:none!important;
+}
+
+.progress{
+    width:100%;
+    height:8px;
+    background:#0f172a;
+    border-radius:20px;
+    overflow:hidden;
+    margin-top:10px;
+}
+
+#progress-bar{
+    width:0%;
+    height:100%;
+    background:#3b82f6;
+    transition:.1s;
+}
+</style>
 </head>
+
 <body>
 
-    <!-- 1. شاشة اختيار الدور -->
-    <div id="role-selector">
-        <h1 style="margin-bottom: 20px; color: var(--accent-color);">تكنو مسار - عارض المحاضرات</h1>
-        <p style="color: var(--text-muted); margin-bottom: 30px;">اختر وضع الاستخدام لهذا الجهاز:</p>
-        
-        <div class="role-card" onclick="initRole('controller')">
-            <h2>📱 الهاتف (وحدة التحكم)</h2>
-            <p>استخدم هذا الخيار من هاتفك لفتح ملف الـ PDF وإرسال الأوامر والتنقل بين الصفحات.</p>
-        </div>
+<!-- اختيار الجهاز -->
 
-        <div class="role-card" onclick="initRole('display')">
-            <h2>📺 التلفزيون (شاشة العرض)</h2>
-            <p>استخدم هذا الخيار من متصفح شاشة التلفزيون لعرض المحاضرة بشكل نقي وكامل.</p>
-        </div>
+<div id="role-selector">
+
+    <h1>📺 عارض المحاضرات</h1>
+
+    <p style="color:#94a3b8;margin-bottom:20px">
+        الهاتف ريموت والتحكم — التلفزيون شاشة العرض
+    </p>
+
+    <div class="role-card" onclick="startController()">
+        <h2>📱 الهاتف</h2>
+        <p>
+            استخدم الهاتف للتحكم في المحاضرة والتنقل بين الصفحات.
+        </p>
     </div>
 
-    <!-- 2. واجهة شاشة العرض (التلفزيون) -->
-    <div id="display-view">
-        <div id="tv-connect-screen">
-            <h2>شاشة العرض جاهزة للاتصال</h2>
-            <p>قم بمسح رمز الاستجابة السريعة أو أدخل كود الاتصال من هاتفك المحمول:</p>
-            <div class="code-display" id="tv-display-code">جاري التوليد...</div>
-            <div id="qrcode"></div>
-            <div id="tv-status-text" class="status-badge status-disconnected">في انتظار اتصال جهاز التحكم...</div>
-        </div>
-
-        <div id="pdf-canvas-container">
-            <canvas id="pdf-canvas"></canvas>
-            <div id="overlay-container"></div>
-        </div>
+    <div class="role-card" onclick="startTV()">
+        <h2>📺 التلفزيون</h2>
+        <p>
+            استخدم التلفزيون كشاشة عرض للمحاضرة.
+        </p>
     </div>
 
-    <!-- 3. واجهة وحدة التحكم (الهاتف) -->
-    <div id="controller-view">
-        <div class="header-box">
-            <h3>وحدة التحكم (الريموت)</h3>
-            <div id="phone-connection-status" class="status-badge status-disconnected">غير متصل</div>
-            
-            <div class="connection-box" id="connect-input-box">
-                <input type="text" id="peer-id-input" placeholder="أدخل كود التلفزيون هنا..." maxlength="6">
-                <button onclick="connectToPeer()">اتصال</button>
-            </div>
+</div>
+
+
+<!-- التلفزيون -->
+
+<div id="display-view">
+
+    <div id="tv-connect-screen">
+
+        <h2>📺 شاشة العرض جاهزة</h2>
+
+        <p>
+            افتح الموقع على الهاتف وأدخل الكود الموجود أسفل الشاشة.
+        </p>
+
+        <div id="tv-code">
+            ------
         </div>
 
-        <!-- اختيار ملف الـ PDF -->
-        <div class="header-box">
-            <div class="file-input-wrapper">
-                <button class="big-btn primary btn-full">📁 اختر ملف PDF للمحاضرة</button>
-                <input type="file" id="pdf-file-input" accept="application/pdf" onchange="loadPdfFile(this)">
-            </div>
-            <div id="file-name-display" style="margin-top: 8px; font-size: 0.9rem; color: var(--text-muted);">لم يتم اختيار ملف</div>
+        <div id="qrcode"></div>
+
+        <div id="tv-status" class="status">
+            في انتظار الهاتف...
         </div>
 
-        <!-- أزرار التحكم التفاعلية -->
-        <div class="controls-grid">
-            <button class="big-btn" onclick="sendAction('prev_page')">⬅️ الصفحة السابقة</button>
-            <button class="big-btn" onclick="sendAction('next_page')">الصفحة التالية ➡️</button>
-            
-            <button class="big-btn primary btn-full" style="background: #1e293b; border: 1px solid var(--accent-color);">
-                الصفحة: <span id="current-page-num" style="color: var(--accent-color); margin: 0 5px;">0</span> / <span id="total-pages-num">0</span>
+    </div>
+
+    <div id="pdf-canvas-container">
+
+        <canvas id="pdf-canvas"></canvas>
+
+    </div>
+
+</div>
+
+
+<!-- الهاتف -->
+
+<div id="controller-view">
+
+    <div class="box">
+
+        <h2>📱 ريموت المحاضرة</h2>
+
+        <div id="phone-status">
+            غير متصل بالتلفزيون
+        </div>
+
+        <div id="connect-area" class="connection">
+
+            <input
+                id="tv-code-input"
+                type="text"
+                inputmode="numeric"
+                maxlength="6"
+                placeholder="كود التلفزيون"
+            >
+
+            <button onclick="connectToTV()">
+                اتصال
             </button>
 
-            <button class="big-btn btn-success" onclick="sendAction('step_next')">➕ إظهار التالي</button>
-            <button class="big-btn btn-danger" onclick="sendAction('step_reset')">🔄 إعادة الصفحة</button>
-
-            <button class="big-btn" onclick="sendAction('zoom_in')">🔍 تكبير +</button>
-            <button class="big-btn" onclick="sendAction('zoom_out')">🔍 تصغير -</button>
-
-            <button class="big-btn btn-full" onclick="sendAction('toggle_fullscreen')">🔲 ملء الشاشة</button>
         </div>
+
+        <div class="small">
+            اكتب الكود الظاهر على شاشة التلفزيون ثم اضغط اتصال.
+        </div>
+
     </div>
 
-    <script>
-        let peer = null;
-        let conn = null;
-        let currentRole = '';
-        let pdfDoc = null;
-        let pageNum = 1;
-        let totalPages = 0;
-        let scale = 1.5;
-        let currentStep = 0;
-        let maxSteps = 5; // عدد الخطوات الوهمية أو التدريجية لكل صفحة
 
-        function initRole(role) {
-            currentRole = role;
-            document.getElementById('role-selector').style.display = 'none';
+    <div class="box">
 
-            if (role === 'display') {
-                document.getElementById('display-view').style.display = 'flex';
-                initDisplayPeer();
-                setupIdleTimer();
-            } else {
-                document.getElementById('controller-view').style.display = 'flex';
+        <div class="file-box">
+
+            <button class="green">
+                📁 اختيار ملف PDF
+            </button>
+
+            <input
+                type="file"
+                id="pdf-input"
+                accept="application/pdf"
+                onchange="selectPDF(this)"
+            >
+
+        </div>
+
+        <div id="file-name">
+            لم يتم اختيار ملف
+        </div>
+
+        <div class="progress">
+            <div id="progress-bar"></div>
+        </div>
+
+    </div>
+
+
+    <div class="box">
+
+        <div class="page-info">
+
+            الصفحة
+            <span id="page-number">0</span>
+            /
+            <span id="page-total">0</span>
+
+        </div>
+
+    </div>
+
+
+    <div class="box">
+
+        <div class="controls">
+
+            <button
+                class="gray"
+                onclick="sendCommand('prev')">
+                ⬅️ السابقة
+            </button>
+
+            <button
+                class="gray"
+                onclick="sendCommand('next')">
+                التالية ➡️
+            </button>
+
+            <button
+                class="green"
+                onclick="sendCommand('step')">
+                ➕ إظهار التالي
+            </button>
+
+            <button
+                class="red"
+                onclick="sendCommand('reset')">
+                🔄 إعادة
+            </button>
+
+            <button
+                class="gray"
+                onclick="sendCommand('zoomIn')">
+                🔍 تكبير
+            </button>
+
+            <button
+                class="gray"
+                onclick="sendCommand('zoomOut')">
+                🔎 تصغير
+            </button>
+
+            <button
+                class="full"
+                onclick="sendCommand('fullscreen')">
+                🔲 ملء الشاشة
+            </button>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<script>
+
+pdfjsLib.GlobalWorkerOptions.workerSrc =
+'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+
+
+/* =========================
+   المتغيرات
+========================= */
+
+let peer = null;
+let connection = null;
+
+let role = '';
+
+let pdfDoc = null;
+
+let currentPage = 1;
+let totalPages = 0;
+
+let scale = 1.4;
+
+let pdfBytes = null;
+
+let receivingChunks = [];
+let receivingTotal = 0;
+let receivingCount = 0;
+
+
+/* =========================
+   اختيار الهاتف
+========================= */
+
+function startController(){
+
+    role = 'controller';
+
+    document.getElementById('role-selector').style.display='none';
+
+    document.getElementById('controller-view').style.display='block';
+
+    createControllerPeer();
+}
+
+
+/* =========================
+   اختيار التلفزيون
+========================= */
+
+function startTV(){
+
+    role = 'tv';
+
+    document.getElementById('role-selector').style.display='none';
+
+    document.getElementById('display-view').style.display='flex';
+
+    createTVPeer();
+}
+
+
+/* =========================
+   إنشاء اتصال التلفزيون
+========================= */
+
+function createTVPeer(){
+
+    const code =
+        Math.floor(100000 + Math.random()*900000).toString();
+
+    document.getElementById('tv-code').textContent = code;
+
+    const url =
+        window.location.origin +
+        window.location.pathname +
+        '?tv=' +
+        code;
+
+    document.getElementById('qrcode').innerHTML='';
+
+    new QRCode(
+        document.getElementById('qrcode'),
+        {
+            text:url,
+            width:170,
+            height:170
+        }
+    );
+
+    peer = new Peer(
+        'lecture-tv-' + code,
+        {
+            debug:1
+        }
+    );
+
+
+    peer.on('open',function(id){
+
+        console.log('TV ready:',id);
+
+        setTVStatus(
+            'في انتظار الهاتف...',
+            false
+        );
+
+    });
+
+
+    peer.on('connection',function(conn){
+
+        connection = conn;
+
+        setupConnection();
+
+        setTVStatus(
+            'تم الاتصال بالهاتف ✅',
+            true
+        );
+
+        setTimeout(function(){
+
+            document.getElementById(
+                'tv-connect-screen'
+            ).style.display='none';
+
+        },1000);
+
+    });
+
+
+    peer.on('error',function(error){
+
+        console.error(error);
+
+        setTVStatus(
+            'حدث خطأ في الاتصال',
+            false
+        );
+
+    });
+
+}
+
+
+/* =========================
+   إنشاء Peer للهاتف
+========================= */
+
+function createControllerPeer(){
+
+    peer = new Peer(
+        {
+            debug:1
+        }
+    );
+
+    peer.on('open',function(id){
+
+        console.log('Phone ready:',id);
+
+    });
+
+    peer.on('error',function(error){
+
+        console.error(error);
+
+        setPhoneStatus(
+            'خطأ في الاتصال: '+error.type,
+            false
+        );
+
+    });
+
+}
+
+
+/* =========================
+   اتصال الهاتف بالتلفزيون
+========================= */
+
+function connectToTV(){
+
+    const code =
+        document.getElementById(
+            'tv-code-input'
+        ).value.trim();
+
+
+    if(!/^\d{6}$/.test(code)){
+
+        alert(
+            'اكتب كود التلفزيون المكون من 6 أرقام.'
+        );
+
+        return;
+    }
+
+
+    if(!peer){
+
+        createControllerPeer();
+
+        setTimeout(function(){
+
+            connectToTV();
+
+        },1000);
+
+        return;
+    }
+
+
+    setPhoneStatus(
+        'جاري الاتصال...',
+        false
+    );
+
+
+    const target =
+        'lecture-tv-' + code;
+
+
+    connection =
+        peer.connect(
+            target,
+            {
+                reliable:true
             }
+        );
+
+
+    setupConnection();
+
+
+    connection.on('open',function(){
+
+        setPhoneStatus(
+            'تم الاتصال بالتلفزيون ✅',
+            true
+        );
+
+        document.getElementById(
+            'connect-area'
+        ).style.display='none';
+
+    });
+
+}
+
+
+/* =========================
+   إعداد الاتصال
+========================= */
+
+function setupConnection(){
+
+    if(!connection)return;
+
+
+    connection.on('open',function(){
+
+        if(role==='controller'){
+
+            setPhoneStatus(
+                'تم الاتصال بالتلفزيون ✅',
+                true
+            );
+
         }
 
-        // --- نظام الاتصال (PeerJS) ---
-        function generateRandomCode() {
-            return Math.floor(100000 + Math.random() * 900000).toString();
+    });
+
+
+    connection.on('data',function(data){
+
+        handleData(data);
+
+    });
+
+
+    connection.on('close',function(){
+
+        if(role==='controller'){
+
+            setPhoneStatus(
+                'انقطع الاتصال',
+                false
+            );
+
+        }else{
+
+            setTVStatus(
+                'انقطع اتصال الهاتف',
+                false
+            );
+
         }
 
-        function initDisplayPeer() {
-            const code = generateRandomCode();
-            document.getElementById('tv-display-code').innerText = code;
-            
-            // إنشاء QR Code يوجه للرابط مع كود الاتصال تلقائياً أو يعرض الكود
-            const currentUrl = window.location.href.split('?')[0];
-            const qrText = `${currentUrl}?code=${code}`;
-            new QRCode(document.getElementById("qrcode"), {
-                text: qrText,
-                width: 150,
-                height: 150
-            });
+    });
 
-            peer = new Peer('ts-' + code);
 
-            peer.on('open', (id) => {
-                console.log('TV Peer ID: ', id);
-            });
+    connection.on('error',function(error){
 
-            peer.on('connection', (connection) => {
-                conn = connection;
-                setupConnectionEvents();
-                document.getElementById('tv-status-text').innerText = "تم الاتصال بجهاز التحكم";
-                document.getElementById('tv-status-text').className = "status-badge status-connected";
-                setTimeout(() => {
-                    document.getElementById('tv-connect-screen').style.display = 'none';
-                }, 1500);
-            });
+        console.error(error);
+
+    });
+
+}
+
+
+/* =========================
+   حالة الهاتف
+========================= */
+
+function setPhoneStatus(text,ok){
+
+    const el =
+        document.getElementById(
+            'phone-status'
+        );
+
+    el.textContent=text;
+
+    if(ok)
+        el.classList.add('ok');
+    else
+        el.classList.remove('ok');
+
+}
+
+
+/* =========================
+   حالة التلفزيون
+========================= */
+
+function setTVStatus(text,ok){
+
+    const el =
+        document.getElementById(
+            'tv-status'
+        );
+
+    el.textContent=text;
+
+    if(ok)
+        el.classList.add('ok');
+    else
+        el.classList.remove('ok');
+
+}
+
+
+/* =========================
+   إرسال أمر
+========================= */
+
+function sendCommand(action){
+
+    if(
+        !connection ||
+        connection.open !== true
+    ){
+
+        alert(
+            'اتصل بالتلفزيون أولاً.'
+        );
+
+        return;
+    }
+
+
+    connection.send({
+
+        type:'command',
+
+        action:action
+
+    });
+
+}
+
+
+/* =========================
+   اختيار PDF
+========================= */
+
+function selectPDF(input){
+
+    const file = input.files[0];
+
+    if(!file)return;
+
+
+    document.getElementById(
+        'file-name'
+    ).textContent=file.name;
+
+
+    const reader = new FileReader();
+
+
+    reader.onload = function(e){
+
+        pdfBytes =
+            new Uint8Array(
+                e.target.result
+            );
+
+
+        loadLocalPDF(pdfBytes);
+
+
+        if(
+            connection &&
+            connection.open === true
+        ){
+
+            sendPDFInChunks(pdfBytes);
+
+        }else{
+
+            alert(
+                'اختر ملف PDF بعد الاتصال بالتلفزيون.'
+            );
+
         }
 
-        function connectToPeer() {
-            const code = document.getElementById('peer-id-input').value.trim();
-            if (!code || code.length !== 6) {
-                alert('الرجاء إدخال كود الاتصال الصحيح المكون من 6 أرقام');
-                return;
-            }
+    };
 
-            peer = new Peer();
-            peer.on('open', () => {
-                conn = peer.connect('ts-' + code);
-                setupConnectionEvents();
-            });
-        }
 
-        function setupConnectionEvents() {
-            conn.on('open', () => {
-                if (currentRole === 'controller') {
-                    document.getElementById('phone-connection-status').innerText = "تم الاتصال بالتلفزيون";
-                    document.getElementById('phone-connection-status').className = "status-badge status-connected";
-                    document.getElementById('connect-input-box').style.display = 'none';
-                }
-            });
+    reader.readAsArrayBuffer(file);
 
-            conn.on('data', (data) => {
-                handleIncomingData(data);
-            });
+}
 
-            conn.on('close', () => {
-                alert('انقطع الاتصال بين الجهازين');
-                location.reload();
-            });
-        }
 
-        // التحقق من وجود كود في الرابط تلقائياً عند الفتح
-        window.addEventListener('DOMContentLoaded', () => {
-            const urlParams = new URLSearchParams(window.location.search);
-            const codeParam = urlParams.get('code');
-            if (codeParam) {
-                document.getElementById('role-selector').style.display = 'none';
-                currentRole = 'controller';
-                document.getElementById('controller-view').style.display = 'flex';
-                document.getElementById('peer-id-input').value = codeParam;
-                setTimeout(() => { connectToPeer(); }, 1000);
-            }
+/* =========================
+   تحميل PDF على الهاتف
+========================= */
+
+function loadLocalPDF(bytes){
+
+    pdfjsLib
+        .getDocument({
+            data:bytes
+        })
+        .promise
+        .then(function(pdf){
+
+            pdfDoc=pdf;
+
+            totalPages=pdf.numPages;
+
+            currentPage=1;
+
+            updatePhonePage();
+
+        })
+        .catch(function(error){
+
+            console.error(error);
+
+            alert(
+                'تعذر قراءة ملف PDF.'
+            );
+
         });
 
-        // --- معالجة وإرسال الأوامر ---
-        function sendAction(action, payload = null) {
-            if (!conn || conn.open === false) {
-                alert('الرجاء التأكد من الاتصال بالتلفزيون أولاً');
-                return;
-            }
-            conn.send({ action, payload });
+}
+
+
+/* =========================
+   إرسال PDF على أجزاء
+========================= */
+
+function sendPDFInChunks(bytes){
+
+    const chunkSize =
+        16 * 1024;
+
+
+    const total =
+        Math.ceil(
+            bytes.length / chunkSize
+        );
+
+
+    document.getElementById(
+        'progress-bar'
+    ).style.width='0%';
+
+
+    connection.send({
+
+        type:'pdf-start',
+
+        total:total,
+
+        size:bytes.length
+
+    });
+
+
+    let index=0;
+
+
+    function sendNext(){
+
+        if(
+            index>=total
+        ){
+
+            connection.send({
+
+                type:'pdf-end'
+
+            });
+
+            document.getElementById(
+                'progress-bar'
+            ).style.width='100%';
+
+            return;
         }
 
-        function handleIncomingData(data) {
-            if (currentRole === 'display') {
-                if (data.action === 'load_pdf') {
-                    loadPdfFromData(data.payload);
-                } else if (data.action === 'next_page') {
-                    if (pageNum < totalPages) { pageNum++; renderPage(pageNum); currentStep = 0; }
-                } else if (data.action === 'prev_page') {
-                    if (pageNum > 1) { pageNum--; renderPage(pageNum); currentStep = 0; }
-                } else if (data.action === 'step_next') {
-                    currentStep++;
-                    updateStepsDisplay();
-                } else if (data.action === 'step_reset') {
-                    currentStep = 0;
-                    updateStepsDisplay();
-                } else if (data.action === 'zoom_in') {
-                    scale += 0.25; renderPage(pageNum);
-                } else if (data.action === 'zoom_out') {
-                    if (scale > 0.75) scale -= 0.25; renderPage(pageNum);
-                } else if (data.action === 'toggle_fullscreen') {
-                    if (!document.fullscreenElement) {
-                        document.documentElement.requestFullscreen();
-                    } else {
-                        document.exitFullscreen();
-                    }
-                }
-            } else if (currentRole === 'controller') {
-                if (data.action === 'update_meta') {
-                    totalPages = data.payload.totalPages;
-                    pageNum = data.payload.pageNum;
-                    document.getElementById('current-page-num').innerText = pageNum;
-                    document.getElementById('total-pages-num').innerText = totalPages;
-                }
-            }
+
+        const start =
+            index*chunkSize;
+
+        const end =
+            Math.min(
+                start+chunkSize,
+                bytes.length
+            );
+
+
+        const chunk =
+            bytes.slice(
+                start,
+                end
+            );
+
+
+        connection.send({
+
+            type:'pdf-chunk',
+
+            index:index,
+
+            data:Array.from(chunk)
+
+        });
+
+
+        index++;
+
+
+        const percent =
+            Math.round(
+                index/total*100
+            );
+
+
+        document.getElementById(
+            'progress-bar'
+        ).style.width =
+            percent+'%';
+
+
+        setTimeout(
+            sendNext,
+            10
+        );
+
+    }
+
+
+    sendNext();
+
+}
+
+
+/* =========================
+   استقبال البيانات
+========================= */
+
+function handleData(data){
+
+    if(role==='controller'){
+
+        if(data.type==='page'){
+
+            currentPage =
+                data.page;
+
+            totalPages =
+                data.total;
+
+            updatePhonePage();
+
         }
 
-        // --- عارض ملفات الـ PDF (PDF.js) ---
-        function loadPdfFile(input) {
-            const file = input.files[0];
-            if (!file) return;
-            
-            document.getElementById('file-name-display').innerText = file.name;
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                const typedarray = new Uint8Array(e.target.result);
-                
-                // تحميل محلي في الهاتف لتحديث العدادات
-                pdfjsLib.getDocument(typedarray).promise.then(pdf => {
-                    pdfDoc = pdf;
-                    totalPages = pdf.numPages;
-                    pageNum = 1;
-                    document.getElementById('current-page-num').innerText = pageNum;
-                    document.getElementById('total-pages-num').innerText = totalPages;
+        return;
+    }
+
+
+    if(role==='tv'){
+
+        handleTVData(data);
+
+    }
+
+}
+
+
+/* =========================
+   استقبال التلفزيون
+========================= */
+
+function handleTVData(data){
+
+
+    if(data.type==='pdf-start'){
+
+        receivingChunks=[];
+
+        receivingTotal =
+            data.total;
+
+        receivingCount=0;
+
+        return;
+    }
+
+
+    if(data.type==='pdf-chunk'){
+
+        receivingChunks[
+            data.index
+        ] =
+            new Uint8Array(
+                data.data
+            );
+
+        receivingCount++;
+
+        return;
+    }
+
+
+    if(data.type==='pdf-end'){
+
+        combinePDF();
+
+        return;
+    }
+
+
+    if(data.type==='command'){
+
+        executeTVCommand(
+            data.action
+        );
+
+    }
+
+}
+
+
+/* =========================
+   تجميع PDF
+========================= */
+
+function combinePDF(){
+
+    try{
+
+        let totalLength=0;
+
+
+        for(
+            let i=0;
+            i<receivingChunks.length;
+            i++
+        ){
+
+            totalLength +=
+                receivingChunks[i].length;
+
+        }
+
+
+        const result =
+            new Uint8Array(
+                totalLength
+            );
+
+
+        let offset=0;
+
+
+        for(
+            let i=0;
+            i<receivingChunks.length;
+            i++
+        ){
+
+            result.set(
+                receivingChunks[i],
+                offset
+            );
+
+            offset +=
+                receivingChunks[i].length;
+
+        }
+
+
+        loadTVPDF(result);
+
+
+        receivingChunks=[];
+
+    }catch(error){
+
+        console.error(error);
+
+        setTVStatus(
+            'حدث خطأ أثناء استقبال PDF',
+            false
+        );
+
+    }
+
+}
+
+
+/* =========================
+   تحميل PDF على التلفزيون
+========================= */
+
+function loadTVPDF(bytes){
+
+    pdfjsLib
+        .getDocument({
+            data:bytes
+        })
+        .promise
+        .then(function(pdf){
+
+            pdfDoc=pdf;
+
+            totalPages=
+                pdf.numPages;
+
+            currentPage=1;
+
+            scale=1.4;
+
+            renderTVPage();
+
+            sendPageInfo();
+
+        })
+        .catch(function(error){
+
+            console.error(error);
+
+            setTVStatus(
+                'تعذر فتح ملف PDF',
+                false
+            );
+
+        });
+
+}
+
+
+/* =========================
+   تنفيذ أوامر التلفزيون
+========================= */
+
+function executeTVCommand(action){
+
+    if(!pdfDoc){
+
+        if(
+            action!=='fullscreen'
+        ){
+
+            return;
+
+        }
+
+    }
+
+
+    if(action==='next'){
+
+        if(
+            currentPage<
+            totalPages
+        ){
+
+            currentPage++;
+
+            renderTVPage();
+
+            sendPageInfo();
+
+        }
+
+    }
+
+
+    else if(action==='prev'){
+
+        if(currentPage>1){
+
+            currentPage--;
+
+            renderTVPage();
+
+            sendPageInfo();
+
+        }
+
+    }
+
+
+    else if(action==='zoomIn'){
+
+        scale+=0.2;
+
+        renderTVPage();
+
+    }
+
+
+    else if(action==='zoomOut'){
+
+        if(scale>0.6){
+
+            scale-=0.2;
+
+            renderTVPage();
+
+        }
+
+    }
+
+
+    else if(action==='fullscreen'){
+
+        enterFullscreen();
+
+    }
+
+
+    else if(action==='step'){
+
+        /*
+        هذا زر تجهيز للعرض التدريجي.
+        سيتم تطويره لاحقًا لاستخراج
+        الجمل من PDF.
+        */
+
+        flashTV();
+
+    }
+
+
+    else if(action==='reset'){
+
+        flashTV();
+
+    }
+
+}
+
+
+/* =========================
+   عرض الصفحة
+========================= */
+
+function renderTVPage(){
+
+    if(!pdfDoc)return;
+
+
+    pdfDoc
+        .getPage(currentPage)
+        .then(function(page){
+
+            const container =
+                document.getElementById(
+                    'pdf-canvas-container'
+                );
+
+
+            const canvas =
+                document.getElementById(
+                    'pdf-canvas'
+                );
+
+
+            const availableWidth =
+                window.innerWidth;
+
+            const availableHeight =
+                window.innerHeight;
+
+
+            const baseViewport =
+                page.getViewport({
+                    scale:1
                 });
 
-                // إرسال الملف إلى التلفزيون عبر البث المباشر
-                sendAction('load_pdf', Array.from(typedarray));
-            };
-            reader.readAsArrayBuffer(file);
-        }
 
-        function loadPdfFromData(dataArray) {
-            const typedarray = new Uint8Array(dataArray);
-            pdfjsLib.getDocument(typedarray).promise.then(pdf => {
-                pdfDoc = pdf;
-                totalPages = pdf.numPages;
-                pageNum = 1;
-                renderPage(pageNum);
-                // إرسال معلومات الصفحات للريموت
-                if(conn) conn.send({ action: 'update_meta', payload: { totalPages, pageNum } });
+            const fitScale =
+                Math.min(
+                    availableWidth /
+                    baseViewport.width,
+
+                    availableHeight /
+                    baseViewport.height
+                );
+
+
+            const finalScale =
+                fitScale * scale;
+
+
+            const viewport =
+                page.getViewport({
+                    scale:finalScale
+                });
+
+
+            canvas.width =
+                viewport.width;
+
+            canvas.height =
+                viewport.height;
+
+
+            canvas.style.width =
+                viewport.width+'px';
+
+            canvas.style.height =
+                viewport.height+'px';
+
+
+            const ctx =
+                canvas.getContext('2d');
+
+
+            ctx.clearRect(
+                0,
+                0,
+                canvas.width,
+                canvas.height
+            );
+
+
+            page.render({
+
+                canvasContext:ctx,
+
+                viewport:viewport
+
             });
+
+        });
+
+}
+
+
+/* =========================
+   إرسال رقم الصفحة للهاتف
+========================= */
+
+function sendPageInfo(){
+
+    if(
+        connection &&
+        connection.open===true
+    ){
+
+        connection.send({
+
+            type:'page',
+
+            page:currentPage,
+
+            total:totalPages
+
+        });
+
+    }
+
+}
+
+
+/* =========================
+   تحديث الهاتف
+========================= */
+
+function updatePhonePage(){
+
+    document.getElementById(
+        'page-number'
+    ).textContent =
+        currentPage;
+
+    document.getElementById(
+        'page-total'
+    ).textContent =
+        totalPages;
+
+}
+
+
+/* =========================
+   ملء الشاشة
+========================= */
+
+function enterFullscreen(){
+
+    const element =
+        document.documentElement;
+
+
+    if(
+        !document.fullscreenElement
+    ){
+
+        if(element.requestFullscreen){
+
+            element.requestFullscreen();
+
         }
 
-        function renderPage(num) {
-            pdfDoc.getPage(num).then(page => {
-                const canvas = document.getElementById('pdf-canvas');
-                const ctx = canvas.getContext('2d');
-                const viewport = page.getViewport({ scale: scale });
+    }
 
-                canvas.height = viewport.height;
-                canvas.width = viewport.width;
+}
 
-                const renderContext = {
-                    canvasContext: ctx,
-                    viewport: viewport
-                };
-                page.render(renderContext);
 
-                if(conn && currentRole === 'display') {
-                    conn.send({ action: 'update_meta', payload: { totalPages, pageNum: num } });
-                }
-            });
+/* =========================
+   تأثير بسيط
+========================= */
+
+function flashTV(){
+
+    const canvas =
+        document.getElementById(
+            'pdf-canvas'
+        );
+
+
+    canvas.style.opacity='0.4';
+
+
+    setTimeout(function(){
+
+        canvas.style.opacity='1';
+
+    },150);
+
+}
+
+
+/* =========================
+   QR Code فتح الهاتف تلقائيًا
+========================= */
+
+window.addEventListener(
+    'DOMContentLoaded',
+    function(){
+
+        const params =
+            new URLSearchParams(
+                window.location.search
+            );
+
+
+        const tvCode =
+            params.get('tv');
+
+
+        if(tvCode){
+
+            startController();
+
+
+            setTimeout(function(){
+
+                document.getElementById(
+                    'tv-code-input'
+                ).value =
+                    tvCode;
+
+                connectToTV();
+
+            },1500);
+
         }
 
-        function updateStepsDisplay() {
-            // نظام طبقة التغطية التدريجية للشرح
-            let container = document.getElementById('overlay-container');
-            // يمكن تخصيص أو محاكاة إخفاء أجزاء من الصفحة كستارة تدريجية
-            // هنا نطبق طبقة تفاعلية واضحة توضح إمكانية الشرح التدريجي
-            console.log("خطوة الشرح الحالية:", currentStep);
+    }
+);
+
+
+/* =========================
+   إعادة رسم التلفزيون
+========================= */
+
+window.addEventListener(
+    'resize',
+    function(){
+
+        if(
+            role==='tv' &&
+            pdfDoc
+        ){
+
+            renderTVPage();
+
         }
 
-        // --- إخفاء واجهة التلفزيون عند الخمول ---
-        function setupIdleTimer() {
-            let timeout;
-            const resetTimer = () => {
-                document.body.classList.remove('idle');
-                clearTimeout(timeout);
-                timeout = setTimeout(() => {
-                    if(document.getElementById('tv-connect-screen').style.display === 'none') {
-                        document.body.classList.add('idle');
-                    }
-                }, 5000);
-            };
-            window.addEventListener('mousemove', resetTimer);
-            window.addEventListener('keypress', resetTimer);
-        }
-    </script>
+    }
+);
+
+</script>
+
 </body>
 </html>
- 
