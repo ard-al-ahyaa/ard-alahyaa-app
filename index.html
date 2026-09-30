@@ -2,334 +2,527 @@
 <html lang="ar" dir="rtl">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="viewport"
+      content="width=device-width,
+               initial-scale=1.0,
+               maximum-scale=1.0,
+               user-scalable=no">
 
-<title>عارض PDF - ريموت التلفزيون</title>
+<title>عارض المحاضرات</title>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 
 <style>
 *{
     box-sizing:border-box;
-}
-
-body{
     margin:0;
-    font-family:Tahoma,Arial,sans-serif;
-    background:#080808;
-    color:white;
+    padding:0;
 }
 
-button{
-    border:0;
-    border-radius:12px;
-    padding:14px 20px;
-    font-size:17px;
-    cursor:pointer;
-    color:white;
-    background:#1268e8;
-}
-
-button:active{
-    transform:scale(.97);
-}
-
-.hidden{
-    display:none!important;
-}
-
-/* =========================
-   اختيار الوضع
-========================= */
-
-#startScreen{
-    min-height:100vh;
-    display:flex;
-    justify-content:center;
-    align-items:center;
-    padding:20px;
-}
-
-.startBox{
+html,
+body{
     width:100%;
-    max-width:600px;
+    height:100%;
+    overflow:hidden;
+    background:#000;
+    font-family:Tahoma,Arial,sans-serif;
+}
+
+/* =====================================================
+   الشاشة الرئيسية
+===================================================== */
+
+#home{
+    position:fixed;
+    inset:0;
+    background:#080808;
+    color:#fff;
+
+    display:flex;
+    align-items:center;
+    justify-content:center;
+
+    overflow:auto;
+}
+
+.home-box{
+    width:min(650px,92%);
     background:#151515;
-    padding:30px;
-    border-radius:25px;
+    border-radius:28px;
+    padding:35px 25px;
     text-align:center;
     border:1px solid #292929;
 }
 
-.startBox h1{
-    margin-bottom:10px;
+.home-box h1{
+    font-size:30px;
+    margin-bottom:12px;
 }
 
-.startBox p{
+.home-box p{
     color:#aaa;
     margin-bottom:30px;
 }
 
-.modeButtons{
+.mode-grid{
     display:grid;
     grid-template-columns:1fr 1fr;
     gap:15px;
 }
 
-.modeButton{
+.mode{
+    border:0;
+    border-radius:20px;
     padding:30px 10px;
+    color:#fff;
+    background:#1769e8;
     font-size:20px;
-    background:#1268e8;
 }
 
-.modeButton.tv{
-    background:#16854b;
+.mode.tv{
+    background:#16864d;
 }
 
-.modeIcon{
+.mode-icon{
     display:block;
-    font-size:45px;
-    margin-bottom:10px;
+    font-size:50px;
+    margin-bottom:12px;
 }
 
-/* =========================
+/* =====================================================
    التلفزيون
-========================= */
+===================================================== */
 
-#tvScreen{
+#tv{
     position:fixed;
     inset:0;
     background:#000;
+    overflow:hidden;
 }
 
-#tvCanvasArea{
+/*
+   منطقة العرض
+*/
+
+#tv-stage{
     position:absolute;
     inset:0;
+
     display:flex;
-    justify-content:center;
     align-items:center;
+    justify-content:center;
+
+    background:#000;
 }
+
+/*
+   الـPDF نفسه
+*/
 
 #pdfCanvas{
-    max-width:100%;
-    max-height:100%;
+    display:block;
+
+    max-width:100vw;
+    max-height:100vh;
+
+    width:auto;
+    height:auto;
+
+    object-fit:contain;
+
+    background:#fff;
 }
 
-.tvWaiting{
-    text-align:center;
-    color:#999;
-}
+/*
+   رسالة الانتظار
+*/
 
-.tvWaiting .icon{
-    font-size:80px;
-}
-
-#tvPairBox{
+#tv-wait{
     position:absolute;
+
     top:50%;
     left:50%;
+
     transform:translate(-50%,-50%);
-    background:#151515;
-    border:1px solid #333;
-    border-radius:25px;
-    padding:30px;
-    width:min(90%,700px);
+
+    width:90%;
+
     text-align:center;
-    z-index:20;
+
+    color:#777;
 }
 
-#tvPairBox h2{
-    margin-top:0;
-}
-
-#offerText{
-    width:100%;
-    height:130px;
-    background:#080808;
-    color:#7dffac;
-    border:1px solid #333;
-    border-radius:10px;
-    padding:10px;
-    direction:ltr;
-    resize:none;
-    font-size:11px;
-}
-
-#answerInput{
-    width:100%;
-    height:130px;
-    background:#080808;
-    color:#7db8ff;
-    border:1px solid #333;
-    border-radius:10px;
-    padding:10px;
-    direction:ltr;
-    resize:none;
-    font-size:11px;
-    margin-top:10px;
-}
-
-#tvStatus{
-    color:#aaa;
-    margin-top:12px;
-}
-
-/* =========================
-   الريموت
-========================= */
-
-#remoteScreen{
-    min-height:100vh;
-    background:#090909;
-    padding:18px;
-}
-
-.remote{
-    width:100%;
-    max-width:650px;
-    margin:auto;
-}
-
-.remoteHeader{
-    text-align:center;
+#tv-wait .icon{
+    font-size:90px;
     margin-bottom:20px;
 }
 
-.remoteHeader h1{
+#tv-wait h2{
+    font-size:38px;
+    margin-bottom:15px;
+}
+
+#tv-wait p{
+    font-size:22px;
+    color:#555;
+}
+
+/*
+   رقم الصفحة
+   يظهر لفترة قصيرة فقط
+*/
+
+#page-indicator{
+    position:absolute;
+
+    bottom:25px;
+    left:50%;
+
+    transform:translateX(-50%);
+
+    background:rgba(0,0,0,.75);
+
+    color:#fff;
+
+    padding:10px 22px;
+
+    border-radius:30px;
+
+    font-size:22px;
+
+    opacity:0;
+
+    transition:.3s;
+
+    pointer-events:none;
+}
+
+#page-indicator.show{
+    opacity:1;
+}
+
+/*
+   وضع الإخفاء
+*/
+
+#hidden-message{
+    position:absolute;
+    inset:0;
+
+    background:#000;
+
+    display:none;
+
+    align-items:center;
+    justify-content:center;
+
+    color:#555;
+
+    font-size:28px;
+}
+
+#hidden-message.active{
+    display:flex;
+}
+
+/*
+   زر ملء الشاشة
+*/
+
+#fullscreen{
+    position:absolute;
+
+    left:20px;
+    bottom:20px;
+
+    background:rgba(0,0,0,.6);
+
+    color:#fff;
+
+    border:1px solid #333;
+
+    border-radius:10px;
+
+    padding:10px 15px;
+
+    opacity:0;
+
+    transition:.3s;
+}
+
+#tv:hover #fullscreen{
+    opacity:1;
+}
+
+/* =====================================================
+   الهاتف
+===================================================== */
+
+#remote{
+    position:fixed;
+    inset:0;
+
+    background:#080808;
+
+    color:#fff;
+
+    overflow:auto;
+
+    padding:16px;
+}
+
+.remote-container{
+    width:100%;
+    max-width:650px;
+
+    margin:auto;
+}
+
+.remote-title{
+    text-align:center;
+
+    padding:10px 0 20px;
+}
+
+.remote-title h1{
     font-size:25px;
 }
 
-.status{
-    color:#aaa;
-    text-align:center;
-    margin:10px 0;
+.remote-title p{
+    color:#888;
+    margin-top:7px;
 }
 
 .card{
     background:#151515;
+
     border:1px solid #292929;
+
     border-radius:20px;
+
     padding:18px;
+
     margin-bottom:15px;
 }
 
-.card h3{
-    margin-top:0;
-}
-
-textarea{
-    width:100%;
-    min-height:130px;
-    resize:none;
-    background:#080808;
-    color:#fff;
-    border:1px solid #333;
-    border-radius:10px;
-    padding:10px;
-    direction:ltr;
-    font-size:11px;
+.card h2{
+    font-size:19px;
+    margin-bottom:15px;
 }
 
 input[type=file]{
     width:100%;
-    padding:12px;
+
     background:#080808;
-    color:white;
+
+    color:#fff;
+
     border:1px solid #333;
-    border-radius:10px;
+
+    border-radius:12px;
+
+    padding:12px;
+}
+
+.status{
+    text-align:center;
+
+    color:#999;
+
+    font-size:14px;
+
+    margin-top:10px;
+}
+
+.connection{
+    display:flex;
+
+    align-items:center;
+
+    justify-content:center;
+
+    gap:8px;
+
+    margin-top:8px;
+}
+
+.dot{
+    width:10px;
+    height:10px;
+
+    border-radius:50%;
+
+    background:#777;
+}
+
+.dot.connected{
+    background:#21d879;
+
+    box-shadow:0 0 10px #21d879;
+}
+
+.page{
+    text-align:center;
+
+    font-size:19px;
+
+    color:#ccc;
+
+    margin:15px 0;
 }
 
 .controls{
     display:grid;
+
     grid-template-columns:1fr 1fr;
+
     gap:12px;
 }
 
 .control{
-    padding:22px 10px;
-    font-size:20px;
+    min-height:80px;
+
+    border:0;
+
+    border-radius:17px;
+
+    color:#fff;
+
     background:#252525;
+
+    font-size:21px;
+}
+
+.control:active{
+    transform:scale(.96);
+}
+
+.previous{
+    background:#303030;
 }
 
 .next{
-    background:#1268e8;
+    background:#1769e8;
 }
 
 .show{
-    background:#16854b;
+    background:#16864d;
 }
 
 .hide{
-    background:#9b3030;
+    background:#a33030;
 }
 
-.pageInfo{
-    text-align:center;
-    font-size:18px;
-    margin:15px 0;
-}
-
-.connected{
-    color:#26db78;
-}
-
-.disconnected{
-    color:#ff6565;
-}
-
-.copy{
-    background:#444;
+.full{
     width:100%;
-    margin-top:10px;
+
+    margin-top:12px;
+
+    background:#303030;
+
+    color:#fff;
+
+    border:0;
+
+    border-radius:14px;
+
+    padding:15px;
+
+    font-size:17px;
 }
 
-.connect{
-    width:100%;
-    margin-top:10px;
+/* =====================================================
+   الموبايل أفقي
+===================================================== */
+
+@media(max-width:700px) and (orientation:landscape){
+
+    #remote{
+        padding:10px;
+    }
+
+    .remote-title{
+        padding:5px;
+    }
+
+    .remote-title h1{
+        font-size:20px;
+    }
+
+    .card{
+        padding:12px;
+        margin-bottom:8px;
+    }
+
+    .control{
+        min-height:60px;
+    }
 }
 
-.small{
-    font-size:13px;
-    color:#999;
-    line-height:1.7;
+/* =====================================================
+   شاشات التلفزيون الكبيرة
+===================================================== */
+
+@media(min-width:1500px){
+
+    #tv-wait .icon{
+        font-size:110px;
+    }
+
+    #tv-wait h2{
+        font-size:48px;
+    }
+
+    #tv-wait p{
+        font-size:28px;
+    }
+
+    #page-indicator{
+        font-size:26px;
+    }
 }
 </style>
 </head>
 
 <body>
 
-<!-- =========================
-     الشاشة الرئيسية
-========================= -->
+<!-- =====================================================
+     الصفحة الرئيسية
+===================================================== -->
 
-<div id="startScreen">
+<section id="home">
 
-    <div class="startBox">
+    <div class="home-box">
 
         <h1>📺 عارض المحاضرات</h1>
 
         <p>
-            اختر الجهاز الذي ستستخدمه
+            اختر الجهاز الذي تستخدمه
         </p>
 
-        <div class="modeButtons">
+        <div class="mode-grid">
 
             <button
-                class="modeButton tv"
-                onclick="startTV()">
+                class="mode tv"
+                onclick="openTV()">
 
-                <span class="modeIcon">📺</span>
+                <span class="mode-icon">
+                    📺
+                </span>
 
-                التلفزيون
+                شاشة التلفزيون
 
             </button>
 
             <button
-                class="modeButton"
-                onclick="startRemote()">
+                class="mode"
+                onclick="openRemote()">
 
-                <span class="modeIcon">📱</span>
+                <span class="mode-icon">
+                    📱
+                </span>
 
-                الهاتف ريموت
+                ريموت الهاتف
 
             </button>
 
@@ -337,167 +530,115 @@ input[type=file]{
 
     </div>
 
-</div>
+</section>
 
 
-<!-- =========================
+<!-- =====================================================
      التلفزيون
-========================= -->
+===================================================== -->
 
-<div id="tvScreen" class="hidden">
+<section id="tv" style="display:none">
 
-    <div id="tvCanvasArea">
+    <div id="tv-stage">
 
-        <div
-            id="tvWaiting"
-            class="tvWaiting">
+        <div id="tv-wait">
 
-            <div class="icon">📺</div>
+            <div class="icon">
+                📺
+            </div>
 
-            <h2>في انتظار الاتصال</h2>
+            <h2>
+                عارض المحاضرات
+            </h2>
 
             <p>
-                استخدم الهاتف لإرسال التحكم
+                اختر ملف PDF من الهاتف لبدء العرض
             </p>
 
         </div>
 
+
         <canvas
-            id="pdfCanvas"
-            class="hidden">
+            id="pdfCanvas">
         </canvas>
 
     </div>
 
 
-    <div id="tvPairBox">
+    <div
+        id="hidden-message">
 
-        <h2>🔗 ربط الهاتف بالتلفزيون</h2>
-
-        <p class="small">
-            انسخ الكود الموجود بالأسفل وأرسله للهاتف.
-        </p>
-
-        <textarea
-            id="offerText"
-            readonly>
-        </textarea>
-
-        <button
-            class="copy"
-            onclick="copyOffer()">
-
-            📋 نسخ كود التلفزيون
-
-        </button>
-
-        <hr style="border-color:#333;margin:20px 0">
-
-        <p class="small">
-            بعد أن يعطيك الهاتف كود الرد، ضعه هنا:
-        </p>
-
-        <textarea
-            id="answerInput"
-            placeholder="الصق كود الهاتف هنا">
-        </textarea>
-
-        <button
-            class="connect"
-            onclick="setAnswer()">
-
-            🔗 إكمال الاتصال
-
-        </button>
-
-        <div id="tvStatus">
-            جاري تجهيز الاتصال...
-        </div>
+        العرض مخفي
 
     </div>
 
-</div>
+
+    <div id="page-indicator">
+
+        الصفحة
+        <span id="tv-page">
+            1
+        </span>
+
+    </div>
 
 
-<!-- =========================
-     الهاتف
-========================= -->
+    <button
+        id="fullscreen"
+        onclick="goFullscreen()">
 
-<div id="remoteScreen" class="hidden">
+        ⛶ ملء الشاشة
 
-    <div class="remote">
+    </button>
 
-        <div class="remoteHeader">
+</section>
 
-            <h1>📱 ريموت التلفزيون</h1>
 
-            <div
-                id="remoteConnection"
-                class="disconnected">
+<!-- =====================================================
+     الريموت
+===================================================== -->
 
-                🔴 غير متصل
+<section id="remote" style="display:none">
+
+    <div class="remote-container">
+
+        <div class="remote-title">
+
+            <h1>
+                📱 ريموت المحاضرة
+            </h1>
+
+            <p>
+                تحكم في العرض من الهاتف
+            </p>
+
+            <div class="connection">
+
+                <span
+                    id="connectionDot"
+                    class="dot">
+                </span>
+
+                <span id="connectionText">
+                    غير متصل
+                </span>
 
             </div>
 
         </div>
 
 
-        <!-- الاتصال -->
+        <!-- ملف PDF -->
 
         <div class="card">
 
-            <h3>🔗 الاتصال بالتلفزيون</h3>
-
-            <p class="small">
-                الصق هنا الكود الذي نسخته من التلفزيون.
-            </p>
-
-            <textarea
-                id="offerInput"
-                placeholder="الصق كود التلفزيون هنا">
-            </textarea>
-
-            <button
-                class="connect"
-                onclick="createAnswer()">
-
-                إنشاء كود الاتصال
-
-            </button>
-
-            <p class="small">
-                بعد إنشاء الكود، انسخه وأرسله للتلفزيون.
-            </p>
-
-            <textarea
-                id="answerText"
-                readonly>
-            </textarea>
-
-            <button
-                class="copy"
-                onclick="copyAnswer()">
-
-                📋 نسخ كود الهاتف
-
-            </button>
-
-        </div>
-
-
-        <!-- PDF -->
-
-        <div class="card">
-
-            <h3>📄 ملف PDF</h3>
-
-            <p class="small">
-                اختر نفس ملف PDF الموجود على التلفزيون.
-            </p>
+            <h2>
+                📄 ملف المحاضرة
+            </h2>
 
             <input
-                type="file"
                 id="pdfFile"
+                type="file"
                 accept="application/pdf"
                 onchange="loadPDF(event)">
 
@@ -516,21 +657,23 @@ input[type=file]{
 
         <div class="card">
 
-            <h3>🎮 التحكم</h3>
+            <h2>
+                🎮 التحكم في العرض
+            </h2>
 
-            <div class="pageInfo">
+            <div class="page">
 
                 الصفحة
 
-                <span id="pageNumber">
+                <b id="currentPage">
                     1
-                </span>
+                </b>
 
-                /
+                من
 
-                <span id="pageTotal">
+                <b id="totalPages">
                     0
-                </span>
+                </b>
 
             </div>
 
@@ -538,8 +681,8 @@ input[type=file]{
             <div class="controls">
 
                 <button
-                    class="control"
-                    onclick="sendCommand('previous')">
+                    class="control previous"
+                    onclick="previousPage()">
 
                     ◀
                     <br>
@@ -550,7 +693,7 @@ input[type=file]{
 
                 <button
                     class="control next"
-                    onclick="sendCommand('next')">
+                    onclick="nextPage()">
 
                     التالي
                     <br>
@@ -561,7 +704,7 @@ input[type=file]{
 
                 <button
                     class="control show"
-                    onclick="sendCommand('show')">
+                    onclick="showPage()">
 
                     👁️
                     <br>
@@ -572,7 +715,7 @@ input[type=file]{
 
                 <button
                     class="control hide"
-                    onclick="sendCommand('hide')">
+                    onclick="hidePage()">
 
                     🙈
                     <br>
@@ -582,546 +725,173 @@ input[type=file]{
 
             </div>
 
+
+            <button
+                class="full"
+                onclick="requestTVFullscreen()">
+
+                ⛶ ملء شاشة التلفزيون
+
+            </button>
+
+        </div>
+
+
+        <div class="card">
+
+            <div class="status">
+
+                هذه الواجهة مخصصة للهاتف فقط.
+
+                <br>
+
+                شاشة التلفزيون تعرض الـPDF
+                بأكبر مساحة ممكنة.
+
+            </div>
+
         </div>
 
     </div>
 
-</div>
+</section>
 
 
 <script>
 
-/* =========================================
+/* =====================================================
+   إعداد PDF.js
+===================================================== */
+
+pdfjsLib.GlobalWorkerOptions.workerSrc =
+"https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
+
+
+/* =====================================================
    المتغيرات
-========================================= */
+===================================================== */
 
-let pc = null;
-
-let dataChannel = null;
-
-let mode = "";
-
-let pdf = null;
+let pdfDocument = null;
 
 let currentPage = 1;
 
 let totalPages = 0;
 
-let pageVisible = true;
+let visible = true;
 
 
-/* =========================================
-   تشغيل التلفزيون
-========================================= */
+/* =====================================================
+   فتح التلفزيون
+===================================================== */
 
-async function startTV(){
-
-    mode = "tv";
+function openTV(){
 
     document
-        .getElementById("startScreen")
-        .classList.add("hidden");
+        .getElementById("home")
+        .style.display = "none";
 
     document
-        .getElementById("tvScreen")
-        .classList.remove("hidden");
-
-    await createTVConnection();
+        .getElementById("tv")
+        .style.display = "block";
 
 }
 
 
-/* =========================================
-   تشغيل الريموت
-========================================= */
+/* =====================================================
+   فتح الريموت
+===================================================== */
 
-function startRemote(){
-
-    mode = "remote";
+function openRemote(){
 
     document
-        .getElementById("startScreen")
-        .classList.add("hidden");
+        .getElementById("home")
+        .style.display = "none";
 
     document
-        .getElementById("remoteScreen")
-        .classList.remove("hidden");
+        .getElementById("remote")
+        .style.display = "block";
 
 }
 
 
-/* =========================================
-   إنشاء اتصال التلفزيون
-========================================= */
-
-async function createTVConnection(){
-
-    pc = new RTCPeerConnection({
-        iceServers:[]
-    });
-
-
-    dataChannel =
-        pc.createDataChannel("remote");
-
-
-    setupDataChannel();
-
-
-    pc.onicecandidate =
-        function(event){
-
-            if(!event.candidate){
-
-                document
-                    .getElementById("offerText")
-                    .value =
-                    JSON.stringify(
-                        pc.localDescription
-                    );
-
-            }
-
-        };
-
-
-    pc.onconnectionstatechange =
-        function(){
-
-            const state =
-                pc.connectionState;
-
-            document
-                .getElementById("tvStatus")
-                .textContent =
-                "حالة الاتصال: " + state;
-
-            if(state === "connected"){
-
-                document
-                    .getElementById("tvPairBox")
-                    .classList.add("hidden");
-
-            }
-
-        };
-
-
-    const offer =
-        await pc.createOffer();
-
-
-    await pc.setLocalDescription(
-        offer
-    );
-
-}
-
-
-/* =========================================
-   تجهيز قناة البيانات
-========================================= */
-
-function setupDataChannel(){
-
-    if(!dataChannel) return;
-
-
-    dataChannel.onopen =
-        function(){
-
-            console.log(
-                "DataChannel connected"
-            );
-
-        };
-
-
-    dataChannel.onclose =
-        function(){
-
-            console.log(
-                "DataChannel closed"
-            );
-
-        };
-
-
-    dataChannel.onmessage =
-        function(event){
-
-            try{
-
-                const command =
-                    JSON.parse(
-                        event.data
-                    );
-
-                handleCommand(command);
-
-            }catch(e){
-
-                console.log(e);
-
-            }
-
-        };
-
-}
-
-
-/* =========================================
-   التلفزيون يستقبل الاتصال
-========================================= */
-
-async function setAnswer(){
-
-    const text =
-        document
-        .getElementById("answerInput")
-        .value
-        .trim();
-
-    if(!text){
-
-        alert(
-            "الصق كود الهاتف أولاً"
-        );
-
-        return;
-
-    }
-
-
-    try{
-
-        const answer =
-            JSON.parse(text);
-
-
-        await pc.setRemoteDescription(
-            answer
-        );
-
-
-        document
-            .getElementById("tvStatus")
-            .textContent =
-            "تم إرسال كود الهاتف، انتظر الاتصال...";
-
-
-    }catch(error){
-
-        alert(
-            "كود الاتصال غير صحيح"
-        );
-
-    }
-
-}
-
-
-/* =========================================
-   الهاتف ينشئ الرد
-========================================= */
-
-async function createAnswer(){
-
-    const text =
-        document
-        .getElementById("offerInput")
-        .value
-        .trim();
-
-
-    if(!text){
-
-        alert(
-            "الصق كود التلفزيون أولاً"
-        );
-
-        return;
-
-    }
-
-
-    try{
-
-        const offer =
-            JSON.parse(text);
-
-
-        pc =
-            new RTCPeerConnection({
-                iceServers:[]
-            });
-
-
-        pc.ondatachannel =
-            function(event){
-
-                dataChannel =
-                    event.channel;
-
-                setupDataChannel();
-
-            };
-
-
-        pc.onicecandidate =
-            function(event){
-
-                if(!event.candidate){
-
-                    document
-                        .getElementById(
-                            "answerText"
-                        )
-                        .value =
-                        JSON.stringify(
-                            pc.localDescription
-                        );
-
-                }
-
-            };
-
-
-        pc.onconnectionstatechange =
-            function(){
-
-                const state =
-                    pc.connectionState;
-
-
-                const element =
-                    document
-                    .getElementById(
-                        "remoteConnection"
-                    );
-
-
-                if(state === "connected"){
-
-                    element.textContent =
-                        "🟢 متصل بالتلفزيون";
-
-                    element.className =
-                        "connected";
-
-                }else{
-
-                    element.textContent =
-                        "🔴 " + state;
-
-                    element.className =
-                        "disconnected";
-
-                }
-
-            };
-
-
-        await pc.setRemoteDescription(
-            offer
-        );
-
-
-        const answer =
-            await pc.createAnswer();
-
-
-        await pc.setLocalDescription(
-            answer
-        );
-
-
-    }catch(error){
-
-        console.error(error);
-
-        alert(
-            "كود التلفزيون غير صحيح"
-        );
-
-    }
-
-}
-
-
-/* =========================================
-   إرسال أمر
-========================================= */
-
-function sendCommand(type){
-
-    if(
-        !dataChannel ||
-        dataChannel.readyState !== "open"
-    ){
-
-        alert(
-            "الموبايل غير متصل بالتلفزيون"
-        );
-
-        return;
-
-    }
-
-
-    dataChannel.send(
-
-        JSON.stringify({
-            type:type
-        })
-
-    );
-
-
-    if(type === "next"){
-
-        if(currentPage < totalPages){
-
-            currentPage++;
-
-            updateRemotePage();
-
-        }
-
-    }
-
-
-    if(type === "previous"){
-
-        if(currentPage > 1){
-
-            currentPage--;
-
-            updateRemotePage();
-
-        }
-
-    }
-
-}
-
-
-/* =========================================
-   استقبال الأوامر في التلفزيون
-========================================= */
-
-function handleCommand(command){
-
-    if(!command) return;
-
-
-    if(command.type === "next"){
-
-        if(!pdf) return;
-
-        if(currentPage < totalPages){
-
-            currentPage++;
-
-            renderPage(currentPage);
-
-        }
-
-    }
-
-
-    if(command.type === "previous"){
-
-        if(!pdf) return;
-
-        if(currentPage > 1){
-
-            currentPage--;
-
-            renderPage(currentPage);
-
-        }
-
-    }
-
-
-    if(command.type === "show"){
-
-        pageVisible = true;
-
-        document
-            .getElementById("pdfCanvas")
-            .classList.remove("hidden");
-
-    }
-
-
-    if(command.type === "hide"){
-
-        pageVisible = false;
-
-        document
-            .getElementById("pdfCanvas")
-            .classList.add("hidden");
-
-    }
-
-}
-
-
-/* =========================================
+/* =====================================================
    تحميل PDF
-========================================= */
+===================================================== */
 
 async function loadPDF(event){
 
     const file =
         event.target.files[0];
 
-    if(!file) return;
+    if(!file){
+
+        return;
+    }
+
+
+    if(file.type !== "application/pdf"){
+
+        alert(
+            "من فضلك اختر ملف PDF فقط"
+        );
+
+        return;
+    }
 
 
     try{
 
-        const buffer =
+        const data =
             await file.arrayBuffer();
 
 
-        pdf =
+        pdfDocument =
             await pdfjsLib
-                .getDocument({
-                    data:buffer
-                })
-                .promise;
+            .getDocument({
+                data:data
+            })
+            .promise;
 
 
         totalPages =
-            pdf.numPages;
+            pdfDocument.numPages;
 
 
         currentPage = 1;
 
 
         document
-            .getElementById("pdfStatus")
-            .textContent =
-            "تم تحميل الملف بنجاح";
-
-
-        document
-            .getElementById("pageTotal")
+            .getElementById("totalPages")
             .textContent =
             totalPages;
 
 
-        updateRemotePage();
+        document
+            .getElementById("currentPage")
+            .textContent =
+            currentPage;
+
+
+        document
+            .getElementById("pdfStatus")
+            .textContent =
+            "تم فتح الملف: " + file.name;
 
 
         /*
-          مهم:
-          كل جهاز يفتح نفس ملف PDF محليًا.
-          الهاتف يرسل أوامر الصفحة فقط.
+          إذا كانت الصفحة الحالية هي التلفزيون
+          يتم عرض الملف مباشرة.
         */
+
+        if(
+            document
+            .getElementById("tv")
+            .style.display !== "none"
+        ){
+
+            renderPage(currentPage);
+
+        }
 
 
     }catch(error){
@@ -1129,7 +899,7 @@ async function loadPDF(event){
         console.error(error);
 
         alert(
-            "تعذر فتح ملف PDF"
+            "حدث خطأ أثناء فتح ملف PDF"
         );
 
     }
@@ -1137,39 +907,54 @@ async function loadPDF(event){
 }
 
 
-/* =========================================
-   رسم PDF على التلفزيون
-========================================= */
+/* =====================================================
+   رسم الصفحة على التلفزيون
+===================================================== */
 
 async function renderPage(number){
 
-    if(!pdf) return;
+    if(!pdfDocument){
+
+        return;
+    }
+
+
+    if(
+        number < 1 ||
+        number > pdfDocument.numPages
+    ){
+
+        return;
+    }
 
 
     const page =
-        await pdf.getPage(number);
+        await pdfDocument
+        .getPage(number);
 
 
     const canvas =
         document
-        .getElementById(
-            "pdfCanvas"
-        );
+        .getElementById("pdfCanvas");
 
 
     const context =
         canvas.getContext("2d");
 
 
-    const maxWidth =
+    /*
+       حساب الحجم المناسب لشاشة Samsung 49
+    */
+
+    const screenWidth =
         window.innerWidth;
 
 
-    const maxHeight =
+    const screenHeight =
         window.innerHeight;
 
 
-    const base =
+    const original =
         page.getViewport({
             scale:1
         });
@@ -1177,8 +962,13 @@ async function renderPage(number){
 
     const scale =
         Math.min(
-            maxWidth / base.width,
-            maxHeight / base.height
+
+            screenWidth /
+            original.width,
+
+            screenHeight /
+            original.height
+
         );
 
 
@@ -1189,11 +979,15 @@ async function renderPage(number){
 
 
     canvas.width =
-        viewport.width;
+        Math.floor(
+            viewport.width
+        );
 
 
     canvas.height =
-        viewport.height;
+        Math.floor(
+            viewport.height
+        );
 
 
     await page.render({
@@ -1206,101 +1000,297 @@ async function renderPage(number){
 
 
     document
-        .getElementById("tvWaiting")
-        .classList.add("hidden");
+        .getElementById("tv-wait")
+        .style.display =
+        "none";
 
 
-    canvas.classList.remove(
-        "hidden"
-    );
+    canvas.style.display =
+        "block";
+
+
+    updateTVPage();
 
 }
 
 
-/* =========================================
-   تحديث صفحة الهاتف
-========================================= */
+/* =====================================================
+   التالي
+===================================================== */
 
-function updateRemotePage(){
+function nextPage(){
+
+    if(!pdfDocument){
+
+        return;
+    }
+
+
+    if(currentPage < totalPages){
+
+        currentPage++;
+
+        document
+            .getElementById("currentPage")
+            .textContent =
+            currentPage;
+
+
+        renderPage(currentPage);
+
+        showPageIndicator();
+
+    }
+
+}
+
+
+/* =====================================================
+   السابق
+===================================================== */
+
+function previousPage(){
+
+    if(!pdfDocument){
+
+        return;
+    }
+
+
+    if(currentPage > 1){
+
+        currentPage--;
+
+        document
+            .getElementById("currentPage")
+            .textContent =
+            currentPage;
+
+
+        renderPage(currentPage);
+
+        showPageIndicator();
+
+    }
+
+}
+
+
+/* =====================================================
+   إظهار
+===================================================== */
+
+function showPage(){
+
+    visible = true;
 
     document
-        .getElementById("pageNumber")
+        .getElementById("pdfCanvas")
+        .style.visibility =
+        "visible";
+
+
+    document
+        .getElementById("hidden-message")
+        .classList.remove(
+            "active"
+        );
+
+}
+
+
+/* =====================================================
+   إخفاء
+===================================================== */
+
+function hidePage(){
+
+    visible = false;
+
+    document
+        .getElementById("pdfCanvas")
+        .style.visibility =
+        "hidden";
+
+
+    document
+        .getElementById("hidden-message")
+        .classList.add(
+            "active"
+        );
+
+}
+
+
+/* =====================================================
+   رقم الصفحة على التلفزيون
+===================================================== */
+
+function updateTVPage(){
+
+    document
+        .getElementById("tv-page")
         .textContent =
         currentPage;
 
 }
 
 
-/* =========================================
-   نسخ كود التلفزيون
-========================================= */
+/* =====================================================
+   إظهار رقم الصفحة مؤقتًا
+===================================================== */
 
-async function copyOffer(){
+let indicatorTimer = null;
 
-    const text =
+function showPageIndicator(){
+
+    const indicator =
         document
-        .getElementById("offerText")
-        .value;
+        .getElementById(
+            "page-indicator"
+        );
 
 
-    if(!text) return;
-
-
-    await navigator.clipboard.writeText(
-        text
+    indicator.classList.add(
+        "show"
     );
 
 
+    clearTimeout(
+        indicatorTimer
+    );
+
+
+    indicatorTimer =
+        setTimeout(
+
+            function(){
+
+                indicator.classList.remove(
+                    "show"
+                );
+
+            },
+
+            1500
+
+        );
+
+}
+
+
+/* =====================================================
+   ملء الشاشة
+===================================================== */
+
+async function goFullscreen(){
+
+    try{
+
+        if(
+            !document.fullscreenElement
+        ){
+
+            await document
+                .documentElement
+                .requestFullscreen();
+
+        }
+
+    }catch(error){
+
+        console.log(error);
+
+    }
+
+}
+
+
+/* =====================================================
+   زر طلب ملء الشاشة
+===================================================== */
+
+function requestTVFullscreen(){
+
+    /*
+       هذا يعمل عندما يكون الزر على نفس الجهاز.
+       المتصفح يمنع صفحة من إجبار جهاز آخر
+       على الدخول إلى Fullscreen.
+    */
+
     alert(
-        "تم نسخ كود التلفزيون"
+        "من شاشة التلفزيون اضغط زر ملء الشاشة."
     );
 
 }
 
 
-/* =========================================
-   نسخ كود الهاتف
-========================================= */
-
-async function copyAnswer(){
-
-    const text =
-        document
-        .getElementById("answerText")
-        .value;
-
-
-    if(!text) return;
-
-
-    await navigator.clipboard.writeText(
-        text
-    );
-
-
-    alert(
-        "تم نسخ كود الهاتف"
-    );
-
-}
-
-
-/* =========================================
-   إعادة رسم عند تغيير حجم التلفزيون
-========================================= */
+/* =====================================================
+   تغيير حجم الشاشة
+===================================================== */
 
 window.addEventListener(
     "resize",
     function(){
 
         if(
-            mode === "tv" &&
-            pdf
+            pdfDocument &&
+            document
+            .getElementById("tv")
+            .style.display !== "none"
         ){
 
             renderPage(
                 currentPage
             );
+
+        }
+
+    }
+);
+
+
+/* =====================================================
+   عند الضغط على F
+===================================================== */
+
+document.addEventListener(
+    "keydown",
+    function(event){
+
+        if(
+            event.key === "f" ||
+            event.key === "F"
+        ){
+
+            goFullscreen();
+
+        }
+
+
+        if(
+            event.key === "ArrowRight"
+        ){
+
+            nextPage();
+
+        }
+
+
+        if(
+            event.key === "ArrowLeft"
+        ){
+
+            previousPage();
+
+        }
+
+
+        if(
+            event.key === "Escape"
+        ){
+
+            showPage();
 
         }
 
