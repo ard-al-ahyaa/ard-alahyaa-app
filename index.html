@@ -1,18 +1,25 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
+
 <head>
 <meta charset="UTF-8">
+
 <meta name="viewport"
       content="width=device-width,
-               initial-scale=1.0,
-               maximum-scale=1.0,
-               user-scalable=no">
+      initial-scale=1.0,
+      maximum-scale=1.0,
+      user-scalable=no">
 
 <title>عارض المحاضرات</title>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 
 <style>
+
+/* ==================================================
+   أساس الصفحة
+================================================== */
+
 *{
     box-sizing:border-box;
     margin:0;
@@ -25,488 +32,859 @@ body{
     height:100%;
     overflow:hidden;
     background:#000;
-    font-family:Tahoma,Arial,sans-serif;
+    font-family:
+        Tahoma,
+        Arial,
+        sans-serif;
 }
 
-/* =====================================================
-   الشاشة الرئيسية
-===================================================== */
+button,
+input{
+    font-family:inherit;
+}
 
-#home{
+.hidden{
+    display:none !important;
+}
+
+
+/* ==================================================
+   شاشة البداية
+================================================== */
+
+#startScreen{
+
     position:fixed;
+
     inset:0;
-    background:#080808;
-    color:#fff;
 
     display:flex;
-    align-items:center;
+
     justify-content:center;
+
+    align-items:center;
+
+    background:
+        radial-gradient(
+            circle at center,
+            #18202b,
+            #050608 70%
+        );
+
+    color:white;
+
+    padding:20px;
 
     overflow:auto;
 }
 
-.home-box{
-    width:min(650px,92%);
-    background:#151515;
-    border-radius:28px;
+
+.startBox{
+
+    width:min(
+        650px,
+        100%
+    );
+
+    background:#11151b;
+
+    border:1px solid #29313c;
+
+    border-radius:24px;
+
     padding:35px 25px;
+
     text-align:center;
-    border:1px solid #292929;
+
+    box-shadow:
+        0 20px 60px #000b;
 }
 
-.home-box h1{
-    font-size:30px;
+
+.startBox h1{
+
+    font-size:
+        clamp(
+            24px,
+            4vw,
+            36px
+        );
+
     margin-bottom:12px;
+
 }
 
-.home-box p{
-    color:#aaa;
+
+.startBox p{
+
+    color:#9da7b5;
+
+    font-size:
+        clamp(
+            14px,
+            2vw,
+            18px
+        );
+
     margin-bottom:30px;
+
 }
 
-.mode-grid{
+
+.modeButtons{
+
     display:grid;
-    grid-template-columns:1fr 1fr;
+
+    grid-template-columns:
+        repeat(
+            2,
+            minmax(0,1fr)
+        );
+
     gap:15px;
+
 }
 
-.mode{
+
+.modeButton{
+
+    min-height:150px;
+
     border:0;
+
     border-radius:20px;
-    padding:30px 10px;
-    color:#fff;
-    background:#1769e8;
-    font-size:20px;
+
+    color:white;
+
+    background:#1268e8;
+
+    font-size:
+        clamp(
+            17px,
+            3vw,
+            23px
+        );
+
+    cursor:pointer;
+
+    transition:.2s;
+
 }
 
-.mode.tv{
+
+.modeButton:hover{
+
+    transform:
+        translateY(-3px);
+
+}
+
+
+.modeButton.tv{
+
     background:#16864d;
+
 }
 
-.mode-icon{
+
+.modeIcon{
+
     display:block;
-    font-size:50px;
+
+    font-size:
+        clamp(
+            42px,
+            7vw,
+            65px
+        );
+
     margin-bottom:12px;
+
 }
 
-/* =====================================================
+
+/* ==================================================
    التلفزيون
-===================================================== */
+================================================== */
 
-#tv{
+#tvScreen{
+
     position:fixed;
+
     inset:0;
+
     background:#000;
+
     overflow:hidden;
+
 }
+
 
 /*
-   منطقة العرض
+   مساحة عرض PDF
 */
 
-#tv-stage{
+#tvStage{
+
     position:absolute;
+
     inset:0;
 
     display:flex;
+
     align-items:center;
+
     justify-content:center;
 
     background:#000;
+
 }
 
+
 /*
-   الـPDF نفسه
+   Canvas
 */
 
 #pdfCanvas{
+
     display:block;
 
     max-width:100vw;
+
     max-height:100vh;
 
     width:auto;
+
     height:auto;
 
     object-fit:contain;
 
-    background:#fff;
 }
 
+
 /*
-   رسالة الانتظار
+   شاشة الانتظار
 */
 
-#tv-wait{
+#tvWaiting{
+
     position:absolute;
 
-    top:50%;
     left:50%;
 
-    transform:translate(-50%,-50%);
+    top:50%;
+
+    transform:
+        translate(
+            -50%,
+            -50%
+        );
 
     width:90%;
 
     text-align:center;
 
-    color:#777;
+    color:#737d89;
+
 }
 
-#tv-wait .icon{
-    font-size:90px;
-    margin-bottom:20px;
-}
 
-#tv-wait h2{
-    font-size:38px;
+#tvWaiting .icon{
+
+    font-size:
+        clamp(
+            60px,
+            10vw,
+            120px
+        );
+
     margin-bottom:15px;
+
 }
 
-#tv-wait p{
-    font-size:22px;
-    color:#555;
+
+#tvWaiting h2{
+
+    font-size:
+        clamp(
+            22px,
+            4vw,
+            48px
+        );
+
+    margin-bottom:12px;
+
 }
+
+
+#tvWaiting p{
+
+    font-size:
+        clamp(
+            14px,
+            2.5vw,
+            27px
+        );
+
+    color:#555e69;
+
+}
+
 
 /*
-   رقم الصفحة
-   يظهر لفترة قصيرة فقط
+   حالة إخفاء الصفحة
 */
 
-#page-indicator{
+#hiddenScreen{
+
     position:absolute;
 
-    bottom:25px;
-    left:50%;
-
-    transform:translateX(-50%);
-
-    background:rgba(0,0,0,.75);
-
-    color:#fff;
-
-    padding:10px 22px;
-
-    border-radius:30px;
-
-    font-size:22px;
-
-    opacity:0;
-
-    transition:.3s;
-
-    pointer-events:none;
-}
-
-#page-indicator.show{
-    opacity:1;
-}
-
-/*
-   وضع الإخفاء
-*/
-
-#hidden-message{
-    position:absolute;
     inset:0;
-
-    background:#000;
 
     display:none;
 
-    align-items:center;
     justify-content:center;
+
+    align-items:center;
+
+    background:#000;
 
     color:#555;
 
-    font-size:28px;
+    font-size:
+        clamp(
+            20px,
+            4vw,
+            40px
+        );
+
 }
 
-#hidden-message.active{
+
+#hiddenScreen.active{
+
     display:flex;
+
 }
+
+
+/*
+   رقم الصفحة
+*/
+
+#pageIndicator{
+
+    position:absolute;
+
+    left:50%;
+
+    bottom:25px;
+
+    transform:
+        translateX(-50%);
+
+    padding:
+        9px 22px;
+
+    background:
+        rgba(
+            0,
+            0,
+            0,
+            .75
+        );
+
+    border:
+        1px solid
+        rgba(
+            255,
+            255,
+            255,
+            .15
+        );
+
+    border-radius:30px;
+
+    color:white;
+
+    font-size:
+        clamp(
+            15px,
+            2vw,
+            25px
+        );
+
+    opacity:0;
+
+    transition:.25s;
+
+    pointer-events:none;
+
+}
+
+
+#pageIndicator.show{
+
+    opacity:1;
+
+}
+
 
 /*
    زر ملء الشاشة
 */
 
-#fullscreen{
+#fullscreenButton{
+
     position:absolute;
 
     left:20px;
+
     bottom:20px;
 
-    background:rgba(0,0,0,.6);
+    padding:
+        10px 16px;
 
-    color:#fff;
-
-    border:1px solid #333;
+    border:
+        1px solid #333;
 
     border-radius:10px;
 
-    padding:10px 15px;
+    background:
+        rgba(
+            20,
+            20,
+            20,
+            .8
+        );
 
-    opacity:0;
+    color:white;
 
-    transition:.3s;
+    cursor:pointer;
+
+    opacity:.15;
+
+    transition:.2s;
+
 }
 
-#tv:hover #fullscreen{
+
+#fullscreenButton:hover{
+
     opacity:1;
+
 }
 
-/* =====================================================
-   الهاتف
-===================================================== */
 
-#remote{
+/* ==================================================
+   الهاتف / الريموت
+================================================== */
+
+#remoteScreen{
+
     position:fixed;
+
     inset:0;
 
-    background:#080808;
+    background:#080a0d;
 
-    color:#fff;
+    color:white;
 
     overflow:auto;
 
-    padding:16px;
+    padding:
+        clamp(
+            10px,
+            3vw,
+            25px
+        );
+
 }
 
-.remote-container{
+
+.remoteContainer{
+
     width:100%;
+
     max-width:650px;
 
     margin:auto;
+
 }
 
-.remote-title{
+
+.remoteHeader{
+
     text-align:center;
 
-    padding:10px 0 20px;
+    padding:
+        8px 0 18px;
+
 }
 
-.remote-title h1{
-    font-size:25px;
+
+.remoteHeader h1{
+
+    font-size:
+        clamp(
+            22px,
+            5vw,
+            30px
+        );
+
 }
 
-.remote-title p{
-    color:#888;
+
+.remoteHeader p{
+
     margin-top:7px;
+
+    color:#87909c;
+
 }
+
 
 .card{
-    background:#151515;
 
-    border:1px solid #292929;
+    background:#12161c;
 
-    border-radius:20px;
+    border:
+        1px solid #242c36;
 
-    padding:18px;
+    border-radius:18px;
 
-    margin-bottom:15px;
+    padding:
+        clamp(
+            14px,
+            3vw,
+            20px
+        );
+
+    margin-bottom:14px;
+
 }
 
-.card h2{
-    font-size:19px;
+
+.cardTitle{
+
+    font-size:
+        clamp(
+            17px,
+            4vw,
+            21px
+        );
+
     margin-bottom:15px;
+
 }
 
-input[type=file]{
+
+/*
+   اختيار PDF
+*/
+
+#pdfFile{
+
     width:100%;
 
-    background:#080808;
+    padding:12px;
 
-    color:#fff;
+    border-radius:10px;
 
     border:1px solid #333;
 
-    border-radius:12px;
+    background:#080a0d;
 
-    padding:12px;
+    color:white;
+
 }
 
+
 .status{
+
+    margin-top:10px;
+
     text-align:center;
 
-    color:#999;
+    color:#929ba6;
 
     font-size:14px;
 
-    margin-top:10px;
 }
 
-.connection{
-    display:flex;
 
-    align-items:center;
+/*
+   رقم الصفحة
+*/
 
-    justify-content:center;
+.pageInfo{
 
-    gap:8px;
-
-    margin-top:8px;
-}
-
-.dot{
-    width:10px;
-    height:10px;
-
-    border-radius:50%;
-
-    background:#777;
-}
-
-.dot.connected{
-    background:#21d879;
-
-    box-shadow:0 0 10px #21d879;
-}
-
-.page{
     text-align:center;
 
-    font-size:19px;
+    font-size:
+        clamp(
+            16px,
+            4vw,
+            20px
+        );
 
-    color:#ccc;
+    color:#c7ced7;
 
-    margin:15px 0;
+    margin-bottom:15px;
+
 }
+
+
+/*
+   أزرار التحكم
+*/
 
 .controls{
+
     display:grid;
 
-    grid-template-columns:1fr 1fr;
+    grid-template-columns:
+        repeat(
+            2,
+            minmax(0,1fr)
+        );
 
     gap:12px;
+
 }
 
+
 .control{
-    min-height:80px;
+
+    min-height:
+        clamp(
+            70px,
+            18vw,
+            100px
+        );
 
     border:0;
 
     border-radius:17px;
 
-    color:#fff;
+    color:white;
 
-    background:#252525;
+    font-size:
+        clamp(
+            17px,
+            4vw,
+            22px
+        );
 
-    font-size:21px;
+    cursor:pointer;
+
+    transition:.12s;
+
 }
+
 
 .control:active{
+
     transform:scale(.96);
+
 }
+
 
 .previous{
-    background:#303030;
+
+    background:#30353d;
+
 }
+
 
 .next{
-    background:#1769e8;
+
+    background:#1268e8;
+
 }
+
 
 .show{
+
     background:#16864d;
+
 }
+
 
 .hide{
+
     background:#a33030;
+
 }
 
-.full{
+
+/*
+   زر عام
+*/
+
+.fullButton{
+
     width:100%;
-
-    margin-top:12px;
-
-    background:#303030;
-
-    color:#fff;
 
     border:0;
 
-    border-radius:14px;
+    border-radius:13px;
 
-    padding:15px;
+    background:#252b34;
 
-    font-size:17px;
+    color:white;
+
+    padding:14px;
+
+    margin-top:12px;
+
+    font-size:16px;
+
+    cursor:pointer;
+
 }
 
-/* =====================================================
-   الموبايل أفقي
-===================================================== */
 
-@media(max-width:700px) and (orientation:landscape){
+/* ==================================================
+   التابلت
+================================================== */
 
-    #remote{
-        padding:10px;
+@media
+(min-width:600px)
+and
+(max-width:1100px){
+
+    .controls{
+
+        grid-template-columns:
+            repeat(
+                4,
+                minmax(0,1fr)
+            );
+
     }
 
-    .remote-title{
-        padding:5px;
+}
+
+
+/* ==================================================
+   التلفزيون العريض
+================================================== */
+
+@media
+(min-width:1200px){
+
+    #pageIndicator{
+
+        bottom:35px;
+
     }
 
-    .remote-title h1{
+}
+
+
+/* ==================================================
+   الهاتف العمودي
+================================================== */
+
+@media
+(max-width:599px){
+
+    .modeButtons{
+
+        grid-template-columns:1fr;
+
+    }
+
+
+    .modeButton{
+
+        min-height:120px;
+
+    }
+
+}
+
+
+/* ==================================================
+   الهاتف الأفقي
+================================================== */
+
+@media
+(max-width:900px)
+and
+(orientation:landscape){
+
+    #remoteScreen{
+
+        padding:8px;
+
+    }
+
+
+    .remoteHeader{
+
+        padding:3px;
+
+    }
+
+
+    .remoteHeader h1{
+
         font-size:20px;
+
     }
+
 
     .card{
-        padding:12px;
+
+        padding:10px;
+
         margin-bottom:8px;
+
     }
+
 
     .control{
-        min-height:60px;
+
+        min-height:55px;
+
     }
+
 }
 
-/* =====================================================
-   شاشات التلفزيون الكبيرة
-===================================================== */
-
-@media(min-width:1500px){
-
-    #tv-wait .icon{
-        font-size:110px;
-    }
-
-    #tv-wait h2{
-        font-size:48px;
-    }
-
-    #tv-wait p{
-        font-size:28px;
-    }
-
-    #page-indicator{
-        font-size:26px;
-    }
-}
 </style>
+
 </head>
+
 
 <body>
 
-<!-- =====================================================
-     الصفحة الرئيسية
-===================================================== -->
 
-<section id="home">
+<!-- ==================================================
+     شاشة البداية
+================================================== -->
 
-    <div class="home-box">
+<section id="startScreen">
 
-        <h1>📺 عارض المحاضرات</h1>
+    <div class="startBox">
+
+        <h1>
+            📺 عارض المحاضرات
+        </h1>
 
         <p>
-            اختر الجهاز الذي تستخدمه
+            اختر وضع الجهاز
         </p>
 
-        <div class="mode-grid">
+
+        <div class="modeButtons">
 
             <button
-                class="mode tv"
+                class="modeButton tv"
                 onclick="openTV()">
 
-                <span class="mode-icon">
+                <span class="modeIcon">
                     📺
                 </span>
 
@@ -514,11 +892,12 @@ input[type=file]{
 
             </button>
 
+
             <button
-                class="mode"
+                class="modeButton"
                 onclick="openRemote()">
 
-                <span class="mode-icon">
+                <span class="modeIcon">
                     📱
                 </span>
 
@@ -533,15 +912,19 @@ input[type=file]{
 </section>
 
 
-<!-- =====================================================
-     التلفزيون
-===================================================== -->
+<!-- ==================================================
+     شاشة التلفزيون
+================================================== -->
 
-<section id="tv" style="display:none">
+<section
+    id="tvScreen"
+    style="display:none">
 
-    <div id="tv-stage">
 
-        <div id="tv-wait">
+    <div id="tvStage">
+
+
+        <div id="tvWaiting">
 
             <div class="icon">
                 📺
@@ -552,7 +935,7 @@ input[type=file]{
             </h2>
 
             <p>
-                اختر ملف PDF من الهاتف لبدء العرض
+                جاهز لعرض ملف PDF
             </p>
 
         </div>
@@ -562,21 +945,22 @@ input[type=file]{
             id="pdfCanvas">
         </canvas>
 
+
     </div>
 
 
-    <div
-        id="hidden-message">
+    <div id="hiddenScreen">
 
         العرض مخفي
 
     </div>
 
 
-    <div id="page-indicator">
+    <div id="pageIndicator">
 
         الصفحة
-        <span id="tv-page">
+
+        <span id="tvPage">
             1
         </span>
 
@@ -584,8 +968,8 @@ input[type=file]{
 
 
     <button
-        id="fullscreen"
-        onclick="goFullscreen()">
+        id="fullscreenButton"
+        onclick="fullscreenTV()">
 
         ⛶ ملء الشاشة
 
@@ -594,53 +978,46 @@ input[type=file]{
 </section>
 
 
-<!-- =====================================================
-     الريموت
-===================================================== -->
+<!-- ==================================================
+     شاشة الهاتف
+================================================== -->
 
-<section id="remote" style="display:none">
+<section
+    id="remoteScreen"
+    style="display:none">
 
-    <div class="remote-container">
 
-        <div class="remote-title">
+    <div class="remoteContainer">
+
+
+        <header class="remoteHeader">
 
             <h1>
-                📱 ريموت المحاضرة
+                📱 ريموت المحاضرات
             </h1>
 
             <p>
-                تحكم في العرض من الهاتف
+                تحكم في صفحات العرض
             </p>
 
-            <div class="connection">
-
-                <span
-                    id="connectionDot"
-                    class="dot">
-                </span>
-
-                <span id="connectionText">
-                    غير متصل
-                </span>
-
-            </div>
-
-        </div>
+        </header>
 
 
         <!-- ملف PDF -->
 
         <div class="card">
 
-            <h2>
-                📄 ملف المحاضرة
-            </h2>
+            <div class="cardTitle">
+                📄 ملف PDF
+            </div>
+
 
             <input
                 id="pdfFile"
                 type="file"
                 accept="application/pdf"
                 onchange="loadPDF(event)">
+
 
             <div
                 id="pdfStatus"
@@ -657,11 +1034,12 @@ input[type=file]{
 
         <div class="card">
 
-            <h2>
-                🎮 التحكم في العرض
-            </h2>
+            <div class="cardTitle">
+                🎮 التحكم
+            </div>
 
-            <div class="page">
+
+            <div class="pageInfo">
 
                 الصفحة
 
@@ -679,6 +1057,7 @@ input[type=file]{
 
 
             <div class="controls">
+
 
                 <button
                     class="control previous"
@@ -723,34 +1102,20 @@ input[type=file]{
 
                 </button>
 
+
             </div>
 
 
             <button
-                class="full"
-                onclick="requestTVFullscreen()">
+                class="fullButton"
+                onclick="fullscreenTV()">
 
-                ⛶ ملء شاشة التلفزيون
+                ⛶ ملء الشاشة
 
             </button>
 
         </div>
 
-
-        <div class="card">
-
-            <div class="status">
-
-                هذه الواجهة مخصصة للهاتف فقط.
-
-                <br>
-
-                شاشة التلفزيون تعرض الـPDF
-                بأكبر مساحة ممكنة.
-
-            </div>
-
-        </div>
 
     </div>
 
@@ -759,17 +1124,17 @@ input[type=file]{
 
 <script>
 
-/* =====================================================
-   إعداد PDF.js
-===================================================== */
+/* ==================================================
+   PDF.js
+================================================== */
 
 pdfjsLib.GlobalWorkerOptions.workerSrc =
 "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
 
 
-/* =====================================================
+/* ==================================================
    المتغيرات
-===================================================== */
+================================================== */
 
 let pdfDocument = null;
 
@@ -777,78 +1142,85 @@ let currentPage = 1;
 
 let totalPages = 0;
 
-let visible = true;
+let pageVisible = true;
+
+let indicatorTimer;
 
 
-/* =====================================================
+/* ==================================================
    فتح التلفزيون
-===================================================== */
+================================================== */
 
 function openTV(){
 
     document
-        .getElementById("home")
+        .getElementById("startScreen")
         .style.display = "none";
 
+
     document
-        .getElementById("tv")
+        .getElementById("tvScreen")
         .style.display = "block";
 
 }
 
 
-/* =====================================================
-   فتح الريموت
-===================================================== */
+/* ==================================================
+   فتح الهاتف
+================================================== */
 
 function openRemote(){
 
     document
-        .getElementById("home")
+        .getElementById("startScreen")
         .style.display = "none";
 
+
     document
-        .getElementById("remote")
+        .getElementById("remoteScreen")
         .style.display = "block";
 
 }
 
 
-/* =====================================================
+/* ==================================================
    تحميل PDF
-===================================================== */
+================================================== */
 
 async function loadPDF(event){
 
     const file =
         event.target.files[0];
 
+
     if(!file){
 
         return;
+
     }
 
 
     if(file.type !== "application/pdf"){
 
         alert(
-            "من فضلك اختر ملف PDF فقط"
+            "اختر ملف PDF فقط"
         );
 
         return;
+
     }
 
 
     try{
 
-        const data =
+        const buffer =
             await file.arrayBuffer();
 
 
         pdfDocument =
             await pdfjsLib
             .getDocument({
-                data:data
+                data:buffer
             })
             .promise;
 
@@ -861,35 +1233,45 @@ async function loadPDF(event){
 
 
         document
-            .getElementById("totalPages")
+            .getElementById(
+                "totalPages"
+            )
             .textContent =
             totalPages;
 
 
         document
-            .getElementById("currentPage")
+            .getElementById(
+                "currentPage"
+            )
             .textContent =
             currentPage;
 
 
         document
-            .getElementById("pdfStatus")
+            .getElementById(
+                "pdfStatus"
+            )
             .textContent =
-            "تم فتح الملف: " + file.name;
+            "تم فتح: " +
+            file.name;
 
 
         /*
-          إذا كانت الصفحة الحالية هي التلفزيون
-          يتم عرض الملف مباشرة.
+           إذا كان الجهاز في وضع التلفزيون
         */
 
         if(
             document
-            .getElementById("tv")
+            .getElementById(
+                "tvScreen"
+            )
             .style.display !== "none"
         ){
 
-            renderPage(currentPage);
+            await renderPage(
+                currentPage
+            );
 
         }
 
@@ -899,7 +1281,7 @@ async function loadPDF(event){
         console.error(error);
 
         alert(
-            "حدث خطأ أثناء فتح ملف PDF"
+            "تعذر فتح ملف PDF"
         );
 
     }
@@ -907,24 +1289,16 @@ async function loadPDF(event){
 }
 
 
-/* =====================================================
-   رسم الصفحة على التلفزيون
-===================================================== */
+/* ==================================================
+   رسم صفحة PDF
+================================================== */
 
 async function renderPage(number){
 
     if(!pdfDocument){
 
         return;
-    }
 
-
-    if(
-        number < 1 ||
-        number > pdfDocument.numPages
-    ){
-
-        return;
     }
 
 
@@ -935,22 +1309,22 @@ async function renderPage(number){
 
     const canvas =
         document
-        .getElementById("pdfCanvas");
+        .getElementById(
+            "pdfCanvas"
+        );
 
 
     const context =
-        canvas.getContext("2d");
+        canvas.getContext(
+            "2d"
+        );
 
 
-    /*
-       حساب الحجم المناسب لشاشة Samsung 49
-    */
-
-    const screenWidth =
+    const width =
         window.innerWidth;
 
 
-    const screenHeight =
+    const height =
         window.innerHeight;
 
 
@@ -960,13 +1334,18 @@ async function renderPage(number){
         });
 
 
+    /*
+       نستخدم أكبر حجم ممكن
+       بدون قص الصفحة
+    */
+
     const scale =
         Math.min(
 
-            screenWidth /
+            width /
             original.width,
 
-            screenHeight /
+            height /
             original.height
 
         );
@@ -979,28 +1358,32 @@ async function renderPage(number){
 
 
     canvas.width =
-        Math.floor(
+        Math.round(
             viewport.width
         );
 
 
     canvas.height =
-        Math.floor(
+        Math.round(
             viewport.height
         );
 
 
     await page.render({
 
-        canvasContext:context,
+        canvasContext:
+            context,
 
-        viewport:viewport
+        viewport:
+            viewport
 
     }).promise;
 
 
     document
-        .getElementById("tv-wait")
+        .getElementById(
+            "tvWaiting"
+        )
         .style.display =
         "none";
 
@@ -1011,49 +1394,53 @@ async function renderPage(number){
 
     updateTVPage();
 
+
+    showIndicator();
+
 }
 
 
-/* =====================================================
+/* ==================================================
    التالي
-===================================================== */
+================================================== */
 
 function nextPage(){
 
     if(!pdfDocument){
 
         return;
+
     }
 
 
-    if(currentPage < totalPages){
+    if(
+        currentPage <
+        totalPages
+    ){
 
         currentPage++;
 
-        document
-            .getElementById("currentPage")
-            .textContent =
-            currentPage;
+        updateRemotePage();
 
-
-        renderPage(currentPage);
-
-        showPageIndicator();
+        renderPage(
+            currentPage
+        );
 
     }
 
 }
 
 
-/* =====================================================
+/* ==================================================
    السابق
-===================================================== */
+================================================== */
 
 function previousPage(){
 
     if(!pdfDocument){
 
         return;
+
     }
 
 
@@ -1061,37 +1448,70 @@ function previousPage(){
 
         currentPage--;
 
-        document
-            .getElementById("currentPage")
-            .textContent =
-            currentPage;
+        updateRemotePage();
 
-
-        renderPage(currentPage);
-
-        showPageIndicator();
+        renderPage(
+            currentPage
+        );
 
     }
 
 }
 
 
-/* =====================================================
-   إظهار
-===================================================== */
+/* ==================================================
+   تحديث رقم الهاتف
+================================================== */
+
+function updateRemotePage(){
+
+    document
+        .getElementById(
+            "currentPage"
+        )
+        .textContent =
+        currentPage;
+
+}
+
+
+/* ==================================================
+   تحديث رقم التلفزيون
+================================================== */
+
+function updateTVPage(){
+
+    document
+        .getElementById(
+            "tvPage"
+        )
+        .textContent =
+        currentPage;
+
+}
+
+
+/* ==================================================
+   إظهار الصفحة
+================================================== */
 
 function showPage(){
 
-    visible = true;
+    pageVisible = true;
+
 
     document
-        .getElementById("pdfCanvas")
+        .getElementById(
+            "pdfCanvas"
+        )
         .style.visibility =
         "visible";
 
 
     document
-        .getElementById("hidden-message")
+        .getElementById(
+            "hiddenScreen"
+        )
         .classList.remove(
             "active"
         );
@@ -1099,22 +1519,27 @@ function showPage(){
 }
 
 
-/* =====================================================
-   إخفاء
-===================================================== */
+/* ==================================================
+   إخفاء الصفحة
+================================================== */
 
 function hidePage(){
 
-    visible = false;
+    pageVisible = false;
+
 
     document
-        .getElementById("pdfCanvas")
+        .getElementById(
+            "pdfCanvas"
+        )
         .style.visibility =
         "hidden";
 
 
     document
-        .getElementById("hidden-message")
+        .getElementById(
+            "hiddenScreen"
+        )
         .classList.add(
             "active"
         );
@@ -1122,32 +1547,16 @@ function hidePage(){
 }
 
 
-/* =====================================================
-   رقم الصفحة على التلفزيون
-===================================================== */
+/* ==================================================
+   رقم الصفحة مؤقتًا
+================================================== */
 
-function updateTVPage(){
-
-    document
-        .getElementById("tv-page")
-        .textContent =
-        currentPage;
-
-}
-
-
-/* =====================================================
-   إظهار رقم الصفحة مؤقتًا
-===================================================== */
-
-let indicatorTimer = null;
-
-function showPageIndicator(){
+function showIndicator(){
 
     const indicator =
         document
         .getElementById(
-            "page-indicator"
+            "pageIndicator"
         );
 
 
@@ -1163,7 +1572,6 @@ function showPageIndicator(){
 
     indicatorTimer =
         setTimeout(
-
             function(){
 
                 indicator.classList.remove(
@@ -1171,19 +1579,17 @@ function showPageIndicator(){
                 );
 
             },
-
-            1500
-
+            1200
         );
 
 }
 
 
-/* =====================================================
+/* ==================================================
    ملء الشاشة
-===================================================== */
+================================================== */
 
-async function goFullscreen(){
+async function fullscreenTV(){
 
     try{
 
@@ -1206,70 +1612,17 @@ async function goFullscreen(){
 }
 
 
-/* =====================================================
-   زر طلب ملء الشاشة
-===================================================== */
-
-function requestTVFullscreen(){
-
-    /*
-       هذا يعمل عندما يكون الزر على نفس الجهاز.
-       المتصفح يمنع صفحة من إجبار جهاز آخر
-       على الدخول إلى Fullscreen.
-    */
-
-    alert(
-        "من شاشة التلفزيون اضغط زر ملء الشاشة."
-    );
-
-}
-
-
-/* =====================================================
-   تغيير حجم الشاشة
-===================================================== */
-
-window.addEventListener(
-    "resize",
-    function(){
-
-        if(
-            pdfDocument &&
-            document
-            .getElementById("tv")
-            .style.display !== "none"
-        ){
-
-            renderPage(
-                currentPage
-            );
-
-        }
-
-    }
-);
-
-
-/* =====================================================
-   عند الضغط على F
-===================================================== */
+/* ==================================================
+   الأسهم من لوحة المفاتيح
+================================================== */
 
 document.addEventListener(
     "keydown",
     function(event){
 
         if(
-            event.key === "f" ||
-            event.key === "F"
-        ){
-
-            goFullscreen();
-
-        }
-
-
-        if(
-            event.key === "ArrowRight"
+            event.key ===
+            "ArrowRight"
         ){
 
             nextPage();
@@ -1278,7 +1631,8 @@ document.addEventListener(
 
 
         if(
-            event.key === "ArrowLeft"
+            event.key ===
+            "ArrowLeft"
         ){
 
             previousPage();
@@ -1287,12 +1641,56 @@ document.addEventListener(
 
 
         if(
-            event.key === "Escape"
+            event.key ===
+            "Escape"
         ){
 
             showPage();
 
         }
+
+    }
+);
+
+
+/* ==================================================
+   إعادة ضبط حجم PDF
+================================================== */
+
+let resizeTimer;
+
+window.addEventListener(
+    "resize",
+    function(){
+
+        clearTimeout(
+            resizeTimer
+        );
+
+
+        resizeTimer =
+            setTimeout(
+                function(){
+
+                    if(
+                        pdfDocument &&
+                        document
+                        .getElementById(
+                            "tvScreen"
+                        )
+                        .style.display !==
+                        "none"
+                    ){
+
+                        renderPage(
+                            currentPage
+                        );
+
+                    }
+
+                },
+                200
+            );
 
     }
 );
