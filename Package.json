@@ -1,0 +1,7 @@
+{
+  "name": "ard-alahyaa",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": { "start": "node server.js" },
+  "dependencies": { "express": "^4.19.2", "realm": "^12.13.0" }
+}
