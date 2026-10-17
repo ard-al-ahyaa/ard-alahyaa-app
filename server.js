@@ -173,4 +173,4 @@ app.get('/api/results', guard, wrap(async (req, res, realm) => {
     totalLectures: UNITS.flatMap(u => u.items).length, totalNotes: NOTES.length });
 }));
 
-app.listen(3000, () => console.log('أرض الأحياء تعمل على http://localhost:3000'));
+app.listen(process.env.PORT || 3000, () => console.log('running'));
