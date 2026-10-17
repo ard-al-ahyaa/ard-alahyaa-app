@@ -71,19 +71,121 @@ const NAV = [['dash','لوحة التحكم','🏠'],['lec','المحاضرات'
   ['hero','بطل الفصل','🏆'],['circ','حلقات قلها أنت','💬'],['res','نتائج الطالب','📊']];
 let T = localStorage.getItem('t'), ME = null, view = 'dash', Q = '';
 
-async function api(p, body) {
-  let r, d;
-  try {
-    r = await fetch('/api/' + p, { method: body ? 'POST' : 'GET',
-      headers: { 'Content-Type': 'application/json', Authorization: T || '' }, body: body && JSON.stringify(body) });
-  } catch { throw new Error('تعذّر الاتصال بالسيرفر. تأكد أنه يعمل وافتح الموقع من رابطه.'); }
-  try { d = await r.json(); } catch { throw new Error('السيرفر لا يعمل على هذا الرابط (الرد ليس JSON). افتح رابط الاستضافة التي تشغّل server.js.'); }
-  if (r.status === 401 && T) { logout(); }
-  if (!r.ok) throw new Error(d.error || 'حدث خطأ');
-  return d;
+/* ---------- 2) Course content (replace URLs / PDFs with your own) ---------- */
+const UNITS = [
+  { unit: 'الباب الأول: الوراثة', items: [
+    { id: 'l1', title: 'قوانين مندل', url: 'https://www.youtube.com/watch?v=REPLACE_ID' },
+    { id: 'l2', title: 'الوراثة المرتبطة بالجنس', url: 'https://www.youtube.com/watch?v=REPLACE_ID' } ] },
+  { unit: 'الباب الثاني: الخلية', items: [
+    { id: 'l3', title: 'تركيب الخلية', url: 'https://www.youtube.com/watch?v=REPLACE_ID' },
+    { id: 'l4', title: 'الانقسام الميتوزي والميوزي', url: 'https://www.youtube.com/watch?v=REPLACE_ID' } ] },
+];
+const NOTES = [
+  { id: 'n1', title: 'ملخص الوراثة', file: 'pdfs/genetics.pdf' },
+  { id: 'n2', title: 'ملخص الخلية', file: 'pdfs/cell.pdf' },
+];
+const EXAMS = [
+  { id: 'e1', name: 'كويز الوراثة', q: [
+    { t: 'من هو أبو علم الوراثة؟', o: ['داروين', 'مندل', 'باستور'], a: 1 },
+    { t: 'الصفة التي تظهر في الجيل الأول تسمى:', o: ['متنحية', 'سائدة', 'متوسطة'], a: 1 },
+    { t: 'عدد الكروموسومات في الخلية الجسدية للإنسان:', o: ['23', '46', '48'], a: 1 } ] },
+  { id: 'e2', name: 'كويز أحياء خلية', q: [
+    { t: 'مركز التحكم في الخلية:', o: ['النواة', 'الريبوسوم', 'الجولجي'], a: 0 },
+    { t: 'مصنع الطاقة في الخلية:', o: ['الميتوكوندريا', 'الليسوسوم', 'الفجوة'], a: 0 },
+    { t: 'الانقسام الذي ينتج الأمشاج:', o: ['الميتوزي', 'الميوزي', 'المباشر'], a: 1 } ] },
+];
+const ACTIVITIES = [
+  { t: 'محاضرة وراثة', s: 'د. أحمد - 10:00 ص' }, { t: 'كويز أحياء خلية', s: 'سارة حسن - 12:00 م' },
+  { t: 'حلقة نقاشية', s: 'قلها أنت - 1:30 م', dark: 1 }, { t: 'مراجعة عامة', s: 'د. أحمد - 3:00 م' },
+];
+
+/* ---------- Local database (IndexedDB inside the browser) ---------- */
+const evalOf = p => p >= 90 ? 'ممتاز' : p >= 75 ? 'جيد جداً' : p >= 50 ? 'جيد' : 'يحتاج مراجعة';
+const DB = new Promise((ok, no) => {
+  const q = indexedDB.open('ard-alahyaa', 1);
+  q.onupgradeneeded = () => ['users', 'results', 'progress', 'posts'].forEach(s => q.result.createObjectStore(s, { keyPath: 'id', autoIncrement: true }));
+  q.onsuccess = () => ok(q.result); q.onerror = () => no(q.error);
+});
+const tx = async (s, mode, f) => { const db = await DB; return new Promise((ok, no) => {
+  const t = db.transaction(s, mode), r = f(t.objectStore(s)); t.oncomplete = () => ok(r.result); t.onerror = () => no(t.error); }); };
+const all = s => tx(s, 'readonly', st => st.getAll());
+const add = (s, o) => tx(s, 'readwrite', st => st.add(o));
+const sha = async (p, salt) => [...new Uint8Array(await crypto.subtle.digest('SHA-256', new TextEncoder().encode(salt + p)))]
+  .map(x => x.toString(16).padStart(2, '0')).join('');
+const fail = (m) => { throw new Error(m); };
+
+async function api(p, body = {}) {
+  const users = await all('users');
+  if (p === 'signup') {
+    const { studentName = '', studentPhone = '', parentName = '', parentPhone = '', password = '' } = body;
+    if (studentName.trim().split(/\s+/).length < 3) fail('اكتب اسم الطالب الثلاثي');
+    if (!parentName.trim()) fail('اكتب اسم ولي الأمر');
+    if (!/^\d{8,15}$/.test(studentPhone) || !/^\d{8,15}$/.test(parentPhone)) fail('رقم الهاتف غير صحيح');
+    if (password.length < 6) fail('كلمة المرور 6 أحرف على الأقل');
+    if (users.some(u => u.studentPhone === studentPhone)) fail('هذا الرقم مسجل بالفعل');
+    const salt = crypto.randomUUID();
+    const id = await add('users', { studentName: studentName.trim(), studentPhone, parentName: parentName.trim(), parentPhone, salt, hash: await sha(password, salt) });
+    return { token: String(id) };
+  }
+  if (p === 'login') {
+    const u = users.find(u => u.studentPhone === body.studentPhone);
+    if (!u || await sha(body.password || '', u.salt) !== u.hash) fail('رقم الهاتف أو كلمة المرور غير صحيحة');
+    return { token: String(u.id) };
+  }
+  const me = users.find(u => String(u.id) === localStorage.getItem('t'));
+  if (!me) { if (T) logout(); fail('سجّل الدخول أولاً'); }
+  const [results, prog, posts] = await Promise.all([all('results'), all('progress'), all('posts')]);
+  const done = type => new Set(prog.filter(x => x.uid === me.id && x.type === type).map(x => x.itemId));
+  const allLec = UNITS.flatMap(u => u.items);
+  const hero = () => {
+    const m = {};
+    results.filter(r => r.at > Date.now() - 6048e5).forEach(r => { const x = m[r.uid] ??= { name: r.name, sum: 0, n: 0 }; x.sum += r.score / r.total * 100; x.n++; });
+    const t = Object.values(m).sort((a, b) => b.sum / b.n - a.sum / a.n)[0];
+    return t ? { name: t.name, pct: Math.round(t.sum / t.n), exams: t.n } : null;
+  };
+  if (p === 'me') return { studentName: me.studentName, parentName: me.parentName, parentPhone: me.parentPhone };
+  if (p === 'dashboard') {
+    const chart = [...Array(7)].map((_, i) => {
+      const d = new Date(); d.setHours(0, 0, 0, 0); d.setDate(d.getDate() - 6 + i); const a = +d;
+      return { label: d.toLocaleDateString('ar-EG', { weekday: 'short' }), value: [...prog, ...results].filter(x => x.at >= a && x.at < a + 864e5).length };
+    });
+    const since = Date.now() - 864e5;
+    return { newLectures: allLec.length, upcomingExams: EXAMS.length, chart, activities: ACTIVITIES, hero: hero(),
+      active: new Set([...prog, ...results].filter(x => x.at >= since).map(x => x.uid)).size };
+  }
+  if (p === 'lectures') { const d = done('lecture'); return UNITS.map(u => ({ ...u, items: u.items.map(i => ({ ...i, done: d.has(i.id) })) })); }
+  if (p === 'notes') { const d = done('note'); return NOTES.map(n => ({ ...n, done: d.has(n.id) })); }
+  if (p === 'progress') {
+    if (!prog.some(x => x.uid === me.id && x.itemId === body.itemId)) await add('progress', { uid: me.id, itemId: body.itemId, type: body.type, at: Date.now() });
+    return { ok: true };
+  }
+  if (p === 'exams') return EXAMS.map(e => ({ id: e.id, name: e.name, count: e.q.length }));
+  const m = p.match(/^exam\/(\w+)(\/submit)?$/);
+  if (m) {
+    const e = EXAMS.find(x => x.id === m[1]); if (!e) fail('الاختبار غير موجود');
+    if (!m[2]) return { id: e.id, name: e.name, q: e.q.map(({ t, o }) => ({ t, o })) };
+    const score = e.q.filter((q, i) => body.answers[i] === q.a).length, pct = Math.round(score / e.q.length * 100), evaluation = evalOf(pct);
+    await add('results', { uid: me.id, name: me.studentName, examName: e.name, score, total: e.q.length, at: Date.now(), evaluation });
+    return { score, total: e.q.length, pct, evaluation, correct: e.q.map(q => q.a) };
+  }
+  if (p === 'hero') return hero() || {};
+  if (p === 'posts') {
+    if (body.text === undefined) return posts.sort((a, b) => b.at - a.at).slice(0, 30);
+    const text = body.text.trim().slice(0, 500); if (!text) fail('اكتب نصاً أولاً');
+    await add('posts', { author: me.studentName, text, at: Date.now() }); return { ok: true };
+  }
+  if (p === 'results') {
+    const rows = results.filter(r => r.uid === me.id).sort((a, b) => b.at - a.at)
+      .map(r => ({ examName: r.examName, score: r.score, total: r.total, date: r.at, evaluation: r.evaluation }));
+    const avg = rows.length ? Math.round(rows.reduce((s, r) => s + r.score / r.total * 100, 0) / rows.length) : 0;
+    return { rows, avg, level: rows.length ? evalOf(avg) : '—', watched: done('lecture').size, downloaded: done('note').size,
+      totalLectures: allLec.length, totalNotes: NOTES.length };
+  }
+  fail('غير موجود');
 }
 function logout() { localStorage.removeItem('t'); T = null; authUI(); }
 
+/* ---------- Auth ---------- */
 function authUI(mode = 'in') {
   const up = mode === 'up';
   $('#app').innerHTML = `<div class="auth card"><h1>🧬 أرض الأحياء</h1>
@@ -102,6 +204,7 @@ function authUI(mode = 'in') {
   };
 }
 
+/* ---------- Shell ---------- */
 async function boot() {
   if (!T) return authUI();
   try { ME = await api('me'); } catch { return authUI(); }
@@ -125,6 +228,7 @@ async function mark(itemId, type, url) {
   go(view);
 }
 
+/* ---------- Views ---------- */
 const heroCard = h => h ? `<div class="hero"><div class="avatar">🏅</div><div><b>${esc(h.name)}</b>
   <p class="mut">متوسط ${h.pct}% في ${h.exams} اختبار هذا الأسبوع</p></div></div>`
   : `<p class="mut">لا توجد نتائج هذا الأسبوع. أدِّ اختباراً لتكون أول بطل!</p>`;
@@ -165,8 +269,7 @@ const VIEWS = {
       <small class="mut">(${e.count} أسئلة)</small></span><button class="btn" onclick="startExam('${e.id}')">ابدأ</button></div>`).join('')}</div>`;
   },
   async hero() {
-    const h = await api('hero');
-    return `<div class="card"><h2>🏆 لوحة الشرف</h2>${heroCard(h.name ? h : null)}</div>`;
+    return `<div class="card"><h2>🏆 لوحة الشرف</h2>${heroCard((await api('hero')).name ? await api('hero') : null)}</div>`;
   },
   async circ() {
     const ps = await api('posts');
@@ -189,6 +292,7 @@ const VIEWS = {
   },
 };
 
+/* ---------- Exam + discussion actions ---------- */
 async function startExam(id) {
   const e = await api('exam/' + id);
   $('#v').innerHTML = `<div class="card"><h2>${esc(e.name)}</h2><form id="qf">${e.q.map((q, i) => `<div class="q"><b>${i + 1}. ${esc(q.t)}</b>
