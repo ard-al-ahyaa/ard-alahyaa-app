@@ -3,7 +3,7 @@ const app = express();
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
 
-/* ---------- 1) Realm schemas ---------- */
+/* ---------- Realm schemas ---------- */
 const schema = [
   { name: 'User', primaryKey: '_id', properties: {
     _id: 'objectId', studentName: 'string', studentPhone: 'string',
@@ -11,16 +11,16 @@ const schema = [
   { name: 'ExamResult', primaryKey: '_id', properties: {
     _id: 'objectId', userId: 'objectId', studentName: 'string', examName: 'string',
     score: 'int', total: 'int', date: 'date', evaluation: 'string' } },
-  // A Progress record exists only once an item is done (video watched / PDF downloaded)
   { name: 'Progress', primaryKey: '_id', properties: {
     _id: 'objectId', userId: 'objectId', itemId: 'string', type: 'string', updatedAt: 'date' } },
   { name: 'Post', primaryKey: '_id', properties: {
     _id: 'objectId', author: 'string', text: 'string', createdAt: 'date' } },
 ];
-const ready = Realm.open({ schema, path: path.join(__dirname, 'ard-alahyaa.realm') });
+const ready = Realm.open({ schema, path: path.join(process.env.DATA_DIR || __dirname, 'ard-alahyaa.realm') });
+ready.catch(e => console.error('Realm failed to open:', e));
 const O = Realm.BSON.ObjectId;
 
-/* ---------- 2) Course content (replace URLs / PDFs with your own) ---------- */
+/* ---------- Course content ---------- */
 const UNITS = [
   { unit: 'الباب الأول: الوراثة', items: [
     { id: 'l1', title: 'قوانين مندل', url: 'https://www.youtube.com/watch?v=REPLACE_ID' },
@@ -48,9 +48,9 @@ const ACTIVITIES = [
   { t: 'حلقة نقاشية', s: 'قلها أنت - 1:30 م', dark: 1 }, { t: 'مراجعة عامة', s: 'د. أحمد - 3:00 م' },
 ];
 
-/* ---------- 3) Helpers ---------- */
+/* ---------- Helpers ---------- */
 const hashPw = (p, s) => crypto.scryptSync(p, s, 32).toString('hex');
-const sessions = new Map(); // token -> userId
+const sessions = new Map();
 const newToken = u => { const t = crypto.randomBytes(24).toString('hex'); sessions.set(t, String(u._id)); return t; };
 const evalOf = p => p >= 90 ? 'ممتاز' : p >= 75 ? 'جيد جداً' : p >= 50 ? 'جيد' : 'يحتاج مراجعة';
 const wrap = f => async (req, res) => {
@@ -74,7 +74,7 @@ const heroOf = realm => {
   return top ? { name: top.name, pct: Math.round(top.sum / top.n), exams: top.n } : null;
 };
 
-/* ---------- 4) Auth ---------- */
+/* ---------- Auth ---------- */
 app.post('/api/signup', wrap(async (req, res, realm) => {
   const { studentName = '', studentPhone = '', parentName = '', parentPhone = '', password = '' } = req.body;
   if (studentName.trim().split(/\s+/).length < 3) return res.status(400).json({ error: 'اكتب اسم الطالب الثلاثي' });
@@ -102,7 +102,7 @@ app.get('/api/me', guard, wrap(async (req, res, realm) => {
   res.json({ studentName: u.studentName, studentPhone: u.studentPhone, parentName: u.parentName, parentPhone: u.parentPhone });
 }));
 
-/* ---------- 5) Sections ---------- */
+/* ---------- Sections ---------- */
 app.get('/api/dashboard', guard, wrap(async (req, res, realm) => {
   const chart = [...Array(7)].map((_, i) => {
     const d = new Date(); d.setHours(0, 0, 0, 0); d.setDate(d.getDate() - 6 + i);
@@ -139,7 +139,7 @@ app.get('/api/exams', guard, (req, res) => res.json(EXAMS.map(e => ({ id: e.id, 
 app.get('/api/exam/:id', guard, (req, res) => {
   const e = EXAMS.find(x => x.id === req.params.id);
   if (!e) return res.status(404).json({ error: 'الاختبار غير موجود' });
-  res.json({ id: e.id, name: e.name, q: e.q.map(({ t, o }) => ({ t, o })) }); // answers stay on the server
+  res.json({ id: e.id, name: e.name, q: e.q.map(({ t, o }) => ({ t, o })) });
 });
 app.post('/api/exam/:id/submit', guard, wrap(async (req, res, realm) => {
   const e = EXAMS.find(x => x.id === req.params.id), u = me(realm, req);
@@ -173,4 +173,6 @@ app.get('/api/results', guard, wrap(async (req, res, realm) => {
     totalLectures: UNITS.flatMap(u => u.items).length, totalNotes: NOTES.length });
 }));
 
-app.listen(3000, () => console.log('أرض الأحياء تعمل على http://localhost:3000'));
+app.get('/health', (req, res) => res.send('ok'));
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, '0.0.0.0', () => console.log('أرض الأحياء تعمل على المنفذ ' + PORT));
