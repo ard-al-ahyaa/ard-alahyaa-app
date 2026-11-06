@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="robots" content="noindex, nofollow">
+  <title>لوحة التحكم | GameX</title>
+  <link rel="stylesheet" href="style.css">
+  <style>
+    .admin { padding: 24px 6%; max-width: 1100px; margin: auto; }
+    .panel { background: var(--panel); border: 1px solid #21262d; border-radius: var(--radius); padding: 20px; margin-bottom: 24px; }
+    .panel h2 { margin-bottom: 14px; font-size: 1.2rem; }
+    .form-grid { display: grid; gap: 12px; grid-template-columns: 1fr 1fr; }
+    .form-grid .full { grid-column: 1 / -1; }
+    label { display: grid; gap: 6px; font-size: .9rem; color: var(--muted); }
+    input, textarea, select {
+      width: 100%; padding: 10px 12px; border-radius: 10px; border: 1px solid #30363d;
+      background: var(--panel-2); color: var(--text); font: inherit;
+    }
+    textarea { min-height: 110px; direction: ltr; text-align: left; }
+    .actions { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 14px; }
+    .btn-sec { background: var(--panel-2); color: var(--text); border: 1px solid #30363d; }
+    .btn-danger { background: #da3633; color: #fff; }
+    table { width: 100%; border-collapse: collapse; font-size: .9rem; }
+    th, td { padding: 10px; border-bottom: 1px solid #21262d; text-align: right; vertical-align: middle; }
+    td img { width: 90px; aspect-ratio: 16/9; object-fit: cover; border-radius: 8px; }
+    .small { font-size: .8rem; padding: 6px 12px; margin: 0 2px; }
+    .login { max-width: 360px; margin: 120px auto; }
+    .hint { color: var(--muted); font-size: .85rem; margin-top: 10px; }
+    @media (max-width: 700px) { .form-grid { grid-template-columns: 1fr; } }
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <a href="index.html" class="logo">Game<span>X</span></a>
+    <span class="badge">لوحة التحكم</span>
+    <a href="index.html" style="margin-inline-start:auto" class="badge">عرض الموقع ↗</a>
+  </header>
+
+  <!-- تسجيل الدخول -->
+  <section id="login" class="login panel">
+    <h2>تسجيل الدخول</h2>
+    <label>كلمة السر
+      <input id="pass" type="password" placeholder="••••••••">
+    </label>
+    <div class="actions"><button class="btn" id="loginBtn">دخول</button></div>
+    <p class="hint">غيّر كلمة السر من متغير PASS داخل admin.html قبل النشر.</p>
+  </section>
+
+  <!-- التطبيق -->
+  <main id="app" class="admin" hidden>
+    <div class="panel">
+      <h2 id="formTitle">إضافة لعبة جديدة</h2>
+      <div class="form-grid">
+        <input type="hidden" id="f-id">
+        <label>اسم اللعبة
+          <input id="f-title" placeholder="مثال: Cyber Racer">
+        </label>
+        <label>التصنيف
+          <input id="f-category" placeholder="أكشن / سباقات / استراتيجية">
+        </label>
+        <label class="full">رابط الصورة
+          <input id="f-image" placeholder="https://...">
+        </label>
+        <label class="full">أو ارفع صورة من جهازك (تُضغط تلقائياً)
+          <input id="f-imgfile" type="file" accept="image/*">
+        </label>
+        <label class="full">الوصف
+          <textarea id="f-description" style="min-height:80px;direction:rtl;text-align:right"></textarea>
+        </label>
+        <label class="full">روابط التحميل (سطر لكل رابط بالشكل: الاسم | الرابط)
+          <textarea id="f-links" placeholder="رابط مباشر 1 | https://example.com/file1&#10;رابط مباشر 2 | https://example.com/file2"></textarea>
+        </label>
+      </div>
+      <div class="actions">
+        <button class="btn" id="saveBtn">حفظ اللعبة</button>
+        <button class="btn btn-sec" id="resetBtn">مسح الحقول</button>
+      </div>
+    </div>
+
+    <div class="panel">
+      <h2>الألعاب (<span id="count">0</span>)</h2>
+      <div class="actions" style="margin:0 0 14px">
+        <button class="btn" id="exportBtn">تصدير games.json</button>
+        <label class="btn btn-sec" style="cursor:pointer;margin:0">
+          استيراد JSON
+          <input id="importFile" type="file" accept="application/json" hidden>
+        </label>
+        <button class="btn btn-danger" id="resetAllBtn">إعادة للافتراضي</button>
+      </div>
+      <p class="hint">التعديلات بتتحفظ في متصفحك. عشان تظهر للزوار: صدّر الملف وارفعه مكان games.json على السيرفر.</p>
+      <div style="overflow-x:auto;margin-top:12px">
+        <table>
+          <thead><tr><th>الصورة</th><th>اللعبة</th><th>التصنيف</th><th>الروابط</th><th>إجراءات</th></tr></thead>
+          <tbody id="rows"></tbody>
+        </table>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    const PASS = 'admin123'; // غيّرها قبل النشر
+    const $ = (s) => document.querySelector(s);
+    let games = [];
+
+    function esc(s) {
+      return String(s ?? '').replace(/[&<>"']/g, c => ({
+        '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+      }[c]));
+    }
+
+    function persist() {
+      localStorage.setItem('wg_admin_games', JSON.stringify(games));
+      renderTable();
+    }
+
+    async function loadInitial() {
+      const saved = localStorage.getItem('wg_admin_games');
+      if (saved) {
+        try { games = JSON.parse(saved); } catch { games = []; }
+      } else {
+        games = await (await fetch('games.json', { cache: 'no-cache' })).json();
+        persist();
+      }
+      renderTable();
+    }
+
+    function parseLinks(text) {
+      return text.split('\n').map(l => l.trim()).filter(Boolean).map(line => {
+        const [name, ...rest] = line.split('|');
+        return { name: (name || '').trim() || 'رابط تحميل', url: rest.join('|').trim() };
+      }).filter(l => /^https?:\/\//i.test(l.url));
+    }
+
+    function linksToText(links) {
+      return (links || []).map(l => `${l.name} | ${l.url}`).join('\n');
+    }
+
+    function clearForm() {
+      ['id', 'title', 'category', 'image', 'description', 'links'].forEach(k => $('#f-' + k).value = '');
+      $('#f-imgfile').value = '';
+      $('#formTitle').textContent = 'إضافة لعبة جديدة';
+    }
+
+    function renderTable() {
+      $('#count').textContent = games.length;
+      $('#rows').innerHTML = games.map(g => `
+        <tr>
+          <td><img src="${esc(g.image)}" alt=""></td>
+          <td>${esc(g.title)}</td>
+          <td>${esc(g.category)}</td>
+          <td>${(g.links || []).length}</td>
+          <td>
+            <button class="btn btn-sec small" data-edit="${esc(g.id)}">تعديل</button>
+            <button class="btn btn-danger small" data-del="${esc(g.id)}">حذف</button>
+          </td>
+        </tr>`).join('') || '<tr><td colspan="5">لا توجد ألعاب</td></tr>';
+    }
+
+    // ضغط الصورة المرفوعة
+    $('#f-imgfile').addEventListener('change', e => {
+      const file = e.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = () => {
+        const img = new Image();
+        img.onload = () => {
+          const max = 600;
+          const scale = Math.min(1, max / img.width);
+          const canvas = document.createElement('canvas');
+          canvas.width = img.width * scale;
+          canvas.height = img.height * scale;
+          canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
+          $('#f-image').value = canvas.toDataURL('image/jpeg', 0.8);
+        };
+        img.src = reader.result;
+      };
+      reader.readAsDataURL(file);
+    });
+
+    $('#saveBtn').addEventListener('click', () => {
+      const title = $('#f-title').value.trim();
+      if (!title) return alert('اكتب اسم اللعبة');
+      const item = {
+        id: $('#f-id').value || 'g' + Date.now(),
+        title,
+        category: $('#f-category').value.trim() || 'عام',
+        image: $('#f-image').value.trim(),
+        description: $('#f-description').value.trim(),
+        links: parseLinks($('#f-links').value)
+      };
+      const idx = games.findIndex(g => g.id === item.id);
+      if (idx >= 0) games[idx] = item; else games.unshift(item);
+      persist();
+      clearForm();
+    });
+
+    $('#resetBtn').addEventListener('click', clearForm);
+
+    $('#rows').addEventListener('click', e => {
+      const edit = e.target.closest('[data-edit]');
+      const del = e.target.closest('[data-del]');
+      if (edit) {
+        const g = games.find(x => x.id === edit.dataset.edit);
+        if (!g) return;
+        $('#f-id').value = g.id;
+        $('#f-title').value = g.title;
+        $('#f-category').value = g.category;
+        $('#f-image').value = g.image;
+        $('#f-description').value = g.description;
+        $('#f-links').value = linksToText(g.links);
+        $('#formTitle').textContent = 'تعديل: ' + g.title;
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }
+      if (del) {
+        if (!confirm('متأكد إنك عايز تحذف اللعبة؟')) return;
+        games = games.filter(x => x.id !== del.dataset.del);
+        persist();
+      }
+    });
+
+    $('#exportBtn').addEventListener('click', () => {
+      const blob = new Blob([JSON.stringify(games, null, 2)], { type: 'application/json' });
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = 'games.json';
+      a.click();
+      URL.revokeObjectURL(a.href);
+    });
+
+    $('#importFile').addEventListener('change', e => {
+      const file = e.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = () => {
+        try {
+          const data = JSON.parse(reader.result);
+          if (!Array.isArray(data)) throw new Error();
+          games = data;
+          persist();
+          alert('تم الاستيراد');
+        } catch { alert('ملف JSON غير صالح'); }
+      };
+      reader.readAsText(file);
+    });
+
+    $('#resetAllBtn').addEventListener('click', async () => {
+      if (!confirm('هيتم مسح كل التعديلات المحلية. متأكد؟')) return;
+      localStorage.removeItem('wg_admin_games');
+      await loadInitial();
+    });
+
+    $('#loginBtn').addEventListener('click', () => {
+      if ($('#pass').value === PASS) {
+        sessionStorage.setItem('wg_ok', '1');
+        showApp();
+      } else alert('كلمة السر غلط');
+    });
+    $('#pass').addEventListener('keydown', e => { if (e.key === 'Enter') $('#loginBtn').click(); });
+
+    function showApp() {
+      $('#login').hidden = true;
+      $('#app').hidden = false;
+      loadInitial();
+    }
+
+    if (sessionStorage.getItem('wg_ok') === '1') showApp();
+  </script>
+</body>
+</html>
