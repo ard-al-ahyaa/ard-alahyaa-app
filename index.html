@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>GameX | تحميل ألعاب الكمبيوتر مجانًا بروابط مباشرة</title>
+  <meta name="description" content="GameX موقعك الأول لتحميل ألعاب الكمبيوتر بروابط مباشرة، فيديوهات تشويقية، وتصنيفات واضحة وتحديثات مستمرة.">
+  <meta name="keywords" content="تحميل ألعاب, ألعاب كمبيوتر, GameX, تحميل مجاني, ألعاب مضغوطة, فيديو الألعاب">
+  <meta name="theme-color" content="#0d1117">
+  <meta name="robots" content="index, follow">
+  <link rel="canonical" href="https://www.yourdomain.com/">
+  <meta property="og:title" content="GameX | تحميل ألعاب الكمبيوتر">
+  <meta property="og:description" content="روابط مباشرة لأحدث ألعاب الكمبيوتر مع فيديوهات تشويقية.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://www.yourdomain.com/">
+  <link rel="manifest" href="manifest.json">
+  <link rel="stylesheet" href="style.css">
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    "name": "GameX",
+    "url": "https://www.yourdomain.com/",
+    "potentialAction": {
+      "@type": "SearchAction",
+      "target": "https://www.yourdomain.com/?q={search_term_string}",
+      "query-input": "required name=search_term_string"
+    }
+  }
+  </script>
+</head>
+<body>
+
+  <!-- ===== شاشة الافتتاح بالشعار المتحرك ===== -->
+  <div id="splash" aria-hidden="true">
+    <div class="splash-logo">Game<span>X</span></div>
+    <div class="splash-bar"></div>
+  </div>
+
+  <div id="progress-bar"></div>
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <!-- ===== الهيدر ===== -->
+  <header class="topbar">
+    <a href="index.html" class="logo" aria-label="GameX الرئيسية">Game<span>X</span></a>
+    <button class="menu-toggle" id="menuToggle" aria-label="فتح القائمة">☰</button>
+    <nav id="mainNav" aria-label="القائمة الرئيسية">
+      <a href="index.html">الرئيسية</a>
+      <a href="#games">الألعاب</a>
+      <a href="#how">طريقة التحميل</a>
+      <a href="#features">لماذا GameX</a>
+      <a href="#faq">الأسئلة الشائعة</a>
+    </nav>
+    <input id="search" type="search" placeholder="ابحث عن لعبة..." autocomplete="off" aria-label="بحث">
+  </header>
+
+  <!-- ===== البانر المميز (يتحكم فيه من لوحة الإدارة) ===== -->
+  <section class="banner" id="banner" aria-label="الألعاب المميزة" hidden>
+    <div id="slides"></div>
+    <button class="banner-nav" id="prevSlide" aria-label="الشريحة السابقة">‹</button>
+    <button class="banner-nav" id="nextSlide" aria-label="الشريحة التالية">›</button>
+    <div class="dots" id="dots"></div>
+    <div class="banner-bar" id="banner-bar"></div>
+  </section>
+
+  <!-- ===== مقدمة وإحصائيات ===== -->
+  <section class="hero">
+    <h1>حمّل أحدث ألعاب الكمبيوتر <span>بسرعة</span></h1>
+    <p>روابط مباشرة، فيديوهات تشويقية قبل التحميل، وتحديثات مستمرة.</p>
+    <div class="stats">
+      <div class="stat"><strong id="stat-games">0</strong><span>لعبة متاحة</span></div>
+      <div class="stat"><strong id="stat-cats">0</strong><span>تصنيف</span></div>
+      <div class="stat"><strong id="stat-links">0</strong><span>رابط تحميل</span></div>
+      <div class="stat"><strong id="stat-videos">0</strong><span>فيديو تشويقي</span></div>
+    </div>
+  </section>
+
+  <!-- ===== الألعاب ===== -->
+  <main>
+    <h2 class="section-title" id="games">مكتبة الألعاب</h2>
+    <p class="section-sub">اختر التصنيف، شاهد الفيديو، واضغط تنزيل</p>
+
+    <div class="toolbar">
+      <div class="filters" id="categories" role="group" aria-label="التصنيفات"></div>
+      <select class="sort-select" id="sortSelect" aria-label="ترتيب الألعاب">
+        <option value="default">الترتيب الافتراضي</option>
+        <option value="name">حسب الاسم</option>
+        <option value="cat">حسب التصنيف</option>
+      </select>
+    </div>
+
+    <p class="count-info" id="countInfo"></p>
+
+    <section id="gamesGrid" class="grid" aria-live="polite"></section>
+    <p id="empty" class="empty" hidden>لا توجد نتائج مطابقة، جرّب كلمة بحث أخرى.</p>
+  </main>
+
+  <!-- ===== طريقة التحميل ===== -->
+  <h2 class="section-title" id="how">إزاي تحمّل اللعبة؟</h2>
+  <p class="section-sub">خطوات بسيطة من أول ضغطة لحد ما تلعب</p>
+  <section class="steps">
+    <div class="step reveal"><span class="step-num">1</span><h3>اختار اللعبة</h3><p>ابحث باسمها أو اختار التصنيف اللي يعجبك.</p></div>
+    <div class="step reveal"><span class="step-num">2</span><h3>شاهد الفيديو</h3><p>اضغط "▶ الفيديو" وتفرج على التريلر قبل ما تقرر.</p></div>
+    <div class="step reveal"><span class="step-num">3</span><h3>اضغط تنزيل</h3><p>الزر الأخضر بيفتح رابط التحميل مباشرة.</p></div>
+    <div class="step reveal"><span class="step-num">4</span><h3>فك الضغط</h3><p>استخدم WinRAR أو 7-Zip لفك الملف داخل مجلد منفصل.</p></div>
+    <div class="step reveal"><span class="step-num">5</span><h3>ثبّت اللعبة</h3><p>شغّل ملف الإعداد أو الملف التنفيذي واتبع التعليمات.</p></div>
+    <div class="step reveal"><span class="step-num">6</span><h3>استمتع!</h3><p>اعمل اختصار على سطح المكتب وابدأ اللعب.</p></div>
+  </section>
+
+  <!-- ===== مميزات الموقع ===== -->
+  <h2 class="section-title" id="features">لماذا GameX؟</h2>
+  <p class="section-sub">كل اللي تحتاجه في مكان واحد</p>
+  <section class="features">
+    <article class="feature reveal"><div class="icon">⚡</div><h3>تحميل سريع</h3><p>روابط مباشرة بدون انتظار طويل أو إعلانات مزعجة.</p></article>
+    <article class="feature reveal"><div class="icon">🎬</div><h3>فيديوهات تشويقية</h3><p>شاهد تريلر كل لعبة قبل ما تحمّلها عشان تختار صح.</p></article>
+    <article class="feature reveal"><div class="icon">🔄</div><h3>تحديثات مستمرة</h3><p>نضيف أحدث الإصدارات فور توفرها لتبقى دائماً في المقدمة.</p></article>
+    <article class="feature reveal"><div class="icon">📱</div><h3>يعمل على كل الأجهزة</h3><p>تصميم متجاوب يعمل بسلاسة على الكمبيوتر والموبايل.</p></article>
+  </section>
+
+  <!-- ===== دعوة للتواصل ===== -->
+  <section class="cta-box reveal">
+    <h2>مش لاقي اللعبة اللي بتدور عليها؟</h2>
+    <p>ابعتلنا اسمها وهنضيفها في أقرب وقت.</p>
+    <a href="mailto:contact@yourdomain.com" class="btn btn-accent btn-lg">راسلنا الآن</a>
+  </section>
+
+  <!-- ===== الأسئلة الشائعة ===== -->
+  <h2 class="section-title" id="faq">الأسئلة الشائعة</h2>
+  <p class="section-sub">إجابات سريعة على أكثر الأسئلة شيوعاً</p>
+  <section class="faq">
+    <details open>
+      <summary>هل التحميل من GameX مجاني؟</summary>
+      <p>نعم، كل الألعاب المتاحة على الموقع يمكن تحميلها مجاناً بدون اشتراك.</p>
+    </details>
+    <details>
+      <summary>ليه بعض الروابط مش شغالة؟</summary>
+      <p>الروابط بتتحدث باستمرار. لو لقيت رابط مش شغال جرّب الرابط البديل في نفس نافذة اللعبة، أو تواصل معانا.</p>
+    </details>
+    <details>
+      <summary>إزاي أشغّل اللعبة بعد التحميل؟</summary>
+      <p>فك ضغط الملف باستخدام WinRAR أو 7-Zip، ثم شغّل ملف التثبيت أو الملف التنفيذي حسب التعليمات داخل المجلد.</p>
+    </details>
+    <details>
+      <summary>هل ممكن أطلب لعبة معينة؟</summary>
+      <p>أكيد، استخدم زر "راسلنا الآن" واكتب اسم اللعبة، وهنحاول نضيفها في أقرب وقت.</p>
+    </details>
+  </section>
+
+  <!-- ===== تنبيه ===== -->
+  <div class="notice">
+    <strong>تنبيه:</strong> الألعاب والروابط المعروضة للاستخدام الشخصي والتجريب فقط. يُرجى دعم مطوري الألعاب بشراء النسخ الأصلية عند الإمكان.
+  </div>
+
+  <!-- ===== النشرة البريدية ===== -->
+  <section class="cta-box reveal" style="margin-top:50px">
+    <h2>اشترك وكن أول من يعرف</h2>
+    <p>تابع الألعاب الجديدة فور إضافتها.</p>
+    <form class="newsletter" id="newsletter" novalidate>
+      <input type="email" id="nlEmail" placeholder="بريدك الإلكتروني" aria-label="البريد الإلكتروني" required>
+      <button class="btn btn-accent" type="submit">اشترك</button>
+    </form>
+    <div class="newsletter-msg" id="nlMsg"></div>
+  </section>
+
+  <!-- ===== الفوتر ===== -->
+  <footer>
+    <div class="footer-grid">
+      <div>
+        <h4>GameX</h4>
+        <p>موقع متخصص في تحميل ألعاب الكمبيوتر بروابط مباشرة وفيديوهات تشويقية وتصنيفات منظمة.</p>
+      </div>
+      <div>
+        <h4>روابط سريعة</h4>
+        <ul>
+          <li><a href="index.html">الرئيسية</a></li>
+          <li><a href="#games">الألعاب</a></li>
+          <li><a href="#faq">الأسئلة الشائعة</a></li>
+          <li><a href="admin.html">لوحة التحكم</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4>تواصل معنا</h4>
+        <ul>
+          <li><a href="mailto:contact@yourdomain.com">contact@yourdomain.com</a></li>
+          <li><a href="privacy.html">سياسة الخصوصية</a></li>
+          <li><a href="terms.html">شروط الاستخدام</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <p>&copy; <span id="year"></span> GameX. جميع الحقوق محفوظة.</p>
+    </div>
+  </footer>
+
+  <button class="to-top" id="toTop" aria-label="للأعلى">↑</button>
+
+  <!-- ===== نافذة تفاصيل اللعبة ===== -->
+  <div id="detailsModal" class="modal" hidden>
+    <div class="modal-box" role="dialog" aria-modal="true" aria-labelledby="m-title">
+      <button class="close" data-close="detailsModal" aria-label="إغلاق">&times;</button>
+      <img id="m-img" src="" alt="">
+      <div class="modal-body">
+        <span class="badge" id="m-cat"></span>
+        <h2 id="m-title"></h2>
+        <div class="specs" id="m-specs"></div>
+        <p id="m-desc"></p>
+        <div class="modal-actions">
+          <button class="btn btn-video" id="m-video" hidden>▶ شاهد الفيديو</button>
+          <button class="btn btn-green" id="m-download" hidden>⬇ تنزيل الآن</button>
+        </div>
+        <h4>روابط التحميل</h4>
+        <div id="m-links" class="links"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== نافذة الفيديو ===== -->
+  <div id="videoModal" class="modal" hidden>
+    <div class="video-box" role="dialog" aria-modal="true" aria-labelledby="vTitle">
+      <button class="close" data-close="videoModal" aria-label="إغلاق">&times;</button>
+      <div class="video-frame" id="videoWrap"></div>
+      <h3 class="video-title" id="vTitle"></h3>
+      <div class="video-actions">
+        <button class="btn btn-green" id="vDownload" hidden>⬇ تنزيل اللعبة</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="progress.js"></script>
+  <script src="script.js"></script>
+</body>
+</html>

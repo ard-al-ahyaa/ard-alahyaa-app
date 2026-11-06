@@ -1,0 +1,99 @@
+[
+  {
+    "id": "game-1",
+    "title": "Cyber Racer 2077",
+    "category": "سباقات",
+    "image": "https://placehold.co/640x360/1a2233/00c2ff?text=Cyber+Racer",
+    "video": "https://www.youtube.com/watch?v=REPLACE_ME",
+    "description": "سباق سرعة مفتوح العالم برسومات مستقبلية وتحديات متنوعة وسيارات قابلة للتخصيص.",
+    "size": "18 GB",
+    "version": "1.2",
+    "developer": "Neon Studios",
+    "featured": true,
+    "featuredOrder": 1,
+    "links": [
+      { "name": "رابط تحميل سريع", "url": "https://example.com/download/cyber-racer-1" },
+      { "name": "رابط تحميل بديل", "url": "https://example.com/download/cyber-racer-2" }
+    ]
+  },
+  {
+    "id": "game-2",
+    "title": "Shadow Warriors",
+    "category": "أكشن",
+    "image": "https://placehold.co/640x360/1a2233/7c5cff?text=Shadow+Warriors",
+    "video": "https://www.youtube.com/watch?v=REPLACE_ME",
+    "description": "مغامرة أكشن قتالية بقصة مشوقة ومعارك سريعة في عالم مظلم مليء بالأسرار.",
+    "size": "25 GB",
+    "version": "2.0",
+    "developer": "Dark Forge",
+    "featured": true,
+    "featuredOrder": 2,
+    "links": [
+      { "name": "رابط تحميل سريع", "url": "https://example.com/download/shadow-warriors-1" }
+    ]
+  },
+  {
+    "id": "game-3",
+    "title": "Farm Kingdom",
+    "category": "استراتيجية",
+    "image": "https://placehold.co/640x360/1a2233/3fb950?text=Farm+Kingdom",
+    "video": "",
+    "description": "ابنِ مملكتك الزراعية وطوّر اقتصادك خطوة بخطوة، وواجه التحديات مع أصدقائك.",
+    "size": "3 GB",
+    "version": "1.0",
+    "developer": "Green Hill",
+    "featured": true,
+    "featuredOrder": 3,
+    "links": [
+      { "name": "رابط تحميل سريع", "url": "https://example.com/download/farm-kingdom-1" }
+    ]
+  },
+  {
+    "id": "game-4",
+    "title": "Night Survivor",
+    "category": "رعب",
+    "image": "https://placehold.co/640x360/1a2233/f85149?text=Night+Survivor",
+    "video": "",
+    "description": "انجُ من الكابوس في منزل مهجور، وحل الألغاز قبل أن يطاردك الكائن.",
+    "size": "7 GB",
+    "version": "1.1",
+    "developer": "Fear Labs",
+    "featured": false,
+    "featuredOrder": 0,
+    "links": [
+      { "name": "رابط تحميل سريع", "url": "https://example.com/download/night-survivor-1" }
+    ]
+  },
+  {
+    "id": "game-5",
+    "title": "Sky Fighters",
+    "category": "أكشن",
+    "image": "https://placehold.co/640x360/1a2233/d29922?text=Sky+Fighters",
+    "video": "",
+    "description": "معارك جوية ملحمية بطائرات حربية وخرائط واسعة ومهمات متنوعة.",
+    "size": "12 GB",
+    "version": "3.4",
+    "developer": "Sky Works",
+    "featured": false,
+    "featuredOrder": 0,
+    "links": [
+      { "name": "رابط تحميل سريع", "url": "https://example.com/download/sky-fighters-1" }
+    ]
+  },
+  {
+    "id": "game-6",
+    "title": "Puzzle Quest",
+    "category": "ألغاز",
+    "image": "https://placehold.co/640x360/1a2233/a371f7?text=Puzzle+Quest",
+    "video": "",
+    "description": "مجموعة ألغاز ممتعة تتحدى عقلك مع مراحل متدرجة في الصعوبة.",
+    "size": "800 MB",
+    "version": "1.0",
+    "developer": "Brain Games",
+    "featured": false,
+    "featuredOrder": 0,
+    "links": [
+      { "name": "رابط تحميل سريع", "url": "https://example.com/download/puzzle-quest-1" }
+    ]
+  }
+]
