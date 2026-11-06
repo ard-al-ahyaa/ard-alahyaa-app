@@ -1,0 +1,33 @@
+[
+  {
+    "id": "game-1",
+    "title": "Cyber Racer 2077",
+    "category": "سباقات",
+    "image": "https://placehold.co/600x340/1a2233/00c2ff?text=Cyber+Racer",
+    "description": "سباق سرعة مفتوح العالم مع رسومات مستقبلية وتحديات متنوعة.",
+    "links": [
+      { "name": "رابط مباشر 1", "url": "https://example.com/download/cyber-racer-1" },
+      { "name": "رابط مباشر 2", "url": "https://example.com/download/cyber-racer-2" }
+    ]
+  },
+  {
+    "id": "game-2",
+    "title": "Shadow Warriors",
+    "category": "أكشن",
+    "image": "https://placehold.co/600x340/1a2233/7c5cff?text=Shadow+Warriors",
+    "description": "مغامرة أكشن قتالية بقصة مشوقة ومعارك سريعة.",
+    "links": [
+      { "name": "رابط مباشر 1", "url": "https://example.com/download/shadow-warriors-1" }
+    ]
+  },
+  {
+    "id": "game-3",
+    "title": "Farm Kingdom",
+    "category": "استراتيجية",
+    "image": "https://placehold.co/600x340/1a2233/3fb950?text=Farm+Kingdom",
+    "description": "ابنِ مملكتك الزراعية وطوّر اقتصادك خطوة بخطوة.",
+    "links": [
+      { "name": "رابط مباشر 1", "url": "https://example.com/download/farm-kingdom-1" }
+    ]
+  }
+]
